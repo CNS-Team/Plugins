@@ -32,4 +32,4 @@ jobs:
           name: Plugins
           path: out/Release/*
   test:
-    needs: build
+    uses: build
