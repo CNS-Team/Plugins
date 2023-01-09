@@ -1,0 +1,38 @@
+name: Main
+
+on: [push, pull_request]
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.100'
+
+      - name: Build
+        id: build
+        run: |
+          cd src
+          dotnet build -c Release
+          Compress-Archive -Path out/Release/net6.0/* ../Plugins.zip
+          echo "TAG_NAME=v$(git rev-list --count HEAD)" >> $env:GITHUB_OUTPUT
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          prerelease: true
+          name: ${{ steps.build.outputs.TAG_NAME }}
+          path: Plugins.zip
