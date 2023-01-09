@@ -29,6 +29,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ItemMonitor", "ItemMonitor\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AsyncSocket", "AsyncSocket\AsyncSocket.csproj", "{C1C0E10A-3CC6-4B9D-BC38-F804F545814F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NPCEventBan", "NPCEventBan\NPCEventBan.csproj", "{A07B75AA-4257-4E6E-A617-229A426C19DD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -141,6 +143,14 @@ Global
 		{C1C0E10A-3CC6-4B9D-BC38-F804F545814F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C1C0E10A-3CC6-4B9D-BC38-F804F545814F}.Release|x64.ActiveCfg = Release|Any CPU
 		{C1C0E10A-3CC6-4B9D-BC38-F804F545814F}.Release|x64.Build.0 = Release|Any CPU
+		{A07B75AA-4257-4E6E-A617-229A426C19DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A07B75AA-4257-4E6E-A617-229A426C19DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A07B75AA-4257-4E6E-A617-229A426C19DD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A07B75AA-4257-4E6E-A617-229A426C19DD}.Debug|x64.Build.0 = Debug|Any CPU
+		{A07B75AA-4257-4E6E-A617-229A426C19DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A07B75AA-4257-4E6E-A617-229A426C19DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A07B75AA-4257-4E6E-A617-229A426C19DD}.Release|x64.ActiveCfg = Release|Any CPU
+		{A07B75AA-4257-4E6E-A617-229A426C19DD}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
