@@ -26,12 +26,9 @@ jobs:
         id: build
         run: |
           dotnet build -c Release
-          Compress-Archive -Path out/Release/* Plugins.zip
-          echo "TAG_NAME=v$(git rev-list --count HEAD)" >> $env:GITHUB_OUTPUT
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          prerelease: true
-          name: ${{ steps.build.outputs.TAG_NAME }}
-          path: Plugins.zip
+          name: Plugins.zip
+          path: out/Release/*
