@@ -1,6 +1,11 @@
 name: Main
 
-on: [push, pull_request]
+on:
+  workflow_dispatch:
+  push:
+    branches:
+     - master
+  pull_request:
 
 defaults:
   run:
@@ -8,6 +13,7 @@ defaults:
 
 jobs:
   build:
+    name: Build Plugins
     runs-on: ubuntu-latest
 
     steps:
@@ -31,5 +37,4 @@ jobs:
         with:
           name: Plugins
           path: out/Release/*
-  test:
-    uses: build
+
