@@ -13,6 +13,7 @@ defaults:
 
 jobs:
   build:
+    name: Build Plugins
     runs-on: ubuntu-latest
 
     steps:
