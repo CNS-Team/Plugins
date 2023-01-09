@@ -10,7 +10,7 @@ namespace History
 {
     public class Action
     {
-        public string ?account;
+        public string account;
         public byte action;
         public ushort data;
         public byte style;
@@ -18,7 +18,7 @@ namespace History
         public int time;
         public int x;
         public int y;
-        public string ?text;
+        public string text;
         public int alt; 
         public int random;
         public bool direction;
@@ -389,7 +389,7 @@ namespace History
                     if (Main.tile[x, y].active())
                     {
                         int prevTile = data & 0xFFFF;
-                        int placedTile = (data >> 16) & 0xFFFF;
+                        //int placedTile = (data >> 16) & 0xFFFF;
 
                         WorldGen.PlaceTile(x, y, prevTile, false, true, -1, style: style);
                         TSPlayer.All.SendTileSquareCentered(x, y, 1);
@@ -397,7 +397,7 @@ namespace History
                     break;
                 case 22:
                     int prevWall = data & 0xFFFF;
-                    int placedWall = (data >> 16) & 0xFFFF;
+                    //int placedWall = (data >> 16) & 0xFFFF;
                     if (Main.tile[x, y].wall != prevWall) //change if not what was replaced
                     {
                         Main.tile[x, y].wall = (byte)prevWall;
