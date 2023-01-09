@@ -26,7 +26,7 @@ jobs:
         id: build
         run: |
           dotnet build -c Release
-          Compress-Archive -Path out/Release/net6.0/* ../Plugins.zip
+          Compress-Archive -Path out/Release/* Plugins.zip
           echo "TAG_NAME=v$(git rev-list --count HEAD)" >> $env:GITHUB_OUTPUT
 
       - name: Upload Artifact
