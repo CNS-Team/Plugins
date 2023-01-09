@@ -1,6 +1,4 @@
 <Project>
-  <Sdk Name="Microsoft.NET.Sdk" />
-
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <PlatformTarget>x64</PlatformTarget>
