@@ -7,6 +7,9 @@ defaults:
     shell: pwsh
 
 jobs:
+  test:
+    needs: build
+
   build:
     runs-on: ubuntu-latest
 
@@ -14,7 +17,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
           submodules: 'recursive'
 
       - name: Setup dotnet
