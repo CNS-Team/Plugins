@@ -5,7 +5,7 @@ VisualStudioVersion = 17.3.32901.215
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LazyUtils", "LazyUtils\LazyUtils.csproj", "{DF9033F5-70F8-4BF4-BCE4-22773C092B62}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PChrome.Core", "PChrome.Core\PChrome.Core.csproj", "{986365B0-B94D-48C9-B73F-222A29C353C6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PChrome.Core", "PChrome.Core\PChrome.Core.csproj", "{986365B0-B94D-48C9-B73F-222A29C353C6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PChrome.AutoRevive", "PChrome.AutoRevive\PChrome.AutoRevive.csproj", "{3B49A33E-C641-4413-8520-E469B71B1989}"
 EndProject
@@ -24,6 +24,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PChrome.RPG", "PChrome.RPG\PChrome.RPG.csproj", "{D9614C46-C1C0-4D00-AD59-53F6E3BDA341}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PChrome.Shop", "PChrome.Shop\PChrome.Shop.csproj", "{BD3931B8-E1E1-4108-B86B-184FCCBBC904}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ItemMonitor", "ItemMonitor\ItemMonitor.csproj", "{A1DCB5F0-2798-4374-8912-08B1CD29AFB5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -121,6 +123,14 @@ Global
 		{BD3931B8-E1E1-4108-B86B-184FCCBBC904}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BD3931B8-E1E1-4108-B86B-184FCCBBC904}.Release|x64.ActiveCfg = Release|Any CPU
 		{BD3931B8-E1E1-4108-B86B-184FCCBBC904}.Release|x64.Build.0 = Release|Any CPU
+		{A1DCB5F0-2798-4374-8912-08B1CD29AFB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1DCB5F0-2798-4374-8912-08B1CD29AFB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1DCB5F0-2798-4374-8912-08B1CD29AFB5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A1DCB5F0-2798-4374-8912-08B1CD29AFB5}.Debug|x64.Build.0 = Debug|Any CPU
+		{A1DCB5F0-2798-4374-8912-08B1CD29AFB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1DCB5F0-2798-4374-8912-08B1CD29AFB5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1DCB5F0-2798-4374-8912-08B1CD29AFB5}.Release|x64.ActiveCfg = Release|Any CPU
+		{A1DCB5F0-2798-4374-8912-08B1CD29AFB5}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
