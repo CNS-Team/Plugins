@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LazyUtils;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
@@ -11,10 +12,8 @@ using TShockAPI.Hooks;
 namespace ItemMonitor
 {
     [ApiVersion(2, 1)]
-    public class PluginContainer : TerrariaPlugin
+    public class PluginContainer : LazyPlugin
     {
-        public override Version Version => new Version(1, 0);
-        public override string Name => "ItemMonitor";
         public PluginContainer(Main game) : base(game)
         {
         }
@@ -42,6 +41,7 @@ namespace ItemMonitor
 
         public override void Initialize()
         {
+            base.Initialize();
             PlayerHooks.PlayerPostLogin += args => args.Player.SetData("ItemValidator", new ItemValidator(args.Player));
             PlayerHooks.PlayerLogout += args => (args.Player.RemoveData("ItemValidator") as ItemValidator).Dispose();
             GetDataHandlers.PlayerSlot.Register((_, args) =>
