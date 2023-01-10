@@ -1,16 +1,16 @@
 ﻿using Microsoft.Xna.Framework;
 using Rests;
+using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using TShockAPI;
 using TShockAPI.DB;
 
 namespace CNSUniCore.UniRest
 {
-    // Token: 0x02000009 RID: 9
     public class RestManager
     {
         public DBManager dbManager;
-        // Token: 0x06000051 RID: 81 RVA: 0x000037B8 File Offset: 0x000019B8
         public RestManager()
         {
             TShock.RestApi.Register(new SecureRestCommand("/uniban/add", new RestCommandD(this.AddBan), new string[]
@@ -47,7 +47,6 @@ namespace CNSUniCore.UniRest
             }));
         }
 
-        // Token: 0x06000052 RID: 82 RVA: 0x00003918 File Offset: 0x00001B18
         private object UniUserUpdate(RestRequestArgs args)
         {
             int num = int.Parse(args.Parameters["id"]);
@@ -92,7 +91,6 @@ namespace CNSUniCore.UniRest
             return null;
         }
 
-        // Token: 0x06000053 RID: 83 RVA: 0x00003AF4 File Offset: 0x00001CF4
         private object UniUserAdd(RestRequestArgs args)
         {
             int id = int.Parse(args.Parameters["id"]);
@@ -109,7 +107,6 @@ namespace CNSUniCore.UniRest
             return null;
         }
 
-        // Token: 0x06000054 RID: 84 RVA: 0x00003BC4 File Offset: 0x00001DC4
         private object UniVipDel(RestRequestArgs args)
         {
             bool flag = !ConfigUtils.config.EnableSponsor;
@@ -147,7 +144,6 @@ namespace CNSUniCore.UniRest
             return result;
         }
 
-        // Token: 0x06000055 RID: 85 RVA: 0x00003C9C File Offset: 0x00001E9C
         private object UniVipAdd(RestRequestArgs args)
         {
             bool flag = !ConfigUtils.config.EnableSponsor;
@@ -194,7 +190,6 @@ namespace CNSUniCore.UniRest
             return result;
         }
 
-        // Token: 0x06000056 RID: 86 RVA: 0x00003E04 File Offset: 0x00002004
         private object Broadcast(RestRequestArgs args)
         {
             string text = args.Parameters["text"];
@@ -202,7 +197,6 @@ namespace CNSUniCore.UniRest
             return null;
         }
 
-        // Token: 0x06000057 RID: 87 RVA: 0x00003E3C File Offset: 0x0000203C
         private object ListBan(RestRequestArgs args)
         {
             List<PlayerInfo> players = this.dbManager.GetPlayers();

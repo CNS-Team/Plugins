@@ -1,20 +1,20 @@
 ﻿using MySql.Data.MySqlClient;
+using System.Collections.Generic;
 using System.Data;
 using System.Runtime.CompilerServices;
 using TShockAPI.DB;
+using System;
+
 
 namespace CNSUniCore
 {
-    // Token: 0x02000003 RID: 3
     public class DBManager
     {
-        // Token: 0x06000006 RID: 6 RVA: 0x0000227D File Offset: 0x0000047D
         public DBManager(IDbConnection connection)
         {
             this.connection = connection;
         }
 
-        // Token: 0x06000007 RID: 7 RVA: 0x00002290 File Offset: 0x00000490
         public void CreateBansTable()
         {
             SqlTable sqlTable = new SqlTable("unibans", new SqlColumn[]
@@ -45,7 +45,6 @@ namespace CNSUniCore
             new SqlTableCreator(dbConnection, queryBuilder2).EnsureTableStructure(sqlTable);
         }
 
-        // Token: 0x06000008 RID: 8 RVA: 0x00002350 File Offset: 0x00000550
         public void CreateSponsorTable()
         {
             SqlTable sqlTable = new SqlTable("unisponsors", new SqlColumn[]
@@ -75,7 +74,6 @@ namespace CNSUniCore
             new SqlTableCreator(dbConnection, queryBuilder2).EnsureTableStructure(sqlTable);
         }
 
-        // Token: 0x06000009 RID: 9 RVA: 0x00002448 File Offset: 0x00000648
         public void AddPlayer(PlayerInfo plr)
         {
             string text = string.Concat(new string[]
@@ -97,14 +95,12 @@ namespace CNSUniCore
             DbExt.Query(this.connection, text, Array.Empty<object>());
         }
 
-        // Token: 0x0600000A RID: 10 RVA: 0x000024B0 File Offset: 0x000006B0
         public void DeletePlayer(string plr)
         {
             string text = "DELETE FROM unibans WHERE Name='" + plr + "';";
             DbExt.Query(this.connection, text, Array.Empty<object>());
         }
 
-        // Token: 0x0600000B RID: 11 RVA: 0x000024E4 File Offset: 0x000006E4
         public void UpdatePlayer(PlayerInfo plr)
         {
             string text = string.Concat(new string[]
@@ -128,7 +124,6 @@ namespace CNSUniCore
             DbExt.Query(this.connection, text, Array.Empty<object>());
         }
 
-        // Token: 0x0600000C RID: 12 RVA: 0x00002560 File Offset: 0x00000760
         public PlayerInfo GetPlayer(string plrname)
         {
             string text = "SELECT * FROM unibans WHERE Name='" + plrname + "';";
@@ -162,7 +157,6 @@ namespace CNSUniCore
             return result;
         }
 
-        // Token: 0x0600000D RID: 13 RVA: 0x00002608 File Offset: 0x00000808
         public List<PlayerInfo> GetPlayers()
         {
             string text = "SELECT * FROM unibans;";
@@ -194,7 +188,6 @@ namespace CNSUniCore
             return result;
         }
 
-        // Token: 0x0600000E RID: 14 RVA: 0x000026B8 File Offset: 0x000008B8
         public void AddSponsor(SponsorInfo plr)
         {
             DefaultInterpolatedStringHandler defaultInterpolatedStringHandler = new DefaultInterpolatedStringHandler(94, 5);
@@ -213,14 +206,12 @@ namespace CNSUniCore
             DbExt.Query(this.connection, text, Array.Empty<object>());
         }
 
-        // Token: 0x0600000F RID: 15 RVA: 0x00002780 File Offset: 0x00000980
         public void DeleteSponsor(string plr)
         {
             string text = "DELETE FROM unisponsors WHERE Name='" + plr + "';";
             DbExt.Query(this.connection, text, Array.Empty<object>());
         }
 
-        // Token: 0x06000010 RID: 16 RVA: 0x000027B4 File Offset: 0x000009B4
         public void UpdateSponsor(SponsorInfo plr)
         {
             DefaultInterpolatedStringHandler defaultInterpolatedStringHandler = new DefaultInterpolatedStringHandler(96, 6);
@@ -241,7 +232,6 @@ namespace CNSUniCore
             DbExt.Query(this.connection, text, Array.Empty<object>());
         }
 
-        // Token: 0x06000011 RID: 17 RVA: 0x00002898 File Offset: 0x00000A98
         public SponsorInfo GetSponsor(string plrname)
         {
             string text = "SELECT * FROM unisponsors WHERE Name='" + plrname + "';";
@@ -266,7 +256,7 @@ namespace CNSUniCore
             return result;
         }
 
-        // Token: 0x06000012 RID: 18 RVA: 0x00002954 File Offset: 0x00000B54
+        
         public List<SponsorInfo> GetSponsors()
         {
             string text = "SELECT * FROM unisponsors;";
@@ -289,7 +279,6 @@ namespace CNSUniCore
             return result;
         }
 
-        // Token: 0x04000006 RID: 6
         private IDbConnection connection;
     }
 }
