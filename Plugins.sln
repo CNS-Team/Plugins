@@ -43,6 +43,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataSync", "DataSync\DataSy
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Invisibility", "Invisibility\Invisibility.csproj", "{05EE176F-7EEE-42EC-993D-9252220C510F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PreloginChatFix", "PreloginChatFix\PreloginChatFix.csproj", "{1903CBC2-A964-47E3-B9D3-E633C60ED8F4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -211,6 +213,14 @@ Global
 		{05EE176F-7EEE-42EC-993D-9252220C510F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{05EE176F-7EEE-42EC-993D-9252220C510F}.Release|x64.ActiveCfg = Release|Any CPU
 		{05EE176F-7EEE-42EC-993D-9252220C510F}.Release|x64.Build.0 = Release|Any CPU
+		{1903CBC2-A964-47E3-B9D3-E633C60ED8F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1903CBC2-A964-47E3-B9D3-E633C60ED8F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1903CBC2-A964-47E3-B9D3-E633C60ED8F4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1903CBC2-A964-47E3-B9D3-E633C60ED8F4}.Debug|x64.Build.0 = Debug|Any CPU
+		{1903CBC2-A964-47E3-B9D3-E633C60ED8F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1903CBC2-A964-47E3-B9D3-E633C60ED8F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1903CBC2-A964-47E3-B9D3-E633C60ED8F4}.Release|x64.ActiveCfg = Release|Any CPU
+		{1903CBC2-A964-47E3-B9D3-E633C60ED8F4}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
