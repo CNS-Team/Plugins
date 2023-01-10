@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using LazyUtils;
+﻿using LazyUtils;
 using LinqToDB;
 using Microsoft.Xna.Framework;
 using OTAPI;
 using PChrome.Core;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Terraria;
 using Terraria.Localization;
 using TerrariaApi.Server;
@@ -24,7 +24,7 @@ namespace PChrome.RPG
         {
 
             double num = damage;
-            int num2 = npc.defense;
+            var num2 = npc.defense;
             if (npc.ichor)
             {
                 num2 -= 15;
@@ -37,20 +37,20 @@ namespace PChrome.RPG
             {
                 num2 = 0;
             }
-            num = Main.CalculateDamageNPCsTake((int)num, num2);
+            num = Main.CalculateDamageNPCsTake((int) num, num2);
             if (crit)
             {
                 num *= 2.0;
             }
             if (npc.takenDamageMultiplier > 1f)
             {
-                num *= (double)npc.takenDamageMultiplier;
+                num *= (double) npc.takenDamageMultiplier;
             }
             if (npc.type == 371 || npc.SpawnedFromStatue && Config.Instance.AllowGainMoneyFromStatueMobs)
             {
                 num = 0.0;
             }
-            return (float)num;
+            return (float) num;
         }
         public override void Initialize()
         {
@@ -67,7 +67,10 @@ namespace PChrome.RPG
             var npc = Main.npc[args.ID];
             var val = CalcRealDmg(npc, args.Damage, args.Critical > 0);
             if (Config.Instance.multiplier.TryGetValue(npc.type, out var multiplier))
+            {
                 val *= multiplier;
+            }
+
             allocator.AddDamage(Main.npc[args.ID], args.Player?.Account?.Name, val);
         }
 
@@ -76,7 +79,11 @@ namespace PChrome.RPG
             using var query = args.Player.Get<Money>();
             var money = query.Single().money;
             var loss = (int) ((money - Config.Instance.DeathPenaltyLimit) * Config.Instance.DeathPenalty);
-            if (money <= 0) return;
+            if (money <= 0)
+            {
+                return;
+            }
+
             query.Set(d => d.money, d => d.money - loss).Update();
             args.Player.NoticeChange(-loss);
             args.Player.SendMessage($"你因死亡失去{loss}$", Color.OrangeRed);

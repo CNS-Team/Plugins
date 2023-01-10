@@ -22,18 +22,18 @@ namespace OnlineInfo
         #region Init / Dispose
         public OnlineInfoPlugin(Main game) : base(game)
         {
-            ServerApi.Hooks.GameInitialize.Register(this, OnGameInitialize);
-            TShockAPI.Hooks.PlayerHooks.PlayerPostLogin += OnPlayerPostLogin;
-            TShockAPI.Hooks.PlayerHooks.PlayerLogout += OnPlayerLogout;
+            ServerApi.Hooks.GameInitialize.Register(this, this.OnGameInitialize);
+            TShockAPI.Hooks.PlayerHooks.PlayerPostLogin += this.OnPlayerPostLogin;
+            TShockAPI.Hooks.PlayerHooks.PlayerLogout += this.OnPlayerLogout;
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                ServerApi.Hooks.GameInitialize.Deregister(this, OnGameInitialize);
-                TShockAPI.Hooks.PlayerHooks.PlayerPostLogin -= OnPlayerPostLogin;
-                TShockAPI.Hooks.PlayerHooks.PlayerLogout -= OnPlayerLogout;
+                ServerApi.Hooks.GameInitialize.Deregister(this, this.OnGameInitialize);
+                TShockAPI.Hooks.PlayerHooks.PlayerPostLogin -= this.OnPlayerPostLogin;
+                TShockAPI.Hooks.PlayerHooks.PlayerLogout -= this.OnPlayerLogout;
             }
             base.Dispose(disposing);
         }
@@ -58,13 +58,17 @@ namespace OnlineInfo
         private void OnPlayerPostLogin(PlayerPostLoginEventArgs args)
         {
             if (isAutoUpdateEnabled)
+            {
                 UpdateOnlineInfo(args.Player, true);
+            }
         }
 
         private void OnPlayerLogout(PlayerLogoutEventArgs args)
         {
             if (isAutoUpdateEnabled)
+            {
                 UpdateOnlineInfo(args.Player, false);
+            }
         }
         #endregion
 
@@ -73,16 +77,20 @@ namespace OnlineInfo
         {
             try
             {
-                List<string> playerNames = TShock.Players
+                var playerNames = TShock.Players
                     .Where(x => x != null && x.Active && !string.IsNullOrEmpty(x.Account?.Name))
                     .Select(x => x.Account.Name)
                     .ToList();
                 if (!string.IsNullOrEmpty(player?.Account?.Name))
                 {
                     if (isJoining)
+                    {
                         playerNames.Add(player.Account.Name);
+                    }
                     else
+                    {
                         playerNames.RemoveAll(x => x == player.Account.Name);
+                    }
                 }
                 playerNames = playerNames.Distinct().ToList();
 

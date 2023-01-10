@@ -19,141 +19,149 @@ namespace History
         public int x;
         public int y;
         public string text;
-        public int alt; 
+        public int alt;
         public int random;
         public bool direction;
 
         public void Reenact()
         {
-            switch (action)
+            switch (this.action)
             {
                 case 0:
                 case 4://del tile
-                    if (Main.tile[x, y].active())
+                    if (Main.tile[this.x, this.y].active())
                     {
-                        Main.tile[x, y].active(false);
-                        Main.tile[x, y].type = 0;
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        Main.tile[this.x, this.y].active(false);
+                        Main.tile[this.x, this.y].type = 0;
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 1://add tile
                        //Don't place if already there
-                    if (Main.tile[x, y].active() && Main.tile[x, y].type == data)
+                    if (Main.tile[this.x, this.y].active() && Main.tile[this.x, this.y].type == this.data)
+                    {
                         break;
-                    WorldGen.PlaceTile(x, y, data, false, true, style: style);
-                    if (Main.tileFrameImportant[data])
-                        TSPlayer.All.SendTileSquareCentered(x, y, 8);
+                    }
+
+                    WorldGen.PlaceTile(this.x, this.y, this.data, false, true, style: this.style);
+                    if (Main.tileFrameImportant[this.data])
+                    {
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 8);
+                    }
                     else
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                    {
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
+                    }
+
                     break;
                 case 2://del wall
-                    if (Main.tile[x, y].wall != 0)
+                    if (Main.tile[this.x, this.y].wall != 0)
                     {
-                        Main.tile[x, y].wall = 0;
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        Main.tile[this.x, this.y].wall = 0;
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 3://add wall
-                    if (Main.tile[x, y].wall == 0)
+                    if (Main.tile[this.x, this.y].wall == 0)
                     {
-                        Main.tile[x, y].wall = (byte)data;
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        Main.tile[this.x, this.y].wall = (byte) this.data;
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 5://placewire
-                    if (!Main.tile[x, y].wire())
+                    if (!Main.tile[this.x, this.y].wire())
                     {
-                        WorldGen.PlaceWire(x, y);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        WorldGen.PlaceWire(this.x, this.y);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 6://killwire
-                    if (Main.tile[x, y].wire())
+                    if (Main.tile[this.x, this.y].wire())
                     {
-                        WorldGen.KillWire(x, y);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        WorldGen.KillWire(this.x, this.y);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 7://poundtile
-                    WorldGen.PoundTile(x, y);
-                    TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                    WorldGen.PoundTile(this.x, this.y);
+                    TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     break;
                 case 8://placeactuator
-                    if (!Main.tile[x, y].actuator())
+                    if (!Main.tile[this.x, this.y].actuator())
                     {
-                        WorldGen.PlaceActuator(x, y);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        WorldGen.PlaceActuator(this.x, this.y);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 9://killactuator
-                    if (Main.tile[x, y].actuator())
+                    if (Main.tile[this.x, this.y].actuator())
                     {
-                        WorldGen.KillActuator(x, y);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        WorldGen.KillActuator(this.x, this.y);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 10://placewire2
-                    if (!Main.tile[x, y].wire2())
+                    if (!Main.tile[this.x, this.y].wire2())
                     {
-                        WorldGen.PlaceWire2(x, y);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        WorldGen.PlaceWire2(this.x, this.y);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 11://killwire2
-                    if (Main.tile[x, y].wire2())
+                    if (Main.tile[this.x, this.y].wire2())
                     {
-                        WorldGen.KillWire2(x, y);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        WorldGen.KillWire2(this.x, this.y);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 12://placewire3
-                    if (!Main.tile[x, y].wire3())
+                    if (!Main.tile[this.x, this.y].wire3())
                     {
-                        WorldGen.PlaceWire3(x, y);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        WorldGen.PlaceWire3(this.x, this.y);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 13://killwire3
-                    if (Main.tile[x, y].wire3())
+                    if (Main.tile[this.x, this.y].wire3())
                     {
-                        WorldGen.KillWire3(x, y);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        WorldGen.KillWire3(this.x, this.y);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 14://slopetile
-                    WorldGen.SlopeTile(x, y, data);
-                    TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                    WorldGen.SlopeTile(this.x, this.y, this.data);
+                    TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     break;
                 case 15:
                     //Uh wtf does "frame track" mean
                     //Too lazy to find atm
                     break;
                 case 16:
-                    if (!Main.tile[x, y].wire4())
+                    if (!Main.tile[this.x, this.y].wire4())
                     {
-                        WorldGen.PlaceWire4(x, y);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        WorldGen.PlaceWire4(this.x, this.y);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 17:
-                    if (Main.tile[x, y].wire4())
+                    if (Main.tile[this.x, this.y].wire4())
                     {
-                        WorldGen.KillWire4(x, y);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        WorldGen.KillWire4(this.x, this.y);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 25://paint tile
-                    if (Main.tile[x, y].active())
+                    if (Main.tile[this.x, this.y].active())
                     {
-                        Main.tile[x, y].color((byte)data);
-                        NetMessage.SendData(63, -1, -1, NetworkText.Empty, x, y, data, 0f, 0);
+                        Main.tile[this.x, this.y].color((byte) this.data);
+                        NetMessage.SendData(63, -1, -1, NetworkText.Empty, this.x, this.y, this.data, 0f, 0);
                     }
                     break;
                 case 26://paint wall
-                    if (Main.tile[x, y].wall > 0)
+                    if (Main.tile[this.x, this.y].wall > 0)
                     {
-                        Main.tile[x, y].wallColor((byte)data);
-                        NetMessage.SendData(64, -1, -1, NetworkText.Empty, x, y, data, 0f, 0);
+                        Main.tile[this.x, this.y].wallColor((byte) this.data);
+                        NetMessage.SendData(64, -1, -1, NetworkText.Empty, this.x, this.y, this.data, 0f, 0);
                     }
                     break;
                 case 27://update sign
@@ -162,87 +170,101 @@ namespace History
         }
         public void Rollback()
         {
-            switch (action)
+            switch (this.action)
             {
                 case 0:
                 case 4://del tile
                 case 20://trykilltile 
-                    if (Main.tileSand[data])//sand falling compensation (need to check up for top of sand)
+                    if (Main.tileSand[this.data])//sand falling compensation (need to check up for top of sand)
                     {
-                        int newY = y;
-                        while (newY > 0 && Main.tile[x, newY].active() && Main.tile[x, newY].type == data)
+                        var newY = this.y;
+                        while (newY > 0 && Main.tile[this.x, newY].active() && Main.tile[this.x, newY].type == this.data)
                         {
                             newY--;
                         }
-                        if (Main.tile[x, newY].active())
+                        if (Main.tile[this.x, newY].active())
+                        {
                             break;
-                        y = newY;
+                        }
+
+                        this.y = newY;
                     }
-                    else if (data == 5)//tree, grow another?
+                    else if (this.data == 5)//tree, grow another?
                     {
-                        WorldGen.GrowTree(x, y + 1);
+                        WorldGen.GrowTree(this.x, this.y + 1);
                         break;
                     }
-                    else if (data == 2 || data == 23 || data == 60 || data == 70 || data == 109 || data == 199)// grasses need to place manually, not from placeTile
+                    else if (this.data == 2 || this.data == 23 || this.data == 60 || this.data == 70 || this.data == 109 || this.data == 199)// grasses need to place manually, not from placeTile
                     {
-                        Main.tile[x, y].type = data;
-                        Main.tile[x, y].color((byte)(paint & 127));
-                        Main.tile[x, y].active(true);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        Main.tile[this.x, this.y].type = this.data;
+                        Main.tile[this.x, this.y].color((byte) (this.paint & 127));
+                        Main.tile[this.x, this.y].active(true);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                         break;
                     }
                     //maybe already repaired?
-                    if (Main.tile[x, y].active() && Main.tile[x, y].type == data)
+                    if (Main.tile[this.x, this.y].active() && Main.tile[this.x, this.y].type == this.data)
                     {
-                        if (data == 314 || data == 395)
+                        if (this.data == 314 || this.data == 395)
+                        {
                             goto frameOnly;
+                        }
+
                         break;
                     }
-                    if (Terraria.ObjectData.TileObjectData.CustomPlace(data, style) && data != 82)
-                        WorldGen.PlaceObject(x, y, data, false, style: style, alternate: alt, random: random, direction: direction ? 1 : -1);
+                    if (Terraria.ObjectData.TileObjectData.CustomPlace(this.data, this.style) && this.data != 82)
+                    {
+                        WorldGen.PlaceObject(this.x, this.y, this.data, false, style: this.style, alternate: this.alt, random: this.random, direction: this.direction ? 1 : -1);
+                    }
                     else
-                        WorldGen.PlaceTile(x, y, data, false, true, -1, style: style);
+                    {
+                        WorldGen.PlaceTile(this.x, this.y, this.data, false, true, -1, style: this.style);
+                    }
 
-                    History.paintFurniture(data, x, y, (byte)(paint & 127));
+                    History.paintFurniture(this.data, this.x, this.y, (byte) (this.paint & 127));
 
                 frameOnly:
                     //restore slopes
-                    if ((paint & 128) == 128)
+                    if ((this.paint & 128) == 128)
                     {
-                        Main.tile[x, y].halfBrick(true);
+                        Main.tile[this.x, this.y].halfBrick(true);
                     }
-                    else if (data == 314)
+                    else if (this.data == 314)
                     {
-                        Main.tile[x, y].frameX = (short)(style - 1);
-                        Main.tile[x, y].frameY = (short)((paint >> 8) - 1);
+                        Main.tile[this.x, this.y].frameX = (short) (this.style - 1);
+                        Main.tile[this.x, this.y].frameY = (short) ((this.paint >> 8) - 1);
                     }
                     else
-                        Main.tile[x, y].slope((byte)(paint >> 8));
+                    {
+                        Main.tile[this.x, this.y].slope((byte) (this.paint >> 8));
+                    }
 
                     //restore sign text
-                    if (data == 55 || data == 85 || data == 425)
+                    if (this.data == 55 || this.data == 85 || this.data == 425)
                     {
-                        int signI = Sign.ReadSign(x, y);
+                        var signI = Sign.ReadSign(this.x, this.y);
                         if (signI >= 0)
-                            Sign.TextSign(signI, text);
+                        {
+                            Sign.TextSign(signI, this.text);
+                        }
                     }
                     //Mannequins
-                    else if (data == 128 || data == 269)
+                    else if (this.data == 128 || this.data == 269)
                     {
                         //x,y should be bottom left, Direction is already done via PlaceObject so we add the item values.
-                        Main.tile[x, y - 2].frameX += (short)(paint * 100);
-                        Main.tile[x, y - 1].frameX += (short)((alt & 0x3FF) * 100);
-                        Main.tile[x, y].frameX += (short)((alt >> 10) * 100);
+                        Main.tile[this.x, this.y - 2].frameX += (short) (this.paint * 100);
+                        Main.tile[this.x, this.y - 1].frameX += (short) ((this.alt & 0x3FF) * 100);
+                        Main.tile[this.x, this.y].frameX += (short) ((this.alt >> 10) * 100);
                     }
                     // Restore Weapon Rack if it had a netID
-                    else if (data == 334 && alt > 0)
+                    else if (this.data == 334 && this.alt > 0)
                     {
-                        int mask = 5000;// +(direction ? 15000 : 0);
-                        Main.tile[x - 1, y].frameX = (short)(alt + mask + 100);
-                        Main.tile[x, y].frameX = (short)(paint + mask + 5000);
+                        var mask = 5000;// +(direction ? 15000 : 0);
+                        Main.tile[this.x - 1, this.y].frameX = (short) (this.alt + mask + 100);
+                        Main.tile[this.x, this.y].frameX = (short) (this.paint + mask + 5000);
                     }
                     // Restore Item Frame
-                    else if (data == 395)
+                    else if (this.data == 395)
                     {
                         /*TileEntity TE;
 						// PlaceObject should already place a blank entity.
@@ -259,183 +281,192 @@ namespace History
 							Console.WriteLine("This Frame restore had no entity");*/
                     }
                     //Send larger area for furniture
-                    if (Main.tileFrameImportant[data])
-                        if (data == 104)
-                            TSPlayer.All.SendTileSquareCentered(x, y - 2, 8);
+                    if (Main.tileFrameImportant[this.data])
+                    {
+                        if (this.data == 104)
+                        {
+                            TSPlayer.All.SendTileSquareCentered(this.x, this.y - 2, 8);
+                        }
                         else
-                            TSPlayer.All.SendTileSquareCentered(x, y, 8);//This can be very large, or too small in some cases
+                        {
+                            TSPlayer.All.SendTileSquareCentered(this.x, this.y, 8);//This can be very large, or too small in some cases
+                        }
+                    }
                     else
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                    {
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
+                    }
+
                     break;
                 case 1://add tile
-                    bool delete = Main.tile[x, y].active();
-                    if (!delete && Main.tileSand[data])//sand falling compensation (it may have fallen down)
+                    var delete = Main.tile[this.x, this.y].active();
+                    if (!delete && Main.tileSand[this.data])//sand falling compensation (it may have fallen down)
                     {
-                        int newY = y + 1;
-                        while (newY < Main.maxTilesY - 1 && !Main.tile[x, newY].active())
+                        var newY = this.y + 1;
+                        while (newY < Main.maxTilesY - 1 && !Main.tile[this.x, newY].active())
                         {
                             newY++;
                         }
-                        if (Main.tile[x, newY].type == data)
+                        if (Main.tile[this.x, newY].type == this.data)
                         {
-                            y = newY;
+                            this.y = newY;
                             delete = true;
                         }
                     }
                     if (delete)
                     {
-                        WorldGen.KillTile(x, y, false, false, true);
-                        NetMessage.SendData(17, -1, -1, NetworkText.Empty, 0, x, y);
+                        WorldGen.KillTile(this.x, this.y, false, false, true);
+                        NetMessage.SendData(17, -1, -1, NetworkText.Empty, 0, this.x, this.y);
                     }
                     break;
                 case 2://del wall
-                    if (Main.tile[x, y].wall != data) //change if not what was deleted
+                    if (Main.tile[this.x, this.y].wall != this.data) //change if not what was deleted
                     {
-                        Main.tile[x, y].wall = (byte)data;
-                        Main.tile[x, y].wallColor((byte)paint);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        Main.tile[this.x, this.y].wall = (byte) this.data;
+                        Main.tile[this.x, this.y].wallColor((byte) this.paint);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 3://add wall
-                    if (Main.tile[x, y].wall != 0)
+                    if (Main.tile[this.x, this.y].wall != 0)
                     {
-                        Main.tile[x, y].wall = 0;
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        Main.tile[this.x, this.y].wall = 0;
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 5://placewire
-                    if (Main.tile[x, y].wire())
+                    if (Main.tile[this.x, this.y].wire())
                     {
-                        WorldGen.KillWire(x, y);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        WorldGen.KillWire(this.x, this.y);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 6://killwire
-                    if (!Main.tile[x, y].wire())
+                    if (!Main.tile[this.x, this.y].wire())
                     {
-                        WorldGen.PlaceWire(x, y);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        WorldGen.PlaceWire(this.x, this.y);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 7://poundtile
-                    WorldGen.PoundTile(x, y);
-                    TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                    WorldGen.PoundTile(this.x, this.y);
+                    TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     break;
                 case 8://placeactuator
-                    if (Main.tile[x, y].actuator())
+                    if (Main.tile[this.x, this.y].actuator())
                     {
-                        WorldGen.KillActuator(x, y);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        WorldGen.KillActuator(this.x, this.y);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 9://killactuator
-                    if (!Main.tile[x, y].actuator())
+                    if (!Main.tile[this.x, this.y].actuator())
                     {
-                        WorldGen.PlaceActuator(x, y);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        WorldGen.PlaceActuator(this.x, this.y);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 10://placewire2
-                    if (Main.tile[x, y].wire2())
+                    if (Main.tile[this.x, this.y].wire2())
                     {
-                        WorldGen.KillWire2(x, y);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        WorldGen.KillWire2(this.x, this.y);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 11://killwire2
-                    if (!Main.tile[x, y].wire2())
+                    if (!Main.tile[this.x, this.y].wire2())
                     {
-                        WorldGen.PlaceWire2(x, y);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        WorldGen.PlaceWire2(this.x, this.y);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 12://placewire3
-                    if (Main.tile[x, y].wire3())
+                    if (Main.tile[this.x, this.y].wire3())
                     {
-                        WorldGen.KillWire3(x, y);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        WorldGen.KillWire3(this.x, this.y);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 13://killwire3
-                    if (!Main.tile[x, y].wire3())
+                    if (!Main.tile[this.x, this.y].wire3())
                     {
-                        WorldGen.PlaceWire3(x, y);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        WorldGen.PlaceWire3(this.x, this.y);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 14://slopetile
-                    Main.tile[x, y].slope((byte)(paint >> 8));
-                    Main.tile[x, y].halfBrick((paint & 128) == 128);
-                    TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                    Main.tile[this.x, this.y].slope((byte) (this.paint >> 8));
+                    Main.tile[this.x, this.y].halfBrick((this.paint & 128) == 128);
+                    TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     break;
                 case 15: //frame track
                          //see above
                     break;
                 case 16:
-                    if (Main.tile[x, y].wire4())
+                    if (Main.tile[this.x, this.y].wire4())
                     {
-                        WorldGen.KillWire4(x, y);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        WorldGen.KillWire4(this.x, this.y);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 17:
-                    if (!Main.tile[x, y].wire4())
+                    if (!Main.tile[this.x, this.y].wire4())
                     {
-                        WorldGen.PlaceWire4(x, y);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        WorldGen.PlaceWire4(this.x, this.y);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 21:
-                    if (Main.tile[x, y].active())
+                    if (Main.tile[this.x, this.y].active())
                     {
-                        int prevTile = data & 0xFFFF;
+                        var prevTile = this.data & 0xFFFF;
                         //int placedTile = (data >> 16) & 0xFFFF;
 
-                        WorldGen.PlaceTile(x, y, prevTile, false, true, -1, style: style);
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        WorldGen.PlaceTile(this.x, this.y, prevTile, false, true, -1, style: this.style);
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 22:
-                    int prevWall = data & 0xFFFF;
+                    var prevWall = this.data & 0xFFFF;
                     //int placedWall = (data >> 16) & 0xFFFF;
-                    if (Main.tile[x, y].wall != prevWall) //change if not what was replaced
+                    if (Main.tile[this.x, this.y].wall != prevWall) //change if not what was replaced
                     {
-                        Main.tile[x, y].wall = (byte)prevWall;
-                        TSPlayer.All.SendTileSquareCentered(x, y, 1);
+                        Main.tile[this.x, this.y].wall = (byte) prevWall;
+                        TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 25://paint tile
-                    if (Main.tile[x, y].active())
+                    if (Main.tile[this.x, this.y].active())
                     {
-                        Main.tile[x, y].color((byte)paint);
-                        NetMessage.SendData(63, -1, -1, NetworkText.Empty, x, y, paint, 0f, 0);
+                        Main.tile[this.x, this.y].color((byte) this.paint);
+                        NetMessage.SendData(63, -1, -1, NetworkText.Empty, this.x, this.y, this.paint, 0f, 0);
                     }
                     break;
                 case 26://paint wall
-                    if (Main.tile[x, y].wall > 0)
+                    if (Main.tile[this.x, this.y].wall > 0)
                     {
-                        Main.tile[x, y].wallColor((byte)paint);
-                        NetMessage.SendData(64, -1, -1, NetworkText.Empty, x, y, paint, 0f, 0);
+                        Main.tile[this.x, this.y].wallColor((byte) this.paint);
+                        NetMessage.SendData(64, -1, -1, NetworkText.Empty, this.x, this.y, this.paint, 0f, 0);
                     }
                     break;
                 case 27://updatesign
-                    int sI = Sign.ReadSign(x, y); //This should be an existing sign, but use coords instead of index anyway
+                    var sI = Sign.ReadSign(this.x, this.y); //This should be an existing sign, but use coords instead of index anyway
                     if (sI >= 0)
                     {
-                        Sign.TextSign(sI, text);
+                        Sign.TextSign(sI, this.text);
                     }
                     break;
             }
         }
         public override string ToString()
         {
-            DateTime dateTime = History.Date.AddSeconds(time);
-            string date = string.Format("{0}-{1} @ {3}:{4}:{5} (UTC):",
+            var dateTime = History.Date.AddSeconds(this.time);
+            var date = string.Format("{0}-{1} @ {3}:{4}:{5} (UTC):",
                 dateTime.Month, dateTime.Day, dateTime.Year,
                 dateTime.Hour, dateTime.Minute.ToString("00"), dateTime.Second.ToString("00"));
 
-            TimeSpan timeDiff = DateTime.UtcNow - dateTime;
-            StringBuilder dhms = new StringBuilder();
+            var timeDiff = DateTime.UtcNow - dateTime;
+            var dhms = new StringBuilder();
             if (timeDiff.Days != 0)
             {
                 dhms.Append(timeDiff.Days + "天");
@@ -453,45 +484,22 @@ namespace History
                 dhms.Append(timeDiff.Seconds + "秒");
             }
 
-            switch (action)
+            return this.action switch
             {
-                case 0:
-                case 4:
-                case 20:
-                    return string.Format("{0} {1} 破坏方块 {2}. ({3})", date, account, data, dhms);
-                case 1:
-                    return string.Format("{0} {1} 放置方块 {2}. ({3})", date, account, data, dhms);
-                case 2:
-                    return string.Format("{0} {1} 破坏墙 {2}. ({3})", date, account, data, dhms);
-                case 3:
-                    return string.Format("{0} {1} 放置墙 {2}. ({3})", date, account, data, dhms);
-                case 5:
-                case 10:
-                case 12:
-                case 16:
-                    return string.Format("{0} {1} 放置电线. ({2})", date, account, dhms);
-                case 6:
-                case 11:
-                case 13:
-                case 17:
-                    return string.Format("{0} {1} 破坏电线. ({2})", date, account, dhms);
-                case 7:
-                case 14:
-                    return string.Format("{0} {1} 改变图格形状. ({2})", date, account, dhms);
-                case 8:
-                    return string.Format("{0} {1} 放置致动器. ({2})", date, account, dhms);
-                case 21:
-                    return string.Format("{0} {1} 放置物块 ({2})", date, account, dhms);
-                case 22:
-                    return string.Format("{0} {1} 放置墙. ({2})", date, account, dhms);
-                case 25:
-                case 26:
-                    return string.Format("{0} {1} 涂漆物块/墙. ({2})", date, account, dhms);
-                case 27:
-                    return string.Format("{0} {1} 修改了告示牌文字. ({2})", date, account, dhms);
-                default:
-                    return "";
-            }
+                0 or 4 or 20 => string.Format("{0} {1} 破坏方块 {2}. ({3})", date, this.account, this.data, dhms),
+                1 => string.Format("{0} {1} 放置方块 {2}. ({3})", date, this.account, this.data, dhms),
+                2 => string.Format("{0} {1} 破坏墙 {2}. ({3})", date, this.account, this.data, dhms),
+                3 => string.Format("{0} {1} 放置墙 {2}. ({3})", date, this.account, this.data, dhms),
+                5 or 10 or 12 or 16 => string.Format("{0} {1} 放置电线. ({2})", date, this.account, dhms),
+                6 or 11 or 13 or 17 => string.Format("{0} {1} 破坏电线. ({2})", date, this.account, dhms),
+                7 or 14 => string.Format("{0} {1} 改变图格形状. ({2})", date, this.account, dhms),
+                8 => string.Format("{0} {1} 放置致动器. ({2})", date, this.account, dhms),
+                21 => string.Format("{0} {1} 放置物块 ({2})", date, this.account, dhms),
+                22 => string.Format("{0} {1} 放置墙. ({2})", date, this.account, dhms),
+                25 or 26 => string.Format("{0} {1} 涂漆物块/墙. ({2})", date, this.account, dhms),
+                27 => string.Format("{0} {1} 修改了告示牌文字. ({2})", date, this.account, dhms),
+                _ => "",
+            };
         }
     }
 }

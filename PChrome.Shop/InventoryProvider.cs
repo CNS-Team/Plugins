@@ -1,9 +1,9 @@
-﻿using System;
+﻿using LazyUtils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LazyUtils;
 using Terraria;
 using TShockAPI;
 
@@ -19,7 +19,11 @@ namespace PChrome.Shop
         public override string Name => "物品";
         protected override bool TryGiveTo(TSPlayer player, ProtoItem content)
         {
-            if (!player.InventorySlotAvailable) return false;
+            if (!player.InventorySlotAvailable)
+            {
+                return false;
+            }
+
             player.GiveItem(content.type, content.stack, content.prefix);
             return true;
         }
@@ -33,10 +37,22 @@ namespace PChrome.Shop
                 stack = count,
                 type = item.type
             };
-            if (inf) return true;
-            if (item.IsAir || item.stack < count) return false;
+            if (inf)
+            {
+                return true;
+            }
+
+            if (item.IsAir || item.stack < count)
+            {
+                return false;
+            }
+
             item.stack -= count;
-            if (item.stack == 0) item.TurnToAir();
+            if (item.stack == 0)
+            {
+                item.TurnToAir();
+            }
+
             item.Send();
             return true;
         }

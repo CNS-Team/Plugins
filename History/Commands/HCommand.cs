@@ -17,10 +17,7 @@ namespace History.Commands
 
         public void Error(string msg)
         {
-            if (sender != null)
-            {
-                sender.SendErrorMessage(msg);
-            }
+            this.sender?.SendErrorMessage(msg);
         }
         public abstract void Execute();
     }

@@ -5,24 +5,24 @@ using TerrariaApi.Server;
 
 namespace AsyncSocket
 {
-	[ApiVersion(2, 1)]
-	public class PluginContainer : LazyPlugin
-	{
-		public PluginContainer(Main game) : base(game)
+    [ApiVersion(2, 1)]
+    public class PluginContainer : LazyPlugin
+    {
+        public PluginContainer(Main game) : base(game)
         {
-            Order = 10;
+            this.Order = 10;
         }
 
-		public override void Initialize()
+        public override void Initialize()
         {
-			base.Initialize();
-			Hooks.Netplay.CreateTcpListener += this.Netplay_CreateTcpListener;
+            base.Initialize();
+            Hooks.Netplay.CreateTcpListener += this.Netplay_CreateTcpListener;
         }
-		
-		private void Netplay_CreateTcpListener(object sender, Hooks.Netplay.CreateTcpListenerEventArgs e)
-		{
-			e.Result = new AsyncSocket();
+
+        private void Netplay_CreateTcpListener(object sender, Hooks.Netplay.CreateTcpListenerEventArgs e)
+        {
+            e.Result = new AsyncSocket();
         }
-		
-	}
+
+    }
 }

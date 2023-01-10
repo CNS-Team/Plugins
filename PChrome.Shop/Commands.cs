@@ -1,37 +1,42 @@
-﻿using System;
+﻿using LazyUtils;
+using LazyUtils.Commands;
+using LinqToDB;
+using PChrome.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LazyUtils;
-using LazyUtils.Commands;
-using LinqToDB;
-using PChrome.Core;
 using TShockAPI;
 
 namespace PChrome.Shop
 {
     [Command("shop")]
-    public static  class Commands
+    public static class Commands
     {
         private const int Pagelimit = 20;
 
-        private static TSPlayer GetOnline(string name) =>
-            TShock.Players.FirstOrDefault(plr => plr?.Account?.Name == name);
+        private static TSPlayer GetOnline(string name)
+        {
+            return TShock.Players.FirstOrDefault(plr => plr?.Account?.Name == name);
+        }
 
         [Alias("列表"), Permissions("economy.shop.player")]
         public static void List(CommandArgs args, int page)
         {
             using var context = Db.Context<ShopItem>();
             var sb = new StringBuilder();
-            sb.AppendLine($"当前商店商品({page}/{(int)Math.Round(context.Config.Count() / (double)Pagelimit)}):");
+            sb.AppendLine($"当前商店商品({page}/{(int) Math.Round(context.Config.Count() / (double) Pagelimit)}):");
             sb.Append(string.Join("\n",
                 context.Config.OrderByDescending(d => d.id).Skip((page - 1) * Pagelimit).Take(Pagelimit)));
             args.Player.SendInfoMessage(sb.ToString());
         }
 
         [Alias("列表"), Permissions("economy.shop.player")]
-        public static void List(CommandArgs args) => List(args, 1);
+        public static void List(CommandArgs args)
+        {
+            List(args, 1);
+        }
 
         [Alias("购买"), Permissions("economy.shop.player"), RealPlayer]
         public static void Buy(CommandArgs args, int index)
@@ -62,16 +67,28 @@ namespace PChrome.Shop
             args.Player.NoticeChange(-item.price);
             ;
             if (!item.infinity)
+            {
                 context.Config.Where(d => d.id == item.id).Delete();
+            }
+
             args.Player.SendSuccessMessage("购买成功！");
 
-            if (string.IsNullOrEmpty(item.owner)) return;
+            if (string.IsNullOrEmpty(item.owner))
+            {
+                return;
+            }
 
             using (var query2 = Db.Get<Money>(item.owner))
+            {
                 query2.Set(d => d.money, d => d.money + item.price).Update();
+            }
 
             var target = GetOnline(item.owner);
-            if (target == null) return;
+            if (target == null)
+            {
+                return;
+            }
+
             target.SendSuccessMessage($"玩家[{args.Player.Name}]购买了您的{item}");
             target.NoticeChange(item.price);
         }
@@ -96,7 +113,7 @@ namespace PChrome.Shop
                     infinity = infinity
                 });
             }
-            
+
             args.Player.SendSuccessMessage("商品已添加！");
         }
 
@@ -140,13 +157,13 @@ namespace PChrome.Shop
                 args.Player.SendErrorMessage("你没有权限删除别人的商品");
                 return;
             }
-                
+
             if (!item.TryGiveTo(args.Player))
             {
                 args.Player.SendErrorMessage("背包已满");
                 return;
             }
-                
+
             context.Config.Where(d => d.id == index).Delete();
             args.Player.SendSuccessMessage("商品已下架！");
         }

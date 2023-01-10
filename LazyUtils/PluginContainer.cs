@@ -1,6 +1,6 @@
+using OTAPI;
 using System;
 using System.Collections.Generic;
-using OTAPI;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;

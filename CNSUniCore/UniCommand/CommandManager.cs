@@ -17,26 +17,28 @@ namespace CNSUniCore.UniCommand
         // Token: 0x0600006C RID: 108 RVA: 0x00004058 File Offset: 0x00002258
         public CommandManager()
         {
-            this.Commands = new List<Command>();
-            this.Commands.Add(new Command("uniban.admin", new CommandDelegate(this.UniBan), new string[]
+            this.Commands = new List<Command>
+            {
+                new Command("uniban.admin", new CommandDelegate(this.UniBan), new string[]
             {
                 "uniban"
-            }));
-            this.Commands.Add(new Command("univip.admin", new CommandDelegate(this.UniVip), new string[]
+            }),
+                new Command("univip.admin", new CommandDelegate(this.UniVip), new string[]
             {
                 "univip"
-            }));
-            this.Commands.Add(new Command("unicore.admin", new CommandDelegate(this.UniCore), new string[]
+            }),
+                new Command("unicore.admin", new CommandDelegate(this.UniCore), new string[]
             {
                 "unicore"
-            }));
+            })
+            };
             TShockAPI.Commands.ChatCommands.AddRange(this.Commands);
         }
 
         // Token: 0x0600006D RID: 109 RVA: 0x0000411C File Offset: 0x0000231C
         private void UniCore(CommandArgs args)
         {
-            bool flag = args.Parameters.Count < 1;
+            var flag = args.Parameters.Count < 1;
             if (flag)
             {
                 args.Player.SendInfoMessage("请输入/unicore help 查看帮助");
@@ -45,7 +47,7 @@ namespace CNSUniCore.UniCommand
             {
                 if (args.Parameters.Count == 0 || args.Parameters[0] == "help")
                 {
-                    StringBuilder stringBuilder4 = new StringBuilder();
+                    var stringBuilder4 = new StringBuilder();
                     stringBuilder4.AppendLine("/unicore list 列出所有服务器");
                     stringBuilder4.AppendLine("/unicore rawcmd 执行命令");
                     stringBuilder4.AppendLine("/unicore ban 开/关封禁功能");
@@ -55,8 +57,8 @@ namespace CNSUniCore.UniCommand
                     args.Player.SendInfoMessage(stringBuilder4.ToString());
                     return;
                 }
-                string text = args.Parameters[0];
-                string text2 = text;
+                var text = args.Parameters[0];
+                var text2 = text;
                 switch (text2)
                 {
                     case "register":
@@ -70,12 +72,12 @@ namespace CNSUniCore.UniCommand
                         ConfigUtils.UpdateConfig();
                         break;
                     case "list":
-                        StringBuilder stringBuilder = new StringBuilder();
-                        foreach (ServerInfo serverInfo in ConfigUtils.servers)
+                        var stringBuilder = new StringBuilder();
+                        foreach (var serverInfo in ConfigUtils.servers)
                         {
-                            StringBuilder stringBuilder2 = stringBuilder;
-                            StringBuilder stringBuilder3 = stringBuilder2;
-                            StringBuilder.AppendInterpolatedStringHandler appendInterpolatedStringHandler = new StringBuilder.AppendInterpolatedStringHandler(6, 3, stringBuilder2);
+                            var stringBuilder2 = stringBuilder;
+                            var stringBuilder3 = stringBuilder2;
+                            var appendInterpolatedStringHandler = new StringBuilder.AppendInterpolatedStringHandler(6, 3, stringBuilder2);
                             appendInterpolatedStringHandler.AppendLiteral("[");
                             appendInterpolatedStringHandler.AppendFormatted<int>(serverInfo.ID);
                             appendInterpolatedStringHandler.AppendLiteral("][");
@@ -93,24 +95,24 @@ namespace CNSUniCore.UniCommand
                         ConfigUtils.UpdateConfig();
                         break;
                     case "rawcmd":
-                        bool flag2 = args.Parameters.Count < 2;
+                        var flag2 = args.Parameters.Count < 2;
                         if (flag2)
                         {
                             args.Player.SendInfoMessage("请输入正确的指令 /unicore rawcmd [服务器ID] [指令]");
                         }
                         else
                         {
-                            List<string> range = args.Parameters.GetRange(2, args.Parameters.Count - 1);
-                            string text3 = string.Join(" ", range);
-                            bool flag3 = !text3.StartsWith("/");
+                            var range = args.Parameters.GetRange(2, args.Parameters.Count - 1);
+                            var text3 = string.Join(" ", range);
+                            var flag3 = !text3.StartsWith("/");
                             if (flag3)
                             {
                                 text3 = "/" + text3;
                             }
-                            bool flag4 = args.Parameters[1].ToLower() == "all";
+                            var flag4 = args.Parameters[1].ToLower() == "all";
                             if (flag4)
                             {
-                                foreach (ServerInfo serverInfo2 in ConfigUtils.servers)
+                                foreach (var serverInfo2 in ConfigUtils.servers)
                                 {
                                     try
                                     {
@@ -124,12 +126,11 @@ namespace CNSUniCore.UniCommand
                             }
                             else
                             {
-                                int id;
-                                bool flag5 = int.TryParse(args.Parameters[1], out id);
+                                var flag5 = int.TryParse(args.Parameters[1], out var id);
                                 if (flag5)
                                 {
-                                    ServerInfo serverInfo3 = ConfigUtils.servers.Find((ServerInfo s) => s.ID == id);
-                                    bool flag6 = serverInfo3 != null;
+                                    var serverInfo3 = ConfigUtils.servers.Find((ServerInfo s) => s.ID == id);
+                                    var flag6 = serverInfo3 != null;
                                     if (flag6)
                                     {
                                         serverInfo3.RawCommand(text3);
@@ -156,7 +157,7 @@ namespace CNSUniCore.UniCommand
         // Token: 0x0600006E RID: 110 RVA: 0x0000464C File Offset: 0x0000284C
         private void UniVip(CommandArgs args)
         {
-            bool flag = args.Parameters.Count < 1;
+            var flag = args.Parameters.Count < 1;
             if (flag)
             {
                 args.Player.SendInfoMessage("输入/univip help 查看赞助系统帮助");
@@ -164,8 +165,8 @@ namespace CNSUniCore.UniCommand
             else
             {
                 TSPlayer tsplayer = null;
-                string text = args.Parameters[0];
-                string a = text;
+                var text = args.Parameters[0];
+                var a = text;
                 if (!(a == "help"))
                 {
                     if (!(a == "list"))
@@ -174,16 +175,16 @@ namespace CNSUniCore.UniCommand
                         {
                             if (a == "del")
                             {
-                                bool flag2 = args.Parameters.Count != 2;
+                                var flag2 = args.Parameters.Count != 2;
                                 if (flag2)
                                 {
                                     args.Player.SendInfoMessage("输入/univip del [玩家名]");
                                 }
                                 else
                                 {
-                                    string text2 = args.Parameters[1];
-                                    SponsorInfo sponsor = MainPlugin.Instance.dbManager.GetSponsor(text2);
-                                    bool flag3 = sponsor == null;
+                                    var text2 = args.Parameters[1];
+                                    var sponsor = MainPlugin.Instance.dbManager.GetSponsor(text2);
+                                    var flag3 = sponsor == null;
                                     if (flag3)
                                     {
                                         args.Player.SendInfoMessage("赞助用户不存在");
@@ -192,20 +193,20 @@ namespace CNSUniCore.UniCommand
                                     {
                                         sponsor.group = sponsor.originGroup;
                                         sponsor.endTime = DateTime.UtcNow;
-                                        List<TSPlayer> list = TSPlayer.FindByNameOrID(text2);
-                                        bool flag4 = list.Count != 0;
+                                        var list = TSPlayer.FindByNameOrID(text2);
+                                        var flag4 = list.Count != 0;
                                         if (flag4)
                                         {
                                             tsplayer = list[0];
                                         }
-                                        bool flag5 = tsplayer != null;
+                                        var flag5 = tsplayer != null;
                                         if (flag5)
                                         {
                                             tsplayer.SendInfoMessage("服务器已取消你的赞助权限");
                                             TShock.UserAccounts.SetUserGroup(tsplayer.Account, sponsor.originGroup);
                                         }
                                         MainPlugin.Instance.dbManager.UpdateSponsor(sponsor);
-                                        foreach (ServerInfo serverInfo in ConfigUtils.servers)
+                                        foreach (var serverInfo in ConfigUtils.servers)
                                         {
                                             try
                                             {
@@ -223,51 +224,50 @@ namespace CNSUniCore.UniCommand
                         }
                         else
                         {
-                            bool flag6 = args.Parameters.Count != 4;
+                            var flag6 = args.Parameters.Count != 4;
                             if (flag6)
                             {
                                 args.Player.SendInfoMessage("请输入/univip add [玩家名] [目标组别] [天数]");
                             }
                             else
                             {
-                                string text3 = args.Parameters[1];
-                                string text4 = args.Parameters[2];
-                                SponsorInfo sponsorInfo = MainPlugin.Instance.dbManager.GetSponsor(text3);
-                                int num;
-                                bool flag7 = int.TryParse(args.Parameters[3], out num);
+                                var text3 = args.Parameters[1];
+                                var text4 = args.Parameters[2];
+                                var sponsorInfo = MainPlugin.Instance.dbManager.GetSponsor(text3);
+                                var flag7 = int.TryParse(args.Parameters[3], out var num);
                                 if (flag7)
                                 {
-                                    bool flag8 = sponsorInfo != null;
+                                    var flag8 = sponsorInfo != null;
                                     if (flag8)
                                     {
                                         sponsorInfo.group = text4;
-                                        sponsorInfo.endTime.AddDays((double)num);
+                                        sponsorInfo.endTime.AddDays((double) num);
                                         MainPlugin.Instance.dbManager.UpdateSponsor(sponsorInfo);
                                     }
                                     else
                                     {
-                                        UserAccount userAccountByName = TShock.UserAccounts.GetUserAccountByName(text3);
-                                        bool flag9 = userAccountByName == null;
+                                        var userAccountByName = TShock.UserAccounts.GetUserAccountByName(text3);
+                                        var flag9 = userAccountByName == null;
                                         if (flag9)
                                         {
                                             args.Player.SendInfoMessage("用户不存在");
                                             return;
                                         }
-                                        sponsorInfo = new SponsorInfo(text3, userAccountByName.Group, text4, DateTime.UtcNow, DateTime.UtcNow.AddDays((double)num));
+                                        sponsorInfo = new SponsorInfo(text3, userAccountByName.Group, text4, DateTime.UtcNow, DateTime.UtcNow.AddDays((double) num));
                                         MainPlugin.Instance.dbManager.AddSponsor(sponsorInfo);
                                     }
-                                    List<TSPlayer> list2 = TSPlayer.FindByNameOrID(text3);
-                                    bool flag10 = list2.Count != 0;
+                                    var list2 = TSPlayer.FindByNameOrID(text3);
+                                    var flag10 = list2.Count != 0;
                                     if (flag10)
                                     {
                                         tsplayer = list2[0];
                                     }
-                                    bool flag11 = tsplayer != null;
+                                    var flag11 = tsplayer != null;
                                     if (flag11)
                                     {
                                         TShock.UserAccounts.SetUserGroup(tsplayer.Account, sponsorInfo.group);
                                     }
-                                    foreach (ServerInfo serverInfo2 in ConfigUtils.servers)
+                                    foreach (var serverInfo2 in ConfigUtils.servers)
                                     {
                                         try
                                         {
@@ -278,8 +278,8 @@ namespace CNSUniCore.UniCommand
                                         {
                                         }
                                     }
-                                    TSPlayer player = args.Player;
-                                    DefaultInterpolatedStringHandler defaultInterpolatedStringHandler = new DefaultInterpolatedStringHandler(19, 3);
+                                    var player = args.Player;
+                                    var defaultInterpolatedStringHandler = new DefaultInterpolatedStringHandler(19, 3);
                                     defaultInterpolatedStringHandler.AppendLiteral("成功添加赞助用户 [");
                                     defaultInterpolatedStringHandler.AppendFormatted(text3);
                                     defaultInterpolatedStringHandler.AppendLiteral("] [");
@@ -298,12 +298,12 @@ namespace CNSUniCore.UniCommand
                     }
                     else
                     {
-                        StringBuilder stringBuilder = new StringBuilder();
-                        foreach (SponsorInfo sponsorInfo2 in MainPlugin.Instance.dbManager.GetSponsors())
+                        var stringBuilder = new StringBuilder();
+                        foreach (var sponsorInfo2 in MainPlugin.Instance.dbManager.GetSponsors())
                         {
-                            StringBuilder stringBuilder2 = stringBuilder;
-                            StringBuilder stringBuilder3 = stringBuilder2;
-                            StringBuilder.AppendInterpolatedStringHandler appendInterpolatedStringHandler = new StringBuilder.AppendInterpolatedStringHandler(19, 3, stringBuilder2);
+                            var stringBuilder2 = stringBuilder;
+                            var stringBuilder3 = stringBuilder2;
+                            var appendInterpolatedStringHandler = new StringBuilder.AppendInterpolatedStringHandler(19, 3, stringBuilder2);
                             appendInterpolatedStringHandler.AppendLiteral("[");
                             appendInterpolatedStringHandler.AppendFormatted(sponsorInfo2.name);
                             appendInterpolatedStringHandler.AppendLiteral("] 赞助组别:[");
@@ -318,7 +318,7 @@ namespace CNSUniCore.UniCommand
                 }
                 else
                 {
-                    StringBuilder stringBuilder4 = new StringBuilder();
+                    var stringBuilder4 = new StringBuilder();
                     stringBuilder4.AppendLine("/univip list 列出所有成员");
                     stringBuilder4.AppendLine("/univip add [玩家名] [目标组别] [天数] 添加赞助信息");
                     stringBuilder4.AppendLine("/univip del [玩家名] 删除赞助信息");
@@ -330,16 +330,16 @@ namespace CNSUniCore.UniCommand
         // Token: 0x0600006F RID: 111 RVA: 0x00004BEC File Offset: 0x00002DEC
         private async void UniBan(CommandArgs args)
         {
-            bool flag = args.Parameters.Count < 1;
+            var flag = args.Parameters.Count < 1;
             if (flag)
             {
                 args.Player.SendInfoMessage("请输入/uniban help 查看帮助");
             }
             else
             {
-                StringBuilder stringBuilder = new StringBuilder();
-                string text = args.Parameters[0];
-                string a = text;
+                var stringBuilder = new StringBuilder();
+                var text = args.Parameters[0];
+                var a = text;
                 if (!(a == "add"))
                 {
                     if (!(a == "del"))
@@ -364,7 +364,7 @@ namespace CNSUniCore.UniCommand
                         else
                         {
                             args.Player.SendInfoMessage("——流光封禁列表——");
-                            List<PlayerInfo> players = MainPlugin.Instance.dbManager.GetPlayers();
+                            var players = MainPlugin.Instance.dbManager.GetPlayers();
                             //int i = 0;
                             int s;
                             int y;
@@ -390,7 +390,7 @@ namespace CNSUniCore.UniCommand
                                 args.Player.SendErrorMessage("这页没有封禁的玩家");
                                 return;
                             }
-                            int i = 0;
+                            var i = 0;
                             for (s = 20 * s; s < players.Count; s++, i++)
                             {
                                 if (i >= 20)
@@ -412,15 +412,11 @@ namespace CNSUniCore.UniCommand
                                     {
 
                                         var c = DateTime.Now - DateTime.Parse(players[s].AddTime);
-                                        int ti = 0;
-                                        int ti2 = 0;
-                                        int ti3 = 0;
-                                        int ti4 = 0;
-                                        string[] time = BanTime.Split(":");
-                                        int.TryParse(time[0], out ti);
-                                        int.TryParse(time[1], out ti2);
-                                        int.TryParse(time[2], out ti3);
-                                        int.TryParse(time[3], out ti4);
+                                        var time = BanTime.Split(":");
+                                        int.TryParse(time[0], out var ti);
+                                        int.TryParse(time[1], out var ti2);
+                                        int.TryParse(time[2], out var ti3);
+                                        int.TryParse(time[3], out var ti4);
                                         int cd = ti - c.Days;
                                         int ch = ti2 - c.Hours;
                                         int cm = ti3 - c.Minutes;
@@ -444,11 +440,11 @@ namespace CNSUniCore.UniCommand
                                         else
                                         {
                                             string text2 = players[s].Name;
-                                            bool flag9 = MainPlugin.Instance.dbManager.GetPlayer(text2) == null;
+                                            var flag9 = MainPlugin.Instance.dbManager.GetPlayer(text2) == null;
                                             if (!flag9)
                                             {
                                                 MainPlugin.Instance.dbManager.DeletePlayer(text2);
-                                                foreach (ServerInfo serverInfo in ConfigUtils.servers)
+                                                foreach (var serverInfo in ConfigUtils.servers)
                                                 {
                                                     try
                                                     {
@@ -473,19 +469,19 @@ namespace CNSUniCore.UniCommand
                     }
                     else
                     {
-                        bool flag2 = args.Parameters.Count != 2;
+                        var flag2 = args.Parameters.Count != 2;
                         if (flag2)
                         {
                             args.Player.SendInfoMessage("正确用法 /uniban del [name]");
                         }
                         else
                         {
-                            string text2 = args.Parameters[1];
-                            bool flag3 = MainPlugin.Instance.dbManager.GetPlayer(text2) == null;
+                            var text2 = args.Parameters[1];
+                            var flag3 = MainPlugin.Instance.dbManager.GetPlayer(text2) == null;
                             if (!flag3)
                             {
                                 MainPlugin.Instance.dbManager.DeletePlayer(text2);
-                                foreach (ServerInfo serverInfo in ConfigUtils.servers)
+                                foreach (var serverInfo in ConfigUtils.servers)
                                 {
                                     try
                                     {
@@ -503,7 +499,7 @@ namespace CNSUniCore.UniCommand
                 }
                 else
                 {
-                    bool flag4 = args.Parameters.Count < 2;
+                    var flag4 = args.Parameters.Count < 2;
                     if (flag4)
                     {
                         args.Player.SendInfoMessage("正确用法 /uniban add [name] <时间>");
@@ -512,19 +508,18 @@ namespace CNSUniCore.UniCommand
                     {
                         if (args.Parameters.Count >= 3)
                         {
-                            string name = args.Parameters[1];
-                            UserAccount userAccountByName2 = TShock.UserAccounts.GetUserAccountByName(name);
+                            var name = args.Parameters[1];
+                            var userAccountByName2 = TShock.UserAccounts.GetUserAccountByName(name);
                             if (userAccountByName2 != null)
                             {
                                 int ti;
-                                int ti2 = 0;
-                                int ti3 = 0;
-                                int ti4;
-                                string BanTime = args.Parameters[2];
+                                var ti2 = 0;
+                                var ti3 = 0;
+                                var BanTime = args.Parameters[2];
                                 if (BanTime.Contains(":"))
                                 {
 
-                                    string[] Time = BanTime.Split(":");
+                                    var Time = BanTime.Split(":");
                                     int.TryParse(Time[0], out ti);
                                     if (Time.Count() >= 2)
                                     {
@@ -570,7 +565,7 @@ namespace CNSUniCore.UniCommand
                                     }
                                     if (Time.Count() >= 4)
                                     {
-                                        if (int.TryParse(Time[3], out ti4))
+                                        if (int.TryParse(Time[3], out var ti4))
                                         {
                                             if (ti4 >= 0 && ti4 <= 60)
                                             {
@@ -617,9 +612,9 @@ namespace CNSUniCore.UniCommand
                                 //TimeSpan mTimeSpan = DateTime.Now.ToUniversalTime() - new DateTime(1970, 1, 1, 0, 0, 0);
                                 //得到精确到秒的时间戳（长度10位）
                                 //long ts = (long)mTimeSpan.TotalSeconds;
-                                string ts = Convert.ToString(DateTime.Now.ToString());
-                                bool flag6 = MainPlugin.Instance.dbManager.GetPlayer(name) != null;
-                                string Reason = "";
+                                var ts = Convert.ToString(DateTime.Now.ToString());
+                                var flag6 = MainPlugin.Instance.dbManager.GetPlayer(name) != null;
+                                var Reason = "";
                                 if (args.Parameters.Count >= 4)
                                 {
                                     Reason = args.Parameters[3];
@@ -650,18 +645,18 @@ namespace CNSUniCore.UniCommand
                                     });
                                 }
 
-                                foreach (ServerInfo serverInfo2 in ConfigUtils.servers)
+                                foreach (var serverInfo2 in ConfigUtils.servers)
                                 {
                                     try
                                     {
-                                        serverInfo2.CreateToken(); 
+                                        serverInfo2.CreateToken();
                                         serverInfo2.BanUser(name, userAccountByName2.ID.ToString(), userAccountByName2.UUID, Reason, BanTime);
                                         //var l = serverInfo2.RawCommand("/kick {name}");
                                         //await Task.Delay(100);
-                                       
+
                                         //string url = $"http://{serverInfo2.IP}:{serverInfo2.Port}/v3/server/rawcmd?token={serverInfo2.Token}&cmd=/kick {name}";
                                         //var l =  serverInfo2.RawCommand("/kick" + name);
-          
+
                                         //args.Player.SendInfoMessage(serverInfo2.Name + l.ToString() + "\n");
 
                                     }
@@ -672,7 +667,7 @@ namespace CNSUniCore.UniCommand
                                 }
                                 TShock.Utils.Broadcast("玩家 [" + userAccountByName2.Name + "] 已被全服封禁", Color.MediumAquamarine);
                                 args.Player.SendInfoMessage("[c/55d284:『][c/7ddff8:流][c/81dbf6:光][c/86d7f4:系][c/8ad3f3:统][c/b1d03b:』] 成功封禁 " + name);
-                                bool flag7 = TSPlayer.FindByNameOrID(name).Count != 0;
+                                var flag7 = TSPlayer.FindByNameOrID(name).Count != 0;
                                 if (flag7)
                                 {
                                     TSPlayer.FindByNameOrID(name)[0].Kick(Reason, false, false, null, false);
@@ -688,16 +683,16 @@ namespace CNSUniCore.UniCommand
 
                             return;
                         }
-                        string text3 = args.Parameters[1];
-                        UserAccount userAccountByName = TShock.UserAccounts.GetUserAccountByName(text3);
-                        bool flag5 = userAccountByName != null;
+                        var text3 = args.Parameters[1];
+                        var userAccountByName = TShock.UserAccounts.GetUserAccountByName(text3);
+                        var flag5 = userAccountByName != null;
                         if (flag5)
                         {
                             //TimeSpan mTimeSpan = DateTime.Now.ToUniversalTime() - new DateTime(1970, 1, 1, 0, 0, 0);
                             //得到精确到秒的时间戳（长度10位）
                             //long ts = (long)mTimeSpan.TotalSeconds;
-                            string ts = DateTime.Now.ToString();
-                            bool flag6 = MainPlugin.Instance.dbManager.GetPlayer(text3) != null;
+                            var ts = DateTime.Now.ToString();
+                            var flag6 = MainPlugin.Instance.dbManager.GetPlayer(text3) != null;
                             if (flag6)
                             {
                                 MainPlugin.Instance.dbManager.UpdatePlayer(new PlayerInfo
@@ -722,7 +717,7 @@ namespace CNSUniCore.UniCommand
                                     BanTime = "-1"
                                 });
                             }
-                            foreach (ServerInfo serverInfo2 in ConfigUtils.servers)
+                            foreach (var serverInfo2 in ConfigUtils.servers)
                             {
                                 try
                                 {
@@ -745,7 +740,7 @@ namespace CNSUniCore.UniCommand
                             }
                             TShock.Utils.Broadcast("玩家 [" + userAccountByName.Name + "] 已被全服封禁", Color.MediumAquamarine);
                             args.Player.SendInfoMessage("[c/55d284:『][c/7ddff8:流][c/81dbf6:光][c/86d7f4:系][c/8ad3f3:统][c/b1d03b:』] 成功封禁 " + text3);
-                            bool flag7 = TSPlayer.FindByNameOrID(text3).Count != 0;
+                            var flag7 = TSPlayer.FindByNameOrID(text3).Count != 0;
                             if (flag7)
                             {
                                 TSPlayer.FindByNameOrID(text3)[0].Kick("因作弊被封禁", false, false, null, false);

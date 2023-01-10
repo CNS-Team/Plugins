@@ -50,15 +50,15 @@ namespace CNSUniCore.UniRest
         // Token: 0x06000052 RID: 82 RVA: 0x00003918 File Offset: 0x00001B18
         private object UniUserUpdate(RestRequestArgs args)
         {
-            int num = int.Parse(args.Parameters["id"]);
-            string text = args.Parameters["name"];
-            string text2 = args.Parameters["group"];
-            string text3 = args.Parameters["uuid"];
-            string text4 = args.Parameters["ip"];
-            string text5 = args.Parameters["registered"];
-            string text6 = args.Parameters["lastaccessed"];
-            UserAccount userAccountByName = TShock.UserAccounts.GetUserAccountByName(text);
-            bool flag = userAccountByName != null;
+            var num = int.Parse(args.Parameters["id"]);
+            var text = args.Parameters["name"];
+            var text2 = args.Parameters["group"];
+            var text3 = args.Parameters["uuid"];
+            var text4 = args.Parameters["ip"];
+            var text5 = args.Parameters["registered"];
+            var text6 = args.Parameters["lastaccessed"];
+            var userAccountByName = TShock.UserAccounts.GetUserAccountByName(text);
+            var flag = userAccountByName != null;
             if (flag)
             {
                 userAccountByName.ID = num;
@@ -68,7 +68,7 @@ namespace CNSUniCore.UniRest
                 userAccountByName.KnownIps = text4;
                 userAccountByName.Registered = text5;
                 userAccountByName.LastAccessed = text6;
-                DefaultInterpolatedStringHandler defaultInterpolatedStringHandler = new DefaultInterpolatedStringHandler(114, 8);
+                var defaultInterpolatedStringHandler = new DefaultInterpolatedStringHandler(114, 8);
                 defaultInterpolatedStringHandler.AppendLiteral("UPDATE Users SET ID=");
                 defaultInterpolatedStringHandler.AppendFormatted<int>(num);
                 defaultInterpolatedStringHandler.AppendLiteral(",Username='");
@@ -86,7 +86,7 @@ namespace CNSUniCore.UniRest
                 defaultInterpolatedStringHandler.AppendLiteral("' WHERE Username='");
                 defaultInterpolatedStringHandler.AppendFormatted(text);
                 defaultInterpolatedStringHandler.AppendLiteral("';");
-                string text7 = defaultInterpolatedStringHandler.ToStringAndClear();
+                var text7 = defaultInterpolatedStringHandler.ToStringAndClear();
                 DbExt.Query(TShock.DB, text7, Array.Empty<object>());
             }
             return null;
@@ -95,16 +95,18 @@ namespace CNSUniCore.UniRest
         // Token: 0x06000053 RID: 83 RVA: 0x00003AF4 File Offset: 0x00001CF4
         private object UniUserAdd(RestRequestArgs args)
         {
-            int id = int.Parse(args.Parameters["id"]);
-            string text = args.Parameters["name"];
-            string text2 = args.Parameters["password"];
-            string text3 = args.Parameters["group"];
-            string text4 = args.Parameters["uuid"];
-            string text5 = args.Parameters["ip"];
-            string text6 = args.Parameters["registered"];
-            string text7 = args.Parameters["lastaccessed"];
-            UserAccount userAccount = new UserAccount(text, text2, text4, text3, text6, text7, text5);
-            userAccount.ID = id;
+            var id = int.Parse(args.Parameters["id"]);
+            var text = args.Parameters["name"];
+            var text2 = args.Parameters["password"];
+            var text3 = args.Parameters["group"];
+            var text4 = args.Parameters["uuid"];
+            var text5 = args.Parameters["ip"];
+            var text6 = args.Parameters["registered"];
+            var text7 = args.Parameters["lastaccessed"];
+            var userAccount = new UserAccount(text, text2, text4, text3, text6, text7, text5)
+            {
+                ID = id
+            };
             TShock.UserAccounts.AddUserAccount(userAccount);
             return null;
         }
@@ -112,7 +114,7 @@ namespace CNSUniCore.UniRest
         // Token: 0x06000054 RID: 84 RVA: 0x00003BC4 File Offset: 0x00001DC4
         private object UniVipDel(RestRequestArgs args)
         {
-            bool flag = !ConfigUtils.config.EnableSponsor;
+            var flag = !ConfigUtils.config.EnableSponsor;
             object result;
             if (flag)
             {
@@ -120,22 +122,22 @@ namespace CNSUniCore.UniRest
             }
             else
             {
-                string text = args.Parameters["name"];
-                List<TSPlayer> list = TSPlayer.FindByNameOrID(text);
+                var text = args.Parameters["name"];
+                var list = TSPlayer.FindByNameOrID(text);
                 TSPlayer tsplayer = null;
-                SponsorInfo sponsor = MainPlugin.Instance.dbManager.GetSponsor(text);
-                bool flag2 = sponsor != null;
+                var sponsor = MainPlugin.Instance.dbManager.GetSponsor(text);
+                var flag2 = sponsor != null;
                 if (flag2)
                 {
                     sponsor.group = sponsor.originGroup;
                     sponsor.endTime = DateTime.UtcNow;
                     MainPlugin.Instance.dbManager.UpdateSponsor(sponsor);
-                    bool flag3 = list.Count != 0;
+                    var flag3 = list.Count != 0;
                     if (flag3)
                     {
                         tsplayer = list[0];
                     }
-                    bool flag4 = tsplayer != null;
+                    var flag4 = tsplayer != null;
                     if (flag4)
                     {
                         tsplayer.SendInfoMessage("服务器已取消你的赞助权限");
@@ -150,7 +152,7 @@ namespace CNSUniCore.UniRest
         // Token: 0x06000055 RID: 85 RVA: 0x00003C9C File Offset: 0x00001E9C
         private object UniVipAdd(RestRequestArgs args)
         {
-            bool flag = !ConfigUtils.config.EnableSponsor;
+            var flag = !ConfigUtils.config.EnableSponsor;
             object result;
             if (flag)
             {
@@ -158,15 +160,15 @@ namespace CNSUniCore.UniRest
             }
             else
             {
-                string text = args.Parameters["name"];
-                string group = args.Parameters["group"];
-                string text2 = args.Parameters["origin"];
-                string s = args.Parameters["start"];
-                string s2 = args.Parameters["end"];
-                List<TSPlayer> list = TSPlayer.FindByNameOrID(text);
+                var text = args.Parameters["name"];
+                var group = args.Parameters["group"];
+                var text2 = args.Parameters["origin"];
+                var s = args.Parameters["start"];
+                var s2 = args.Parameters["end"];
+                var list = TSPlayer.FindByNameOrID(text);
                 TSPlayer tsplayer = null;
-                SponsorInfo sponsorInfo = MainPlugin.Instance.dbManager.GetSponsor(text);
-                bool flag2 = sponsorInfo != null;
+                var sponsorInfo = MainPlugin.Instance.dbManager.GetSponsor(text);
+                var flag2 = sponsorInfo != null;
                 if (flag2)
                 {
                     sponsorInfo.group = group;
@@ -179,12 +181,12 @@ namespace CNSUniCore.UniRest
                     sponsorInfo = new SponsorInfo(text, text2, group, DateTime.Parse(s), DateTime.Parse(s2));
                     MainPlugin.Instance.dbManager.AddSponsor(sponsorInfo);
                 }
-                bool flag3 = list.Count != 0;
+                var flag3 = list.Count != 0;
                 if (flag3)
                 {
                     tsplayer = list[0];
                 }
-                bool flag4 = tsplayer != null;
+                var flag4 = tsplayer != null;
                 if (flag4)
                 {
                     TShock.UserAccounts.SetUserGroup(tsplayer.Account, sponsorInfo.group);
@@ -197,7 +199,7 @@ namespace CNSUniCore.UniRest
         // Token: 0x06000056 RID: 86 RVA: 0x00003E04 File Offset: 0x00002004
         private object Broadcast(RestRequestArgs args)
         {
-            string text = args.Parameters["text"];
+            var text = args.Parameters["text"];
             TShock.Utils.Broadcast(text, Color.DarkTurquoise);
             return null;
         }
@@ -205,16 +207,18 @@ namespace CNSUniCore.UniRest
         // Token: 0x06000057 RID: 87 RVA: 0x00003E3C File Offset: 0x0000203C
         private object ListBan(RestRequestArgs args)
         {
-            List<PlayerInfo> players = this.dbManager.GetPlayers();
+            var players = this.dbManager.GetPlayers();
             List<player> player = new() { };
             object result;
-            for (int i = 0; i < players.Count; i++)
+            for (var i = 0; i < players.Count; i++)
             {
                 var w = players[i];
                 player.Add(new() { Name = w.Name, Reason = w.Reason, Time = w.BanTime });
             }
-            RestObject restObject = new RestObject("200");
-            restObject.Add("back", player);
+            var restObject = new RestObject("200")
+            {
+                { "back", player }
+            };
             result = restObject;
             return result;
         }
@@ -226,7 +230,7 @@ namespace CNSUniCore.UniRest
         }
         private object DelBan(RestRequestArgs args)
         {
-            bool flag = !ConfigUtils.config.EnableBan;
+            var flag = !ConfigUtils.config.EnableBan;
             object result;
             if (flag)
             {
@@ -234,8 +238,8 @@ namespace CNSUniCore.UniRest
             }
             else
             {
-                string text = args.Parameters["name"];
-                bool flag2 = MainPlugin.Instance.dbManager.GetPlayer(text) != null;
+                var text = args.Parameters["name"];
+                var flag2 = MainPlugin.Instance.dbManager.GetPlayer(text) != null;
                 if (flag2)
                 {
                     MainPlugin.Instance.dbManager.DeletePlayer(text);
@@ -248,36 +252,38 @@ namespace CNSUniCore.UniRest
         // Token: 0x06000058 RID: 88 RVA: 0x00003EA0 File Offset: 0x000020A0
         private object AddBan(RestRequestArgs args)
         {
-            bool flag = !ConfigUtils.config.EnableBan;
+            var flag = !ConfigUtils.config.EnableBan;
             object result;
             RestObject restObject;
             if (flag)
             {
-                restObject = new RestObject("402");
-                restObject.Add("error", "发生错误");
+                restObject = new RestObject("402")
+                {
+                    { "error", "发生错误" }
+                };
                 result = restObject;
                 return result;
             }
             else
             {
-                string text = args.Parameters["name"];
-                string ip = args.Parameters["ip"];
-                string uuid = args.Parameters["uuid"];
-                string reason = args.Parameters["reason"];
-                string time = args.Parameters["time"];
-                string name = text;
-                UserAccount userAccountByName2 = TShock.UserAccounts.GetUserAccountByName(name);
+                var text = args.Parameters["name"];
+                var ip = args.Parameters["ip"];
+                var uuid = args.Parameters["uuid"];
+                var reason = args.Parameters["reason"];
+                var time = args.Parameters["time"];
+                var name = text;
+                var userAccountByName2 = TShock.UserAccounts.GetUserAccountByName(name);
                 Commands.HandleCommand(TSPlayer.Server, "/kick " + name);
                 if (userAccountByName2 != null)
                 {
-                    int ti = 0;
-                    int ti2 = 0;
-                    int ti3 = 0;
-                    int ti4 = 0;
-                    string BanTime = time;
+                    var ti = 0;
+                    var ti2 = 0;
+                    var ti3 = 0;
+                    var ti4 = 0;
+                    var BanTime = time;
                     if (BanTime.Contains(":"))
                     {
-                        string[] Time = BanTime.Split(":");
+                        var Time = BanTime.Split(":");
                         if (int.TryParse(Time[0], out ti) && int.TryParse(Time[1], out ti2) && int.TryParse(Time[2], out ti3) && int.TryParse(Time[3], out ti4))
                         {
                             if (ti2 >= 0)
@@ -286,8 +292,10 @@ namespace CNSUniCore.UniRest
                             }
                             else
                             {
-                                RestObject restObject2 = new RestObject("401");
-                                restObject2.Add("error", "时间格式错误");
+                                var restObject2 = new RestObject("401")
+                                {
+                                    { "error", "时间格式错误" }
+                                };
                                 result = restObject2;
                                 return result;
                             }
@@ -295,8 +303,10 @@ namespace CNSUniCore.UniRest
                         else
                         {
                             RestObject restObject3;
-                            restObject3 = new RestObject("401");
-                            restObject3.Add("error", "时间格式错误");
+                            restObject3 = new RestObject("401")
+                            {
+                                { "error", "时间格式错误" }
+                            };
                             result = restObject3;
                             return result;
                         }
@@ -316,16 +326,20 @@ namespace CNSUniCore.UniRest
                             }
                             else
                             {
-                                RestObject restObject8 = new RestObject("401");
-                                restObject8.Add("error", "时间格式错误");
+                                var restObject8 = new RestObject("401")
+                                {
+                                    { "error", "时间格式错误" }
+                                };
                                 result = restObject8;
                                 return result;
                             }
                         }
                         else
                         {
-                            RestObject restObject9 = new RestObject("401");
-                            restObject9.Add("error", "时间格式错误");
+                            var restObject9 = new RestObject("401")
+                            {
+                                { "error", "时间格式错误" }
+                            };
                             result = restObject9;
                             return result;
                         }
@@ -333,8 +347,8 @@ namespace CNSUniCore.UniRest
                     //TimeSpan mTimeSpan = DateTime.Now.ToUniversalTime() - new DateTime(1970, 1, 1, 0, 0, 0);
                     //得到精确到秒的时间戳（长度10位）
                     //long ts = (long)mTimeSpan.TotalSeconds;
-                    string ts = DateTime.Now.ToString();
-                    bool flag7 = TSPlayer.FindByNameOrID(name).Count != 0;
+                    var ts = DateTime.Now.ToString();
+                    var flag7 = TSPlayer.FindByNameOrID(name).Count != 0;
                     if (flag7)
                     {
                         TSPlayer.FindByNameOrID(name)[0].Kick("因作弊被封禁", false, false, null, false);
@@ -352,7 +366,7 @@ namespace CNSUniCore.UniRest
                         tsplayer.Disconnect("你已被服务器封禁");
                     }*/
 
-                    bool flag3 = MainPlugin.Instance.dbManager.GetPlayer(text) != null;
+                    var flag3 = MainPlugin.Instance.dbManager.GetPlayer(text) != null;
                     if (flag3)
                     {
                         MainPlugin.Instance.dbManager.UpdatePlayer(new PlayerInfo
@@ -382,14 +396,18 @@ namespace CNSUniCore.UniRest
                     {
                         TSPlayer.FindByNameOrID(name)[0].Kick("因作弊被封禁", false, false, null, false);
                     }
-                    RestObject restObject10 = new RestObject("200");
-                    restObject10.Add("back", "成功");
+                    var restObject10 = new RestObject("200")
+                    {
+                        { "back", "成功" }
+                    };
                     result = restObject10;
                     return result;
                 }
             }
-            RestObject restObject11 = new RestObject("402");
-            restObject11.Add("error", "发生错误");
+            var restObject11 = new RestObject("402")
+            {
+                { "error", "发生错误" }
+            };
             result = restObject11;
             return result;
         }

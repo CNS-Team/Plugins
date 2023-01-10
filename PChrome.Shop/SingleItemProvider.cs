@@ -8,15 +8,20 @@ namespace PChrome.Shop
         protected abstract bool TryGiveTo(TSPlayer player, int stack);
         protected abstract bool TryTakeFrom(TSPlayer player, int count);
 
-        public bool TryGiveTo(TSPlayer player, string content) =>
-            TryGiveTo(player, int.Parse(content));
+        public bool TryGiveTo(TSPlayer player, string content)
+        {
+            return this.TryGiveTo(player, int.Parse(content));
+        }
 
         public bool TryTakeFrom(TSPlayer player, int count, out string content, bool inf)
         {
             content = count.ToString();
-            return inf || TryTakeFrom(player, count);
+            return inf || this.TryTakeFrom(player, count);
         }
 
-        public string SerializeToText(string content) => $"{Name}*{content}";
+        public string SerializeToText(string content)
+        {
+            return $"{this.Name}*{content}";
+        }
     }
 }
