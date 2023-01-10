@@ -129,12 +129,7 @@ namespace ItemMonitor
                 return true;
             }
 
-            if (itemToPickUp.type == 184 || itemToPickUp.type == 1735 || itemToPickUp.type == 1868)
-            {
-                return true;
-            }
-
-            return itemToPickUp.type == 4143;
+            return itemToPickUp.type == 184 || itemToPickUp.type == 1735 || itemToPickUp.type == 1868 ? true : itemToPickUp.type == 4143;
         }
 
         public void AddItem(int item, int num)

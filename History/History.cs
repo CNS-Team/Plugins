@@ -43,7 +43,7 @@ namespace History
 
         public History(Main game) : base(game)
         {
-            base.Order = 5;
+            this.Order = 5;
         }
 
         protected override void Dispose(bool disposing)

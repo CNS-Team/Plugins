@@ -23,8 +23,8 @@ namespace OnlineInfo
         public OnlineInfoPlugin(Main game) : base(game)
         {
             ServerApi.Hooks.GameInitialize.Register(this, this.OnGameInitialize);
-            TShockAPI.Hooks.PlayerHooks.PlayerPostLogin += this.OnPlayerPostLogin;
-            TShockAPI.Hooks.PlayerHooks.PlayerLogout += this.OnPlayerLogout;
+            PlayerHooks.PlayerPostLogin += this.OnPlayerPostLogin;
+            PlayerHooks.PlayerLogout += this.OnPlayerLogout;
         }
 
         protected override void Dispose(bool disposing)
@@ -32,8 +32,8 @@ namespace OnlineInfo
             if (disposing)
             {
                 ServerApi.Hooks.GameInitialize.Deregister(this, this.OnGameInitialize);
-                TShockAPI.Hooks.PlayerHooks.PlayerPostLogin -= this.OnPlayerPostLogin;
-                TShockAPI.Hooks.PlayerHooks.PlayerLogout -= this.OnPlayerLogout;
+                PlayerHooks.PlayerPostLogin -= this.OnPlayerPostLogin;
+                PlayerHooks.PlayerLogout -= this.OnPlayerLogout;
             }
             base.Dispose(disposing);
         }

@@ -108,7 +108,7 @@ namespace DataSync
         // Token: 0x0600000A RID: 10 RVA: 0x000021B3 File Offset: 0x000003B3
         public override void Initialize()
         {
-            Plugin.EnsureTable();
+            EnsureTable();
             //AddNewStaticField();
             //ServerApi.Hooks.GamePostUpdate.Register(this, p0);
             ServerApi.Hooks.NpcKilled.Register(this, new HookHandler<NpcKilledEventArgs>(this.NpcKilled));

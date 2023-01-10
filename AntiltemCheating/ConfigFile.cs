@@ -1207,7 +1207,7 @@ namespace AntiItemCheating
             {
                 using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    result = ConfigFile.Read(fileStream);
+                    result = Read(fileStream);
                 }
             }
             return result;
@@ -1219,12 +1219,8 @@ namespace AntiItemCheating
             ConfigFile result;
             using (var streamReader = new StreamReader(stream))
             {
-                var configFile = JsonConvert.DeserializeObject<ConfigFile>(streamReader.ReadToEnd());
-                var flag = ConfigFile.ConfigR != null;
-                if (flag)
-                {
-                    ConfigFile.ConfigR(configFile);
-                }
+                var configFile = JsonConvert.DeserializeObject<ConfigFile>(streamReader.ReadToEnd())!;
+                ConfigR?.Invoke(configFile);
                 result = configFile;
             }
             return result;
@@ -1252,7 +1248,7 @@ namespace AntiItemCheating
         // Token: 0x06000005 RID: 5 RVA: 0x00005518 File Offset: 0x00003718
         public static void WriteConfig(ConfigFile config)
         {
-            File.WriteAllText(ConfigFile.ConfigPath, JsonConvert.SerializeObject(config));
+            File.WriteAllText(ConfigPath, JsonConvert.SerializeObject(config));
         }
         public bool 连接远程服务器判断进度 = false;
         // Token: 0x04000001 RID: 1
@@ -1460,6 +1456,6 @@ namespace AntiItemCheating
         public static readonly string ConfigPath = Path.Combine(TShock.SavePath, "超进度物品限制.json");
 
         // Token: 0x04000038 RID: 56
-        public static Action<ConfigFile> ConfigR;
+        public static Action<ConfigFile>? ConfigR;
     }
 }
