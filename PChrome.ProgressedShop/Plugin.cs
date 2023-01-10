@@ -1,12 +1,12 @@
-﻿using System;
+﻿using LazyUtils;
+using LinqToDB;
+using Newtonsoft.Json;
+using PChrome.Shop;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LazyUtils;
-using LinqToDB;
-using Newtonsoft.Json;
-using PChrome.Shop;
 using Terraria;
 using TerrariaApi.Server;
 
@@ -29,32 +29,42 @@ namespace PChrome.ProgressedShop
 
         public override void Initialize()
         {
-            ServerApi.Hooks.GamePostUpdate.Register(this, PostUpdate);
+            ServerApi.Hooks.GamePostUpdate.Register(this, this.PostUpdate);
         }
 
         private void PostUpdate(EventArgs _)
         {
-            if (!loaded)
+            if (!this.loaded)
             {
                 foreach (var config in Config.Instance.items)
+                {
                     config.lastpred = config.Predict;
-                loaded = true;
+                }
+
+                this.loaded = true;
             }
 
             foreach (var config in Config.Instance.items)
             {
-                if (config.lastpred || !config.Predict) continue;
+                if (config.lastpred || !config.Predict)
+                {
+                    continue;
+                }
+
                 using (var context = Db.Context<ShopItem>())
+                {
                     foreach (var item in config.items)
                     {
                         context.Insert(new ShopItem()
                         {
-                            content = JsonConvert.SerializeObject((object)item),
+                            content = JsonConvert.SerializeObject((object) item),
                             infinity = true,
                             price = item.price,
                             provider = "物品"
                         });
                     }
+                }
+
                 config.lastpred = true;
             }
         }

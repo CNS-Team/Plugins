@@ -1,11 +1,11 @@
-﻿using System;
+﻿using LazyUtils;
+using LazyUtils.Commands;
+using LinqToDB;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LazyUtils;
-using LazyUtils.Commands;
-using LinqToDB;
 using TShockAPI;
 using TShockAPI.DB;
 
@@ -34,7 +34,11 @@ namespace PChrome.OnlineTime
             {
                 var account = TShock.UserAccounts.GetUserAccountByName(name);
                 var nowgroup = Config.Instance.groups.IndexOf(account.Group);
-                if (nowgroup < 0 || nowgroup == Config.Instance.groups.Count - 1) continue;
+                if (nowgroup < 0 || nowgroup == Config.Instance.groups.Count - 1)
+                {
+                    continue;
+                }
+
                 TShock.UserAccounts.SetUserGroup(account, Config.Instance.groups[nowgroup + 1]);
             }
 
@@ -42,7 +46,11 @@ namespace PChrome.OnlineTime
             {
                 var account = TShock.UserAccounts.GetUserAccountByName(name);
                 var nowgroup = Config.Instance.groups.IndexOf(account.Group);
-                if (nowgroup < 0 || nowgroup == 0) continue;
+                if (nowgroup < 0 || nowgroup == 0)
+                {
+                    continue;
+                }
+
                 TShock.UserAccounts.SetUserGroup(account, Config.Instance.groups[nowgroup - 1]);
             }
         }

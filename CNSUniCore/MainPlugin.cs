@@ -15,53 +15,23 @@ namespace CNSUniCore
     {
         // Token: 0x17000001 RID: 1
         // (get) Token: 0x06000013 RID: 19 RVA: 0x00002A18 File Offset: 0x00000C18
-        public static MainPlugin Instance
-        {
-            get
-            {
-                return MainPlugin.instace;
-            }
-        }
+        public static MainPlugin Instance => MainPlugin.instace;
 
         // Token: 0x17000002 RID: 2
         // (get) Token: 0x06000014 RID: 20 RVA: 0x00002A1F File Offset: 0x00000C1F
-        public override string Name
-        {
-            get
-            {
-                return "CNSUniCore";
-            }
-        }
+        public override string Name => "CNSUniCore";
 
         // Token: 0x17000003 RID: 3
         // (get) Token: 0x06000015 RID: 21 RVA: 0x00002A26 File Offset: 0x00000C26
-        public override Version Version
-        {
-            get
-            {
-                return Assembly.GetExecutingAssembly().GetName().Version;
-            }
-        }
+        public override Version Version => Assembly.GetExecutingAssembly().GetName().Version;
 
         // Token: 0x17000004 RID: 4
         // (get) Token: 0x06000016 RID: 22 RVA: 0x00002A37 File Offset: 0x00000C37
-        public override string Author
-        {
-            get
-            {
-                return "豆沙";
-            }
-        }
+        public override string Author => "豆沙";
 
         // Token: 0x17000005 RID: 5
         // (get) Token: 0x06000017 RID: 23 RVA: 0x00002A3E File Offset: 0x00000C3E
-        public override string Description
-        {
-            get
-            {
-                return "流光统一REST核心";
-            }
-        }
+        public override string Description => "流光统一REST核心";
 
         // Token: 0x06000018 RID: 24 RVA: 0x00002A45 File Offset: 0x00000C45
         public MainPlugin(Main game) : base(game)
@@ -86,20 +56,22 @@ namespace CNSUniCore
         // Token: 0x0600001A RID: 26 RVA: 0x00002B0C File Offset: 0x00000D0C
         private void OnPlayerLogin(PlayerPostLoginEventArgs args)
         {
-            bool flag = !ConfigUtils.config.EnableRegister;
+            var flag = !ConfigUtils.config.EnableRegister;
             if (!flag)
             {
-                UserInfo info = new UserInfo();
-                info.ID = args.Player.Account.ID;
-                info.KnownIPs = args.Player.Account.KnownIps;
-                info.LastAccessed = args.Player.Account.LastAccessed;
-                info.Name = args.Player.Account.Name;
-                info.Password = args.Player.Account.Password;
-                info.Registered = args.Player.Account.Registered;
-                info.UserGroup = args.Player.Account.Group;
+                var info = new UserInfo
+                {
+                    ID = args.Player.Account.ID,
+                    KnownIPs = args.Player.Account.KnownIps,
+                    LastAccessed = args.Player.Account.LastAccessed,
+                    Name = args.Player.Account.Name,
+                    Password = args.Player.Account.Password,
+                    Registered = args.Player.Account.Registered,
+                    UserGroup = args.Player.Account.Group
+                };
                 Task.Run(delegate ()
                 {
-                    foreach (ServerInfo serverInfo in ConfigUtils.servers)
+                    foreach (var serverInfo in ConfigUtils.servers)
                     {
                         try
                         {
@@ -116,20 +88,22 @@ namespace CNSUniCore
         // Token: 0x0600001B RID: 27 RVA: 0x00002C18 File Offset: 0x00000E18
         private void OnCreateAccount(AccountCreateEventArgs args)
         {
-            bool flag = !ConfigUtils.config.EnableRegister;
+            var flag = !ConfigUtils.config.EnableRegister;
             if (!flag)
             {
-                UserInfo info = new UserInfo();
-                info.ID = args.Account.ID;
-                info.KnownIPs = args.Account.KnownIps;
-                info.LastAccessed = args.Account.LastAccessed;
-                info.Name = args.Account.Name;
-                info.Password = args.Account.Password;
-                info.Registered = args.Account.Registered;
-                info.UserGroup = args.Account.Group;
+                var info = new UserInfo
+                {
+                    ID = args.Account.ID,
+                    KnownIPs = args.Account.KnownIps,
+                    LastAccessed = args.Account.LastAccessed,
+                    Name = args.Account.Name,
+                    Password = args.Account.Password,
+                    Registered = args.Account.Registered,
+                    UserGroup = args.Account.Group
+                };
                 Task.Run(delegate ()
                 {
-                    foreach (ServerInfo serverInfo in ConfigUtils.servers)
+                    foreach (var serverInfo in ConfigUtils.servers)
                     {
                         try
                         {
@@ -148,15 +122,15 @@ namespace CNSUniCore
         {
             Task.Run(delegate ()
             {
-                bool enableSponsor = ConfigUtils.config.EnableSponsor;
+                var enableSponsor = ConfigUtils.config.EnableSponsor;
                 if (enableSponsor)
                 {
-                    TSPlayer tsplayer = TShock.Players[args.Who];
-                    SponsorInfo sponsor = this.dbManager.GetSponsor(tsplayer.Name);
-                    UserAccount userAccountByName = TShock.UserAccounts.GetUserAccountByName(tsplayer.Name);
+                    var tsplayer = TShock.Players[args.Who];
+                    var sponsor = this.dbManager.GetSponsor(tsplayer.Name);
+                    var userAccountByName = TShock.UserAccounts.GetUserAccountByName(tsplayer.Name);
                     tsplayer.SendSuccessMessage("激活赞助权限中...");
                     Task.Delay(3000);
-                    bool flag = sponsor != null && userAccountByName != null && sponsor.endTime - sponsor.startTime > DateTime.UtcNow - sponsor.startTime;
+                    var flag = sponsor != null && userAccountByName != null && sponsor.endTime - sponsor.startTime > DateTime.UtcNow - sponsor.startTime;
                     if (flag)
                     {
                         tsplayer.Group = TShock.Groups.GetGroupByName(sponsor.group);
@@ -165,7 +139,7 @@ namespace CNSUniCore
                     }
                     else
                     {
-                        bool flag2 = sponsor != null && userAccountByName != null && sponsor.endTime - sponsor.startTime <= DateTime.UtcNow - sponsor.startTime;
+                        var flag2 = sponsor != null && userAccountByName != null && sponsor.endTime - sponsor.startTime <= DateTime.UtcNow - sponsor.startTime;
                         if (flag2)
                         {
                             TShock.UserAccounts.SetUserGroup(tsplayer.Account, sponsor.originGroup);
@@ -190,22 +164,22 @@ namespace CNSUniCore
         private void OnJoin(JoinEventArgs args)
         {
 
-            TSPlayer tsplayer = TShock.Players[args.Who];
+            var tsplayer = TShock.Players[args.Who];
 
             if (!this.dbManager.GetPlayers().Exists(s => s.Name == tsplayer.Name))
             {
                 return;
             }
             var pl = this.dbManager.GetPlayers().Find(s => s.Name == tsplayer.Name);
-            List<PlayerInfo> players = this.dbManager.GetPlayers();
-            List<string> list = (from p in players
+            var players = this.dbManager.GetPlayers();
+            var list = (from p in players
                                  select p.Name).ToList<string>();
-            List<string> list2 = (from p in players
+            var list2 = (from p in players
                                   select p.UUID).ToList<string>();
-            List<string> list3 = (from p in players
+            var list3 = (from p in players
                                   select p.IP).ToList<string>();
-            bool flag = false;
-            bool flag2 = list.Contains(tsplayer.Name);
+            var flag = false;
+            var flag2 = list.Contains(tsplayer.Name);
             string BanTime = pl.BanTime;
             if (flag2)
             {
@@ -219,14 +193,10 @@ namespace CNSUniCore
                 {
                     string[] time = pl.BanTime.Split(":");
                     var c = DateTime.Now - DateTime.Parse(pl.AddTime);
-                    int ti = 0;
-                    int ti2 = 0;
-                    int ti3 = 0;
-                    int ti4 = 0;
-                    int.TryParse(time[0], out ti);
-                    int.TryParse(time[1], out ti2);
-                    int.TryParse(time[2], out ti3);
-                    int.TryParse(time[3], out ti4);
+                    int.TryParse(time[0], out var ti);
+                    int.TryParse(time[1], out var ti2);
+                    int.TryParse(time[2], out var ti3);
+                    int.TryParse(time[3], out var ti4);
                     int cd = ti - c.Days;
                     int ch = ti2 - c.Hours;
                     int cm = ti3 - c.Minutes;
@@ -249,12 +219,12 @@ namespace CNSUniCore
                     }
                     else
                     {
-                        string text2 = tsplayer.Name;
-                        bool flag9 = MainPlugin.Instance.dbManager.GetPlayer(text2) == null;
+                        var text2 = tsplayer.Name;
+                        var flag9 = MainPlugin.Instance.dbManager.GetPlayer(text2) == null;
                         if (!flag9)
                         {
                             MainPlugin.Instance.dbManager.DeletePlayer(text2);
-                            foreach (ServerInfo serverInfo in ConfigUtils.servers)
+                            foreach (var serverInfo in ConfigUtils.servers)
                             {
                                 try
                                 {
@@ -277,7 +247,7 @@ namespace CNSUniCore
                 TShock.Log.ConsoleInfo("玩家 " + tsplayer.Name + " 处于名称封禁列表中");
 
             }
-            bool flag3 = list2.Contains(tsplayer.UUID);
+            var flag3 = list2.Contains(tsplayer.UUID);
             if (flag3)
             {
                 flag = true;
@@ -290,7 +260,7 @@ namespace CNSUniCore
                     ") 处于UUID封禁列表中"
                 }));
             }
-            bool flag4 = list3.Contains(tsplayer.IP);
+            var flag4 = list3.Contains(tsplayer.IP);
             if (flag4)
             {
                 flag = true;
@@ -303,7 +273,7 @@ namespace CNSUniCore
                     ") 处于IP封禁列表中"
                 }));
             }
-            bool flag5 = flag;
+            var flag5 = flag;
             if (flag5)
             {
                 tsplayer.Disconnect($"————流光系统———\n" +

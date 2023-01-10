@@ -1,13 +1,13 @@
-using System.Collections.Generic;
 using LazyUtils;
 using Microsoft.Xna.Framework;
+using System.Collections.Generic;
 using TShockAPI;
 
 namespace PChrome.PVP
 {
     [Config]
-	public class Config : Config<Config>
-	{
+    public class Config : Config<Config>
+    {
         public class Group
         {
             public string name;
@@ -17,7 +17,7 @@ namespace PChrome.PVP
 
         public Group[] Groups = new Group[0];
 
-		public class WeaponDebuffInfo
+        public class WeaponDebuffInfo
         {
             public int ID;
 
@@ -25,52 +25,52 @@ namespace PChrome.PVP
 
             public Dictionary<int, int> Debuff;
         }
-        
-		public int Life = 800;
+
+        public int Life = 800;
 
 
-		public Point AreaLeftTop = new Point(2000, 250);
+        public Point AreaLeftTop = new Point(2000, 250);
 
 
-		public Point AreaRightButtom = new Point(2100, 350);
+        public Point AreaRightButtom = new Point(2100, 350);
 
 
-		public int[] BanndProj  =
-		{
-			502,
-			503,
-			132,
-			684,
-			634,
-			635,
-			459,
-			460,
-			461
-		};
+        public int[] BanndProj =
+        {
+            502,
+            503,
+            132,
+            684,
+            634,
+            635,
+            459,
+            460,
+            461
+        };
 
 
-		public WeaponDebuffInfo[] WeaponDebuff =
-		{
-			new WeaponDebuffInfo
-			{
-				ID = 1254,
-				AllowedProj = new []
-				{
-					242
-				},
-				Debuff = new Dictionary<int, int>
-				{
-					{
-						33,
-						600
-					},
-					{
-						36,
-						600
-					}
-				}
-			}
-		};
+        public WeaponDebuffInfo[] WeaponDebuff =
+        {
+            new WeaponDebuffInfo
+            {
+                ID = 1254,
+                AllowedProj = new []
+                {
+                    242
+                },
+                Debuff = new Dictionary<int, int>
+                {
+                    {
+                        33,
+                        600
+                    },
+                    {
+                        36,
+                        600
+                    }
+                }
+            }
+        };
 
         public int[] RegionBuff = new int[1]
         {
@@ -171,8 +171,8 @@ namespace PChrome.PVP
 
         public Rectangle GetArea()
         {
-            return new Rectangle(AreaLeftTop.X, AreaLeftTop.Y, AreaRightButtom.X - AreaLeftTop.X,
-                AreaRightButtom.Y - AreaLeftTop.Y);
+            return new Rectangle(this.AreaLeftTop.X, this.AreaLeftTop.Y, this.AreaRightButtom.X - this.AreaLeftTop.X,
+                this.AreaRightButtom.Y - this.AreaLeftTop.Y);
         }
     }
 }

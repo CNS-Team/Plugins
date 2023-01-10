@@ -1,16 +1,16 @@
 ﻿using LazyUtils;
+using LinqToDB;
 using LinqToDB.Data;
+using LinqToDB.DataProvider;
 using LinqToDB.DataProvider.MySql;
 using LinqToDB.DataProvider.SQLite;
-using LinqToDB.DataProvider;
+using Microsoft.Data.Sqlite;
+using MySql.Data.MySqlClient;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using LinqToDB;
-using Microsoft.Data.Sqlite;
 using TShockAPI;
 using TShockAPI.DB;
-using MySql.Data.MySqlClient;
 
 namespace OnlineInfo
 {
@@ -43,7 +43,10 @@ namespace OnlineInfo
             _ => string.Empty
         };
 
-        public static DataConnection GetDBConnection() => new DataConnection(DBProvider, DBConnectionString);
+        public static DataConnection GetDBConnection()
+        {
+            return new DataConnection(DBProvider, DBConnectionString);
+        }
 
         public static DisposableQuery<T> GetDBQuery<T>() where T : class
         {
@@ -56,13 +59,19 @@ namespace OnlineInfo
     {
         private static readonly string AssemblyName = Assembly.GetExecutingAssembly().GetName().Name;
 
-        public static void ConsoleInfo(string message) =>
+        public static void ConsoleInfo(string message)
+        {
             TShock.Log.ConsoleInfo($"[{AssemblyName}] [INFO] {message}");
+        }
 
-        public static void ConsoleError(string message, [CallerMemberName] string callerName = "") =>
+        public static void ConsoleError(string message, [CallerMemberName] string callerName = "")
+        {
             TShock.Log.ConsoleError($"[{AssemblyName}] [ERROR] [{callerName}] {message}");
+        }
 
-        public static void ConsoleDebug(string message, [CallerMemberName] string callerName = "") =>
+        public static void ConsoleDebug(string message, [CallerMemberName] string callerName = "")
+        {
             TShock.Log.ConsoleDebug($"[{AssemblyName}] [DEBUG] [{callerName}] {message}");
+        }
     }
 }

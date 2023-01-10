@@ -10,9 +10,9 @@ namespace History.Commands
 {
     public class InfoCommand : HCommand
     {
-        private string account;
-        private int radius;
-        private int time;
+        private readonly string account;
+        private readonly int radius;
+        private readonly int time;
 
         public InfoCommand(string account, int time, int radius, TSPlayer sender)
             : base(sender)
@@ -25,35 +25,35 @@ namespace History.Commands
         public override void Execute()
         {
             var actions = new List<Action>();
-            int lookupTime = (int)(DateTime.UtcNow - History.Date).TotalSeconds - time;
+            var lookupTime = (int) (DateTime.UtcNow - History.Date).TotalSeconds - this.time;
 
-            int plrX = sender.TileX;
-            int plrY = sender.TileY;
-            int lowX = plrX - radius;
-            int highX = plrX + radius;
-            int lowY = plrY - radius;
-            int highY = plrY + radius;
-            string XYReq = string.Format("XY / 65536 BETWEEN {0} AND {1} AND XY & 65535 BETWEEN {2} AND {3}", lowX, highX, lowY, highY);
+            var plrX = this.sender.TileX;
+            var plrY = this.sender.TileY;
+            var lowX = plrX - this.radius;
+            var highX = plrX + this.radius;
+            var lowY = plrY - this.radius;
+            var highY = plrY + this.radius;
+            var XYReq = string.Format("XY / 65536 BETWEEN {0} AND {1} AND XY & 65535 BETWEEN {2} AND {3}", lowX, highX, lowY, highY);
 
-            using (QueryResult reader =
+            using (var reader =
                 History.Database.QueryReader("SELECT Action, XY FROM History WHERE Account = @0 AND Time >= @1 AND " + XYReq + " AND WorldID = @2",
-                account, lookupTime, Main.worldID))
+                this.account, lookupTime, Main.worldID))
             {
                 while (reader.Read())
                 {
                     actions.Add(new Action
                     {
-                        action = (byte)reader.Get<int>("Action"),
+                        action = (byte) reader.Get<int>("Action"),
                         x = reader.Get<int>("XY") >> 16,
                         y = reader.Get<int>("XY") & 0xffff,
                     });
                 }
             }
 
-            for (int i = 0; i >= 0 && i < History.Actions.Count; i++)
+            for (var i = 0; i >= 0 && i < History.Actions.Count; i++)
             {
-                Action action = History.Actions[i];
-                if (action.account == account && action.time >= lookupTime &&
+                var action = History.Actions[i];
+                if (action.account == this.account && action.time >= lookupTime &&
                     lowX <= action.x && lowY <= action.y && action.x <= highX && action.y <= highY)
                 {
                     actions.Add(action);
@@ -62,7 +62,7 @@ namespace History.Commands
             // 0 actions escape
             if (actions.Count == 0)
             {
-                sender.SendInfoMessage("{0}在指定区域中未执行任何图格操作.", account);
+                this.sender.SendInfoMessage("{0}在指定区域中未执行任何图格操作.", this.account);
                 return;
             }
 
@@ -72,7 +72,7 @@ namespace History.Commands
                         WirePlaced = new List<Action>(), WireDestroyed = new List<Action>(), WireModified = new List<Action>(),
                         ActuatorPlaced = new List<Action>(), ActuatorDestroyed = new List<Action>(), ActuatorModified = new List<Action>(),
                         Painted = new List<Action>(), SignModified = new List<Action>(), Other = new List<Action>();
-            foreach (Action action in actions)
+            foreach (var action in actions)
             {
                 switch (action.action)
                 {
@@ -196,32 +196,87 @@ namespace History.Commands
                 }
             }
             actions.Clear();
-            StringBuilder InfoPrep = new StringBuilder();
-            InfoPrep.Append(account);
+            var InfoPrep = new StringBuilder();
+            InfoPrep.Append(this.account);
 
-            if (TileModified.Count > 0) InfoPrep.Append(" 修改 " + TileModified.Count + " 物块" + ",");
-            if (TileDestroyed.Count > 0) InfoPrep.Append(" 破环 " + TileDestroyed.Count + " 物块" + ",");
-            if (TilePlaced.Count > 0) InfoPrep.Append(" 放置 " + TilePlaced.Count + " 物块" + ",");
+            if (TileModified.Count > 0)
+            {
+                InfoPrep.Append(" 修改 " + TileModified.Count + " 物块" + ",");
+            }
 
-            if (WallModified.Count > 0) InfoPrep.Append(" 修改 " + WallModified.Count + " 墙" + ",");
-            if (WallDestroyed.Count > 0) InfoPrep.Append(" 破坏 " + WallDestroyed.Count + " 墙" + ",");
-            if (WallPlaced.Count > 0) InfoPrep.Append(" 放置 " + WallPlaced.Count + " 墙" + ",");
+            if (TileDestroyed.Count > 0)
+            {
+                InfoPrep.Append(" 破环 " + TileDestroyed.Count + " 物块" + ",");
+            }
 
-            if (WireModified.Count > 0) InfoPrep.Append(" 修改 " + WireModified.Count + " 电线" + ",");
-            if (WireDestroyed.Count > 0) InfoPrep.Append(" 破坏 " + WireDestroyed.Count + " 电线" + ",");
-            if (WirePlaced.Count > 0) InfoPrep.Append(" 放置 " + WirePlaced.Count + " 电线" + ",");
+            if (TilePlaced.Count > 0)
+            {
+                InfoPrep.Append(" 放置 " + TilePlaced.Count + " 物块" + ",");
+            }
 
-            if (ActuatorModified.Count > 0) InfoPrep.Append(" 修改 " + ActuatorModified.Count + " 致动器" + ",");
-            if (ActuatorDestroyed.Count > 0) InfoPrep.Append(" 破坏 " + ActuatorDestroyed.Count + " 致动器" + ",");
-            if (ActuatorPlaced.Count > 0) InfoPrep.Append(" 放置 " + ActuatorPlaced.Count + " 致动器" + ",");
+            if (WallModified.Count > 0)
+            {
+                InfoPrep.Append(" 修改 " + WallModified.Count + " 墙" + ",");
+            }
 
-            if (Painted.Count > 0) InfoPrep.Append(" 涂漆 " + Painted.Count + " 物块/墙" + ",");
-            if (SignModified.Count > 0) InfoPrep.Append(" 修改 " + SignModified.Count + " 告示牌" + ",");
-            if (Other.Count > 0) InfoPrep.Append(" " + Other.Count + " 其他修改" + ",");
+            if (WallDestroyed.Count > 0)
+            {
+                InfoPrep.Append(" 破坏 " + WallDestroyed.Count + " 墙" + ",");
+            }
+
+            if (WallPlaced.Count > 0)
+            {
+                InfoPrep.Append(" 放置 " + WallPlaced.Count + " 墙" + ",");
+            }
+
+            if (WireModified.Count > 0)
+            {
+                InfoPrep.Append(" 修改 " + WireModified.Count + " 电线" + ",");
+            }
+
+            if (WireDestroyed.Count > 0)
+            {
+                InfoPrep.Append(" 破坏 " + WireDestroyed.Count + " 电线" + ",");
+            }
+
+            if (WirePlaced.Count > 0)
+            {
+                InfoPrep.Append(" 放置 " + WirePlaced.Count + " 电线" + ",");
+            }
+
+            if (ActuatorModified.Count > 0)
+            {
+                InfoPrep.Append(" 修改 " + ActuatorModified.Count + " 致动器" + ",");
+            }
+
+            if (ActuatorDestroyed.Count > 0)
+            {
+                InfoPrep.Append(" 破坏 " + ActuatorDestroyed.Count + " 致动器" + ",");
+            }
+
+            if (ActuatorPlaced.Count > 0)
+            {
+                InfoPrep.Append(" 放置 " + ActuatorPlaced.Count + " 致动器" + ",");
+            }
+
+            if (Painted.Count > 0)
+            {
+                InfoPrep.Append(" 涂漆 " + Painted.Count + " 物块/墙" + ",");
+            }
+
+            if (SignModified.Count > 0)
+            {
+                InfoPrep.Append(" 修改 " + SignModified.Count + " 告示牌" + ",");
+            }
+
+            if (Other.Count > 0)
+            {
+                InfoPrep.Append(" " + Other.Count + " 其他修改" + ",");
+            }
 
             InfoPrep.Length--;
             InfoPrep.Append(".");
-            sender.SendInfoMessage(InfoPrep.ToString());
+            this.sender.SendInfoMessage(InfoPrep.ToString());
         }
     }
 }

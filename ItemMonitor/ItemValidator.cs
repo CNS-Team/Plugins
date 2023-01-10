@@ -17,28 +17,39 @@ namespace ItemMonitor
             {
                 if (other.TryGetValue(item.Key, out var num))
                 {
-                    if (num != item.Value) return false;
+                    if (num != item.Value)
+                    {
+                        return false;
+                    }
                 }
-                else if (item.Value != 0) return false;
+                else if (item.Value != 0)
+                {
+                    return false;
+                }
             }
 
             foreach (var item in other)
-                if (item.Value != 0 && !ContainsKey(item.Key)) return false;
+            {
+                if (item.Value != 0 && !this.ContainsKey(item.Key))
+                {
+                    return false;
+                }
+            }
 
             return true;
         }
 
         public override int GetHashCode()
         {
-            int hashCode = -170788016;
-            hashCode = hashCode * -1521134295 + EqualityComparer<KeyCollection>.Default.GetHashCode(Keys);
-            hashCode = hashCode * -1521134295 + EqualityComparer<ValueCollection>.Default.GetHashCode(Values);
+            var hashCode = -170788016;
+            hashCode = (hashCode * -1521134295) + EqualityComparer<KeyCollection>.Default.GetHashCode(this.Keys);
+            hashCode = (hashCode * -1521134295) + EqualityComparer<ValueCollection>.Default.GetHashCode(this.Values);
             return hashCode;
         }
 
         public override bool Equals(object obj)
         {
-            return obj is ItemHolder holder && Equals(holder);
+            return obj is ItemHolder holder && this.Equals(holder);
         }
 
         public static bool operator ==(ItemHolder a, ItemHolder b) => a.Equals(b);
@@ -46,7 +57,7 @@ namespace ItemMonitor
 
         private static string GetItemName(int netId)
         {
-            Item item = new Item();
+            var item = new Item();
             item.netDefaults(netId);
             return item.Name;
         }
@@ -58,20 +69,38 @@ namespace ItemMonitor
 
         public void BalanceMoney()
         {
-            int money = 0;
-            if (TryGetValue(74, out var val)) money += val * 1000000;
-            if (TryGetValue(73, out val)) money += val * 10000;
-            if (TryGetValue(72, out val)) money += val * 100;
-            if (TryGetValue(71, out val)) money += val * 1;
+            var money = 0;
+            if (this.TryGetValue(74, out var val))
+            {
+                money += val * 1000000;
+            }
+
+            if (this.TryGetValue(73, out val))
+            {
+                money += val * 10000;
+            }
+
+            if (this.TryGetValue(72, out val))
+            {
+                money += val * 100;
+            }
+
+            if (this.TryGetValue(71, out val))
+            {
+                money += val * 1;
+            }
 
             this[74] = money / 1000000;
-            this[73] = (money / 10000) % 100;
-            this[72] = (money / 100) % 100;
-            this[71] = (money) % 100;
+            this[73] = money / 10000 % 100;
+            this[72] = money / 100 % 100;
+            this[71] = money % 100;
         }
 
         public static readonly ItemHolder Empty = new ItemHolder();
-        public bool IsEmpty() => this == Empty;
+        public bool IsEmpty()
+        {
+            return this == Empty;
+        }
     }
 
     internal sealed class ItemValidator : IDisposable
@@ -88,45 +117,64 @@ namespace ItemMonitor
 
         private static bool IsIgnore(int type)
         {
-            Item itemToPickUp = new Item();
+            var itemToPickUp = new Item();
             itemToPickUp.netDefaults(type);
-            if (itemToPickUp.IsAir || ItemID.Sets.NebulaPickup[itemToPickUp.type]) return true;
-            if (itemToPickUp.type == 58 || itemToPickUp.type == 1734 || itemToPickUp.type == 1867) return true;
-            if (itemToPickUp.type == 184 || itemToPickUp.type == 1735 || itemToPickUp.type == 1868) return true;
-            if (itemToPickUp.type == 4143) return true;
-            return false;
+            if (itemToPickUp.IsAir || ItemID.Sets.NebulaPickup[itemToPickUp.type])
+            {
+                return true;
+            }
+
+            if (itemToPickUp.type == 58 || itemToPickUp.type == 1734 || itemToPickUp.type == 1867)
+            {
+                return true;
+            }
+
+            if (itemToPickUp.type == 184 || itemToPickUp.type == 1735 || itemToPickUp.type == 1868)
+            {
+                return true;
+            }
+
+            return itemToPickUp.type == 4143;
         }
 
         public void AddItem(int item, int num)
         {
-            if (IsIgnore(item)) return;
-            if (!items.ContainsKey(item)) items[item] = 0;
-            items[item] += num;
-            count = 0;
+            if (IsIgnore(item))
+            {
+                return;
+            }
+
+            if (!this.items.ContainsKey(item))
+            {
+                this.items[item] = 0;
+            }
+
+            this.items[item] += num;
+            this.count = 0;
         }
 
         private void Settle()
         {
-            items.BalanceMoney();
-            if (!items.IsEmpty())
+            this.items.BalanceMoney();
+            if (!this.items.IsEmpty())
             {
-                TShock.Log.Info($"item imbalance detected for {player.Name}: {items}");
+                TShock.Log.Info($"item imbalance detected for {this.player.Name}: {this.items}");
             }
-            items.Clear();
+            this.items.Clear();
         }
 
         public void Update()
         {
-            if (++count == settle_count)
+            if (++this.count == settle_count)
             {
-                Settle();
-                count = 0;
+                this.Settle();
+                this.count = 0;
             }
         }
 
         public void Dispose()
         {
-            Settle();
+            this.Settle();
         }
     }
 }

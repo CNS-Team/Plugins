@@ -9,6 +9,9 @@ namespace ItemMonitor
 {
     internal static class Extensions
     {
-        public static ItemValidator GetValidator(this TSPlayer player) => player.GetData<ItemValidator>("ItemValidator");
+        public static ItemValidator GetValidator(this TSPlayer player)
+        {
+            return player.GetData<ItemValidator>("ItemValidator");
+        }
     }
 }

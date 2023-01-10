@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using TShockAPI;
 
 namespace LazyUtils.Commands;
@@ -10,21 +10,21 @@ internal partial class SingleCommand
 
     private static bool TryParseBool(string arg, out object obj)
     {
-        var result = bool.TryParse(arg, out bool t);
+        var result = bool.TryParse(arg, out var t);
         obj = t;
         return result;
     }
 
     private static bool TryParseInt(string arg, out object obj)
     {
-        var result = int.TryParse(arg, out int t);
+        var result = int.TryParse(arg, out var t);
         obj = t;
         return result;
     }
 
     private static bool TryParseLong(string arg, out object obj)
     {
-        var result = long.TryParse(arg, out long t);
+        var result = long.TryParse(arg, out var t);
         obj = t;
         return result;
     }
@@ -37,7 +37,7 @@ internal partial class SingleCommand
 
     private static bool TryParseDateTime(string arg, out object obj)
     {
-        var result = DateTime.TryParse(arg, out DateTime t);
+        var result = DateTime.TryParse(arg, out var t);
         obj = t;
         var a = TryParseDateTime;
         return result;
@@ -47,7 +47,8 @@ internal partial class SingleCommand
     {
         var maybe = new List<TSPlayer>();
         foreach (var plr in TShock.Players)
-            if (plr is {Active: true})
+        {
+            if (plr is { Active: true })
             {
                 if (plr.Name == arg)
                 {
@@ -56,8 +57,11 @@ internal partial class SingleCommand
                 }
 
                 if (plr.Name.StartsWith(arg))
+                {
                     maybe.Add(plr);
+                }
             }
+        }
 
         if (maybe.Count == 1)
         {

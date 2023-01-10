@@ -1,11 +1,11 @@
-﻿using System;
+﻿using LazyUtils;
+using LinqToDB;
+using PChrome.Shop;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LazyUtils;
-using LinqToDB;
-using PChrome.Shop;
 using TShockAPI;
 
 namespace PChrome.AutoRevive
@@ -16,7 +16,11 @@ namespace PChrome.AutoRevive
         protected override bool TryTakeFrom(TSPlayer player, int count)
         {
             using var query = player.Get<AutoReviveCoin>();
-            if (query.Single().count < count) return false;
+            if (query.Single().count < count)
+            {
+                return false;
+            }
+
             query.Set(d => d.count, d => d.count - count).Update();
             return true;
         }

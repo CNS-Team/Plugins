@@ -9,7 +9,7 @@ namespace AntiItemCheating
         // Token: 0x06000001 RID: 1 RVA: 0x00002050 File Offset: 0x00000250
         public static ConfigFile Read(string path)
         {
-            bool flag = !File.Exists(path);
+            var flag = !File.Exists(path);
             ConfigFile result;
             if (flag)
             {
@@ -1205,7 +1205,7 @@ namespace AntiItemCheating
             }
             else
             {
-                using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     result = ConfigFile.Read(fileStream);
                 }
@@ -1217,10 +1217,10 @@ namespace AntiItemCheating
         public static ConfigFile Read(Stream stream)
         {
             ConfigFile result;
-            using (StreamReader streamReader = new StreamReader(stream))
+            using (var streamReader = new StreamReader(stream))
             {
-                ConfigFile configFile = JsonConvert.DeserializeObject<ConfigFile>(streamReader.ReadToEnd());
-                bool flag = ConfigFile.ConfigR != null;
+                var configFile = JsonConvert.DeserializeObject<ConfigFile>(streamReader.ReadToEnd());
+                var flag = ConfigFile.ConfigR != null;
                 if (flag)
                 {
                     ConfigFile.ConfigR(configFile);
@@ -1233,7 +1233,7 @@ namespace AntiItemCheating
         // Token: 0x06000003 RID: 3 RVA: 0x00005494 File Offset: 0x00003694
         public void Write(string path)
         {
-            using (FileStream fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Write))
+            using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Write))
             {
                 this.Write(fileStream);
             }
@@ -1242,8 +1242,8 @@ namespace AntiItemCheating
         // Token: 0x06000004 RID: 4 RVA: 0x000054D4 File Offset: 0x000036D4
         public void Write(Stream stream)
         {
-            string value = JsonConvert.SerializeObject(this, (Formatting)1);
-            using (StreamWriter streamWriter = new StreamWriter(stream))
+            var value = JsonConvert.SerializeObject(this, (Formatting) 1);
+            using (var streamWriter = new StreamWriter(stream))
             {
                 streamWriter.Write(value);
             }

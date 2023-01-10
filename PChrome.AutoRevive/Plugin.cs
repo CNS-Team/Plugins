@@ -1,10 +1,10 @@
-﻿using System;
+﻿using LazyUtils;
+using LinqToDB;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LazyUtils;
-using LinqToDB;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
@@ -22,7 +22,7 @@ namespace PChrome.AutoRevive
         {
             Shop.Plugin.RegisterProvider(new AutoReviveCoinProvider());
             GetDataHandlers.KillMe.Register(OnKillMe, HandlerPriority.Highest);
-            GetDataHandlers.PlayerSpawn.Register(OnPlayerSpawn, HandlerPriority.Highest);
+            GetDataHandlers.PlayerSpawn.Register(this.OnPlayerSpawn, HandlerPriority.Highest);
         }
 
         private void OnPlayerSpawn(object _, GetDataHandlers.SpawnEventArgs args)
@@ -58,7 +58,11 @@ namespace PChrome.AutoRevive
             }
 
             var isrevive = teleport || args.Player.HasPermission("autorevive.revive");
-            if (!isrevive) return;
+            if (!isrevive)
+            {
+                return;
+            }
+
             var pos = args.Player.TPlayer.position;
             args.Player.SetData<object>("handle_one_spawn", null);
             args.Player.Spawn(PlayerSpawnContext.ReviveFromDeath);

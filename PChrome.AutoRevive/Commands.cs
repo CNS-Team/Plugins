@@ -1,7 +1,7 @@
-﻿using System.Linq;
-using LazyUtils;
+﻿using LazyUtils;
 using LazyUtils.Commands;
 using LinqToDB;
+using System.Linq;
 using TShockAPI;
 
 namespace PChrome.AutoRevive

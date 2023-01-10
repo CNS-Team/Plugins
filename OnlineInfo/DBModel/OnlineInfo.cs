@@ -20,10 +20,10 @@ namespace OnlineInfo.DBModel
         public override string ToString()
         {
             return
-                $"ID: {ServerId}\n" +
-                $"名称: {ServerName}\n" +
-                $"人数: {PlayerCount}\n" +
-                $"玩家: {Players}";
+                $"ID: {this.ServerId}\n" +
+                $"名称: {this.ServerName}\n" +
+                $"人数: {this.PlayerCount}\n" +
+                $"玩家: {this.Players}";
         }
     }
 }

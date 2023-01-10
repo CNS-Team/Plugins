@@ -1,7 +1,7 @@
 ﻿using LazyUtils;
+using LazyUtils.Commands;
 using System;
 using System.Linq;
-using LazyUtils.Commands;
 using TShockAPI;
 
 namespace OnlineInfo
@@ -28,10 +28,10 @@ namespace OnlineInfo
             try
             {
                 using var query = Utils.GetDBQuery<DBModel.OnlineInfo>();
-                int count = query.Select(x => x.PlayerCount).Sum();
-                string[] players = query.Select(x => x.Players).Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                var count = query.Select(x => x.PlayerCount).Sum();
+                var players = query.Select(x => x.Players).Where(x => !string.IsNullOrEmpty(x)).ToArray();
                 args.Player.SendInfoMessage(
-                    $"当前全服在线人数: {count}\n" + 
+                    $"当前全服在线人数: {count}\n" +
                     $"当前全服在线玩家: {string.Join(",", players)}");
             }
             catch (Exception ex) { Logger.ConsoleError($"Failed to count total online with player names, Ex: {ex}"); }
@@ -129,9 +129,13 @@ namespace OnlineInfo
         public static void Update(CommandArgs args)
         {
             if (OnlineInfoPlugin.UpdateOnlineInfo())
+            {
                 args.Player.SendInfoMessage("更新成功");
+            }
             else
+            {
                 args.Player.SendInfoMessage("更新失败");
+            }
         }
 
         [Permission("onlineinfo.ctrl")]

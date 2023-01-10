@@ -1,10 +1,10 @@
-﻿using System;
-using System.Linq;
-using LazyUtils;
+﻿using LazyUtils;
 using LazyUtils.Commands;
 using Newtonsoft.Json.Linq;
 using PChrome.OnlineTime;
 using Rests;
+using System;
+using System.Linq;
 using TShockAPI;
 
 namespace PChrome.Ranking
@@ -40,8 +40,9 @@ namespace PChrome.Ranking
             };
         }
         [Permissions("ranking.quest")]
-        public static JToken quest(RestRequestArgs args) =>
-            new JArray
+        public static JToken quest(RestRequestArgs args)
+        {
+            return new JArray
             (
                 TShock.UserAccounts.GetUserAccounts()
                     .Select(user => new Tuple<string, PlayerData>(user.Name, TShock.CharacterDB.GetPlayerData(null, user.ID)))
@@ -54,10 +55,12 @@ namespace PChrome.Ranking
                         ["name"] = tuple.Item1
                     })
             );
+        }
 
         [Permissions("ranking.item")]
-        public static JToken item(RestRequestArgs args, int id) =>
-            new JArray
+        public static JToken item(RestRequestArgs args, int id)
+        {
+            return new JArray
             (
                 TShock.UserAccounts.GetUserAccounts()
                     .Select(user => new Tuple<string, PlayerData>(user.Name, TShock.CharacterDB.GetPlayerData(null, user.ID)))
@@ -72,6 +75,7 @@ namespace PChrome.Ranking
                         ["name"] = tuple.Item1
                     })
             );
+        }
 
         [Permissions("ranking.deathtimes")]
         public static JToken deathtimes(RestRequestArgs args)
@@ -82,7 +86,7 @@ namespace PChrome.Ranking
                 context.Config.OrderByDescending(tuple => tuple.times)
                     .AsEnumerable().Select((tuple, i) => new JObject
                     {
-                        ["times"] = (long)tuple.times,
+                        ["times"] = (long) tuple.times,
                         ["rank"] = i + 1,
                         ["name"] = tuple.name
                     })
