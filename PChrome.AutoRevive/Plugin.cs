@@ -39,7 +39,7 @@ namespace PChrome.AutoRevive
         private static void OnKillMe(object _, GetDataHandlers.KillMeEventArgs args)
         {
             if (args.Player.ContainsData(TIMER_KEY) &&
-                args.Player.GetData<long>(TIMER_KEY) + Config.Instance.cooldown > timer)
+                args.Player.GetData<long>(TIMER_KEY) + Config.Instance.cooldown > TimingUtils.Timer)
             {
                 args.Player.SendInfoMessage("复活冷却中");
                 return;
@@ -66,7 +66,7 @@ namespace PChrome.AutoRevive
             var pos = args.Player.TPlayer.position;
             args.Player.SetData<object>("handle_one_spawn", null);
             args.Player.Spawn(PlayerSpawnContext.ReviveFromDeath);
-            args.Player.SetData(TIMER_KEY, timer);
+            args.Player.SetData(TIMER_KEY, TimingUtils.Timer);
             args.Handled = true;
             if (teleport)
             {

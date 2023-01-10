@@ -38,7 +38,6 @@ public class ConfigAttribute : Attribute
 
 public abstract class LazyPlugin : TerrariaPlugin
 {
-    public static long timer { get; internal set; }
     public override string Name => this.GetType().Namespace;
     public sealed override Version Version => this.GetType().Assembly.GetName().Version;
 

@@ -25,12 +25,12 @@ namespace PChrome.Core
                 return;
             }
 
-            if (plr.GetData<long>("spamTimer") - LazyPlugin.timer > -60)
+            if (plr.GetData<long>("spamTimer") - TimingUtils.Timer > -60)
             {
                 return;
             }
 
-            plr.SetData("spamTimer", LazyPlugin.timer);
+            plr.SetData("spamTimer", TimingUtils.Timer);
 
             SendCombatText(plr.TPlayer.Top, val > 0 ? $"+{val}$" : $"{val}$", Color.Yellow, plr.Index);
         }

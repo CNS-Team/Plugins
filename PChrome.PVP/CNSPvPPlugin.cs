@@ -194,7 +194,7 @@ namespace PChrome.PVP
                 NetMessage.SendData(30, -1, -1, null, plr.Index, false.GetHashCode());
             }
 
-            if (timer % 30 != 0)
+            if (TimingUtils.Timer % 30 != 0)
             {
                 return;
             }

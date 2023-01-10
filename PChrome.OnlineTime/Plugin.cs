@@ -41,7 +41,7 @@ namespace PChrome.OnlineTime
 
         private void OnUpdate(EventArgs __)
         {
-            if (timer % (60 * 60) != 0)
+            if (TimingUtils.Timer % (60 * 60) != 0)
             {
                 return;
             }
