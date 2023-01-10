@@ -100,7 +100,7 @@ namespace ItemMonitor
 
                 var last = Main.item[args.ID];
                 if (args.Stacks == 0 || args.Type == 0 || // pickup
-                    args.Type == last.netID && args.Position == last.position && args.Stacks <= last.stack) // pickup return
+                    (args.Type == last.netID && args.Position == last.position && args.Stacks <= last.stack)) // pickup return
                 {
                     args.Player.GetValidator().AddItem(last.netID, -last.stack);
                 }

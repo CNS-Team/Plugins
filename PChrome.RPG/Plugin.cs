@@ -46,7 +46,7 @@ namespace PChrome.RPG
             {
                 num *= (double) npc.takenDamageMultiplier;
             }
-            if (npc.type == 371 || npc.SpawnedFromStatue && Config.Instance.AllowGainMoneyFromStatueMobs)
+            if (npc.type == 371 || (npc.SpawnedFromStatue && Config.Instance.AllowGainMoneyFromStatueMobs))
             {
                 num = 0.0;
             }

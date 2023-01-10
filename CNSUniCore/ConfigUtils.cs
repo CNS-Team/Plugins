@@ -1,102 +1,76 @@
 ﻿using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.IO;
 using TShockAPI;
 
-namespace CNSUniCore
+namespace CNSUniCore;
+public static class ConfigUtils
 {
-    // Token: 0x02000002 RID: 2
-    public static class ConfigUtils
+    public static readonly string configDir = Path.Combine(TShock.SavePath, "CNSUniCore");
+
+    public static readonly string configPath = Path.Combine(configDir, "config.json");
+
+    public static readonly string serversPath = Path.Combine(configDir, "servers.json");
+
+    public static UConfig config = new UConfig();
+
+    public static List<ServerInfo> servers = new List<ServerInfo>();
+
+    public static void LoadConfig()
     {
-        // Token: 0x06000001 RID: 1 RVA: 0x00002050 File Offset: 0x00000250
-        public static void LoadConfig()
+        if (Directory.Exists(configDir))
         {
-            var flag = Directory.Exists(ConfigUtils.configDir);
-            if (flag)
+            if (File.Exists(serversPath))
             {
-                var flag2 = File.Exists(ConfigUtils.serversPath);
-                if (flag2)
-                {
-                    ConfigUtils.servers = JsonConvert.DeserializeObject<List<ServerInfo>>(File.ReadAllText(ConfigUtils.serversPath));
-                }
-                else
-                {
-                    ConfigUtils.servers.Add(new ServerInfo());
-                    File.WriteAllText(ConfigUtils.serversPath, JsonConvert.SerializeObject(ConfigUtils.servers, (Formatting) 1));
-                }
-                var flag3 = File.Exists(ConfigUtils.configPath);
-                if (flag3)
-                {
-                    ConfigUtils.config = JsonConvert.DeserializeObject<UConfig>(File.ReadAllText(ConfigUtils.configPath));
-                }
-                else
-                {
-                    File.WriteAllText(ConfigUtils.configPath, JsonConvert.SerializeObject(ConfigUtils.config, (Formatting) 1));
-                }
+                servers = JsonConvert.DeserializeObject<List<ServerInfo>>(File.ReadAllText(serversPath))!;
             }
             else
             {
-                Directory.CreateDirectory(ConfigUtils.configDir);
-                ConfigUtils.servers.Add(new ServerInfo());
-                File.WriteAllText(ConfigUtils.serversPath, JsonConvert.SerializeObject(ConfigUtils.servers, (Formatting) 1));
-                File.WriteAllText(ConfigUtils.configPath, JsonConvert.SerializeObject(ConfigUtils.config, (Formatting) 1));
+                servers.Add(new ServerInfo());
+                File.WriteAllText(serversPath, JsonConvert.SerializeObject(servers, Formatting.Indented));
             }
-        }
-
-        // Token: 0x06000002 RID: 2 RVA: 0x00002148 File Offset: 0x00000348
-        public static IDbConnection LoadDb()
-        {
-            IDbConnection result;
-            try
+            if (File.Exists(configPath))
             {
-                var array = ConfigUtils.config.HostPort.Split(':', StringSplitOptions.None);
-                result = new MySqlConnection
-                {
-                    ConnectionString = string.Format("Server={0}; Port={1}; Database={2}; Uid={3}; Pwd={4};", new object[]
-                    {
-                        array[0],
-                        (array.Length > 1) ? array[1] : "3306",
-                        ConfigUtils.config.DataBaseName,
-                        ConfigUtils.config.DBUserName,
-                        ConfigUtils.config.DBPassword
-                    })
-                };
+                config = JsonConvert.DeserializeObject<UConfig>(File.ReadAllText(configPath))!;
             }
-            catch (MySqlException)
+            else
             {
-                throw new Exception("Mysql未正确配置");
+                File.WriteAllText(configPath, JsonConvert.SerializeObject(config, Formatting.Indented));
             }
-            return result;
         }
-
-        // Token: 0x06000003 RID: 3 RVA: 0x000021EC File Offset: 0x000003EC
-        public static void UpdateConfig()
+        else
         {
-            File.WriteAllText(ConfigUtils.configPath, JsonConvert.SerializeObject(ConfigUtils.config, (Formatting) 1));
+            Directory.CreateDirectory(configDir);
+            servers.Add(new ServerInfo());
+            File.WriteAllText(serversPath, JsonConvert.SerializeObject(servers, Formatting.Indented));
+            File.WriteAllText(configPath, JsonConvert.SerializeObject(config, Formatting.Indented));
         }
+    }
 
-        // Token: 0x06000004 RID: 4 RVA: 0x00002205 File Offset: 0x00000405
-        public static void UpdateServer()
+    public static IDbConnection LoadDb()
+    {
+        try
         {
-            File.WriteAllText(ConfigUtils.serversPath, JsonConvert.SerializeObject(ConfigUtils.servers, (Formatting) 1));
+            var array = config.HostPort.Split(':');
+            var mySqlConnection = new MySqlConnection
+            {
+                ConnectionString = string.Format("Server={0}; Port={1}; Database={2}; Uid={3}; Pwd={4};", array[0], (array.Length > 1) ? array[1] : "3306", config.DataBaseName, config.DBUserName, config.DBPassword)
+            };
+            return mySqlConnection;
         }
+        catch (MySqlException)
+        {
+            throw new Exception("Mysql未正确配置");
+        }
+    }
 
-        // Token: 0x04000001 RID: 1
-        public static readonly string configDir = TShock.SavePath + "/CNSUniCore";
+    public static void UpdateConfig()
+    {
+        File.WriteAllText(configPath, JsonConvert.SerializeObject(config, Formatting.Indented));
+    }
 
-        // Token: 0x04000002 RID: 2
-        public static readonly string configPath = ConfigUtils.configDir + "/config.json";
-
-        // Token: 0x04000003 RID: 3
-        public static readonly string serversPath = ConfigUtils.configDir + "/servers.json";
-
-        // Token: 0x04000004 RID: 4
-        public static UConfig config = new UConfig();
-
-        // Token: 0x04000005 RID: 5
-        public static List<ServerInfo> servers = new List<ServerInfo>();
+    public static void UpdateServer()
+    {
+        File.WriteAllText(serversPath, JsonConvert.SerializeObject(servers, Formatting.Indented));
     }
 }
