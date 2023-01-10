@@ -1,11 +1,6 @@
 name: Main
 
-on:
-  workflow_dispatch:
-  push:
-    branches:
-     - master
-  pull_request:
+on: [push]
 
 defaults:
   run:
@@ -31,10 +26,14 @@ jobs:
         id: build
         run: |
           dotnet build -c Release
+          Compress-Archive -Path out/Release/* Artifact.zip
+          echo "TAG_NAME=v$(git rev-list --count HEAD)" >> $env:GITHUB_OUTPUT
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         with:
-          name: Plugins
-          path: out/Release/*
-
+          prerelease: true
+          tag_name: ${{ steps.build.outputs.TAG_NAME }}
+          name: Release ${{ steps.build.outputs.TAG_NAME }}
+          files: Artifact.zip
