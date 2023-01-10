@@ -3,16 +3,17 @@ using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
 using TShockAPI.DB;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using System.Linq;
 
 namespace AntiItemCheating
 {
-    // Token: 0x02000006 RID: 6
     [ApiVersion(2, 1)]
     public class MainPlugin : TerrariaPlugin
-    {
-        // Token: 0x17000003 RID: 3
-        // (get) Token: 0x06000010 RID: 16 RVA: 0x000057FD File Offset: 0x000039FD
-        public override string Author
+    {        public override string Author
         {
             get
             {
@@ -20,8 +21,6 @@ namespace AntiItemCheating
             }
         }
 
-        // Token: 0x17000004 RID: 4
-        // (get) Token: 0x06000011 RID: 17 RVA: 0x00005804 File Offset: 0x00003A04
         public override string Description
         {
             get
@@ -30,8 +29,6 @@ namespace AntiItemCheating
             }
         }
 
-        // Token: 0x17000005 RID: 5
-        // (get) Token: 0x06000012 RID: 18 RVA: 0x0000580B File Offset: 0x00003A0B
         public override string Name
         {
             get
@@ -40,8 +37,6 @@ namespace AntiItemCheating
             }
         }
 
-        // Token: 0x17000006 RID: 6
-        // (get) Token: 0x06000013 RID: 19 RVA: 0x00005812 File Offset: 0x00003A12
         public override Version Version
         {
             get
@@ -167,8 +162,6 @@ namespace AntiItemCheating
                 TShock.Log.ConsoleError("超进度物品限制配置读取错误:" + ex.ToString());
             }
         }
-
-        // Token: 0x0600001C RID: 28 RVA: 0x00005C4C File Offset: 0x00003E4C
         private void OnPostInitialize(EventArgs args)
         {
             TShock.Log.ConsoleInfo("test");
