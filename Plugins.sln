@@ -31,7 +31,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AsyncSocket", "AsyncSocket\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NPCEventBan", "NPCEventBan\NPCEventBan.csproj", "{A07B75AA-4257-4E6E-A617-229A426C19DD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "History", "History\History.csproj", "{157274A1-ED4A-4AF6-B578-7AC0AC6D3673}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "History", "History\History.csproj", "{157274A1-ED4A-4AF6-B578-7AC0AC6D3673}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnlineInfo", "OnlineInfo\OnlineInfo.csproj", "{5A2D6C4A-42D1-47BD-88A3-533CDC5FC815}"
 EndProject
