@@ -1,6 +1,9 @@
 ﻿using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
+using System.Collections;
+using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
@@ -169,6 +172,7 @@ namespace DataSync
             if (flag4)
             {
                 RJb("海盗进行", "true");
+                
                 p1(); return;
             }
             bool flag5 = !GetJb("日蚀一进行") && (args.npc.netID == 158 || args.npc.netID == 159 || args.npc.netID == 461);
@@ -334,6 +338,7 @@ namespace DataSync
                 TSPlayer.Server.SendErrorMessage($"[DataSync]配置文件读取错误");
             }
         }
+        
         public static Dictionary<string, bool> GetJbs()
         {
             Dictionary<string, bool> list = new() { };
