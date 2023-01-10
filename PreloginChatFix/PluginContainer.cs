@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using LazyUtils;
 using Terraria;
 using TerrariaApi.Server;
+using TShockAPI;
 
 namespace PreloginChatFix
 {
@@ -18,14 +19,15 @@ namespace PreloginChatFix
 
         public override void Initialize()
         {
-            TShockAPI.Hooks.PlayerHooks.PlayerChat += PlayerHooks_PlayerChat;
+            ServerApi.Hooks.ServerChat.Register(this, ServerChat, 9999);
             base.Initialize();
         }
 
-        private static void PlayerHooks_PlayerChat(TShockAPI.Hooks.PlayerChatEventArgs e)
+        private static void ServerChat(ServerChatEventArgs args)
         {
-            if (!e.Player.Active && !e.Player.IsLoggedIn)
-                e.Player.Ban("trying to chat before spawn");
+            var plr = TShock.Players[args.Who];
+            if (plr.Account == null)
+                plr.Disconnect("trying to chat before logged in.");
         }
     }
 }
