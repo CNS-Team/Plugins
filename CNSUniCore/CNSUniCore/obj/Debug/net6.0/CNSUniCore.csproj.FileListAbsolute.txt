@@ -1,0 +1,13 @@
+D:\编程\Tshockplunge\CNSUniCore\CNSUniCore\obj\Debug\net6.0\CNSUniCore.csproj.AssemblyReference.cache
+D:\编程\Tshockplunge\CNSUniCore\CNSUniCore\obj\Debug\net6.0\CNSUniCore.GeneratedMSBuildEditorConfig.editorconfig
+D:\编程\Tshockplunge\CNSUniCore\CNSUniCore\obj\Debug\net6.0\CNSUniCore.AssemblyInfoInputs.cache
+D:\编程\Tshockplunge\CNSUniCore\CNSUniCore\obj\Debug\net6.0\CNSUniCore.AssemblyInfo.cs
+D:\编程\Tshockplunge\CNSUniCore\CNSUniCore\obj\Debug\net6.0\CNSUniCore.csproj.CoreCompileInputs.cache
+D:\编程\Tshockplunge\CNSUniCore\CNSUniCore\bin\Debug\net6.0\HttpServer.dll
+D:\编程\Tshockplunge\CNSUniCore\CNSUniCore\bin\Debug\net6.0\CNSUniCore.deps.json
+D:\编程\Tshockplunge\CNSUniCore\CNSUniCore\bin\Debug\net6.0\CNSUniCore.dll
+D:\编程\Tshockplunge\CNSUniCore\CNSUniCore\bin\Debug\net6.0\CNSUniCore.pdb
+D:\编程\Tshockplunge\CNSUniCore\CNSUniCore\obj\Debug\net6.0\CNSUniCore.dll
+D:\编程\Tshockplunge\CNSUniCore\CNSUniCore\obj\Debug\net6.0\refint\CNSUniCore.dll
+D:\编程\Tshockplunge\CNSUniCore\CNSUniCore\obj\Debug\net6.0\CNSUniCore.pdb
+D:\编程\Tshockplunge\CNSUniCore\CNSUniCore\obj\Debug\net6.0\ref\CNSUniCore.dll
