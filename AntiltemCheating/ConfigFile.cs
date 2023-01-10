@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
 using TShockAPI;
-
+using System;
+using System.Collections.Generic;
+using System.IO;
 namespace AntiItemCheating
 {
     // Token: 0x02000002 RID: 2

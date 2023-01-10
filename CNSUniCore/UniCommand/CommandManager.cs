@@ -1,4 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using TShockAPI;
@@ -6,15 +8,11 @@ using TShockAPI.DB;
 
 namespace CNSUniCore.UniCommand
 {
-    // Token: 0x0200000B RID: 11
     public class CommandManager
     {
-        // Token: 0x1700001F RID: 31
-        // (get) Token: 0x0600006A RID: 106 RVA: 0x00004044 File Offset: 0x00002244
-        // (set) Token: 0x0600006B RID: 107 RVA: 0x0000404C File Offset: 0x0000224C
+        
         public List<Command> Commands { get; set; }
 
-        // Token: 0x0600006C RID: 108 RVA: 0x00004058 File Offset: 0x00002258
         public CommandManager()
         {
             this.Commands = new List<Command>();
@@ -33,7 +31,6 @@ namespace CNSUniCore.UniCommand
             TShockAPI.Commands.ChatCommands.AddRange(this.Commands);
         }
 
-        // Token: 0x0600006D RID: 109 RVA: 0x0000411C File Offset: 0x0000231C
         private void UniCore(CommandArgs args)
         {
             bool flag = args.Parameters.Count < 1;
@@ -119,6 +116,7 @@ namespace CNSUniCore.UniCommand
                                     }
                                     catch (Exception)
                                     {
+
                                     }
                                 }
                             }
@@ -153,7 +151,6 @@ namespace CNSUniCore.UniCommand
                 }
             }
         }
-        // Token: 0x0600006E RID: 110 RVA: 0x0000464C File Offset: 0x0000284C
         private void UniVip(CommandArgs args)
         {
             bool flag = args.Parameters.Count < 1;
@@ -326,9 +323,7 @@ namespace CNSUniCore.UniCommand
                 }
             }
         }
-
-        // Token: 0x0600006F RID: 111 RVA: 0x00004BEC File Offset: 0x00002DEC
-        private async void UniBan(CommandArgs args)
+        private void UniBan(CommandArgs args)
         {
             bool flag = args.Parameters.Count < 1;
             if (flag)
@@ -526,7 +521,7 @@ namespace CNSUniCore.UniCommand
 
                                     string[] Time = BanTime.Split(":");
                                     int.TryParse(Time[0], out ti);
-                                    if (Time.Count() >= 2)
+                                    if (Time.Length >= 2)
                                     {
                                         if (int.TryParse(Time[1], out ti2))
                                         {
@@ -547,7 +542,7 @@ namespace CNSUniCore.UniCommand
                                         }
 
                                     }
-                                    if (Time.Count() >= 3)
+                                    if (Time.Length >= 3)
                                     {
                                         if (int.TryParse(Time[2], out ti3))
                                         {
@@ -568,7 +563,7 @@ namespace CNSUniCore.UniCommand
                                         }
 
                                     }
-                                    if (Time.Count() >= 4)
+                                    if (Time.Length >= 4)
                                     {
                                         if (int.TryParse(Time[3], out ti4))
                                         {
