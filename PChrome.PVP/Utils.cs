@@ -40,7 +40,7 @@ namespace PChrome.PVP
 
         private static Rectangle? area;
 
-        public static Rectangle PvPArea => (area ??= Config<Config>.Instance.GetArea()).Value;
+        public static Rectangle PvPArea => (area ??= Config<Config>.Instance.GetArea());
 
         public static string GetQueryString(this TSPlayer plr)
         {
