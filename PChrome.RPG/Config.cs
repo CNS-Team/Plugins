@@ -17,6 +17,6 @@ namespace PChrome.RPG
         public float BaseMoney = 1f;
         public float FloatMoneyMax = .2f;
         public float FloatMoneyMin = -.2f;
-        public Dictionary<int, float> multiplier;
+        public Dictionary<int, float> multiplier = new();
     }
 }
