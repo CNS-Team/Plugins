@@ -45,27 +45,10 @@ internal partial class SingleCommand
 
     private static bool TryParseTSPlayer(string arg, out object obj)
     {
-        var maybe = new List<TSPlayer>();
-        foreach (var plr in TShock.Players)
+        var plr = TSPlayer.FindByNameOrID(arg);
+        if (plr.Count == 1)
         {
-            if (plr is { Active: true })
-            {
-                if (plr.Name == arg)
-                {
-                    obj = plr;
-                    return true;
-                }
-
-                if (plr.Name.StartsWith(arg))
-                {
-                    maybe.Add(plr);
-                }
-            }
-        }
-
-        if (maybe.Count == 1)
-        {
-            obj = maybe[0];
+            obj = plr.Single();
             return true;
         }
 
