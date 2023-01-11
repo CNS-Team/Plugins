@@ -699,11 +699,12 @@ namespace Permabuffs_V2
 					{
                         acc = TShock.UserAccounts.GetUserAccountByID(int.Parse(args.Parameters[0]));
                     }
-					catch(Exception)
+					catch{}
+					if (acc == null)
 					{
-						args.Player.SendErrorMessage("没有找到该玩家或账户");
-						return;
-					}
+                        args.Player.SendErrorMessage("没有找到该玩家或账户");
+                        return;
+                    }
                 }
                 DB.ClearPlayerBuffs(acc.ID);
                 args.Player.SendSuccessMessage($"用户{acc.Name}所有的PermaBuff都被清除了.");
