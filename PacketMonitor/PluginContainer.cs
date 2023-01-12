@@ -39,33 +39,40 @@ namespace PacketMonitor
 
         private void NetSendBytes(SendBytesEventArgs args)
         {
-            try
+            lock (_clientWriter)
             {
-                using var br = new BinaryReader(new MemoryStream(args.Buffer, args.Offset, args.Count));
-                var packet = _clientSerializer.Deserialize(br);
-                _clientWriter.WriteLine($"[Player #{args.Socket.Id}::SendData] {packet}");
+                try
+                {
+                    using var br = new BinaryReader(new MemoryStream(args.Buffer, args.Offset, args.Count));
+                    var packet = _clientSerializer.Deserialize(br);
+                    //_clientWriter.WriteLine($"[Player #{args.Socket.Id}::SendData] {packet}");
+                }
+                catch (Exception)
+                {
+                    _clientWriter.WriteLine(
+                        $"[Player #{args.Socket.Id}::SendData] " +
+                        $"{string.Join(' ', Enumerable.Range(args.Offset, args.Count).Select(i => $"{args.Buffer[i]:x2}"))}");
+                }
             }
-            catch (Exception)
-            {
-                _clientWriter.WriteLine(
-                    $"[Player #{args.Socket.Id}::SendData] " +
-                    $"{string.Join(' ', Enumerable.Range(args.Offset, args.Count).Select(i => $"{args.Buffer[i]:x2}"))}");
-            }
+
         }
 
         private void NetGetData(GetDataEventArgs args)
         {
-            try
+            lock (_serverWriter)
             {
-                using var br = new BinaryReader(new MemoryStream(args.Msg.readBuffer, args.Index - 3, args.Length + 2));
-                var packet = _serverSerializer.Deserialize(br);
-                _serverWriter.WriteLine($"[Player #{args.Msg.whoAmI}::GetData] {packet}");
-            }
-            catch (Exception)
-            {
-                _serverWriter.WriteLine(
-                    $"[Player #{args.Msg.whoAmI}::GetData] " +
-                    $"{string.Join(' ', Enumerable.Range(args.Index - 3, args.Length + 2).Select(i => $"{args.Msg.readBuffer[i]:x2}"))}");
+                try
+                {
+                    using var br = new BinaryReader(new MemoryStream(args.Msg.readBuffer, args.Index - 3, args.Length + 2));
+                    var packet = _serverSerializer.Deserialize(br);
+                    //_serverWriter.WriteLine($"[Player #{args.Msg.whoAmI}::GetData] {packet}");
+                }
+                catch (Exception)
+                {
+                    _serverWriter.WriteLine(
+                        $"[Player #{args.Msg.whoAmI}::GetData] " +
+                        $"{string.Join(' ', Enumerable.Range(args.Index - 3, args.Length + 2).Select(i => $"{args.Msg.readBuffer[i]:x2}"))}");
+                }
             }
         }
     }
