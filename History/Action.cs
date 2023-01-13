@@ -15,7 +15,7 @@ namespace History
         public int time;
         public int x;
         public int y;
-        public string text;
+        public string ?text;
         public int alt;
         public int random;
         public bool direction;
@@ -218,7 +218,7 @@ namespace History
                         WorldGen.PlaceTile(this.x, this.y, this.data, false, true, -1, style: this.style);
                     }
 
-                    History.paintFurniture(this.data, this.x, this.y, (byte)(this.paint & 127));
+                    History.PaintFurniture(this.data, this.x, this.y, (byte)(this.paint & 127));
 
                 frameOnly:
                     //restore slopes

@@ -15,7 +15,7 @@ namespace History
     [ApiVersion(2, 1)]
     public class History : TerrariaPlugin
     {
-        public static List<Action> Actions = new List<Action>(SaveCount);
+        public static List<Action> Actions = new(SaveCount);
         public static IDbConnection ?Database;
         public static DateTime Date = DateTime.UtcNow;
         public const int SaveCount = 10;
@@ -23,8 +23,8 @@ namespace History
         private readonly bool[] AwaitingHistory = new bool[256];
         public override string Author => "Cracker64 & Zaicon & Cai";
 
-        readonly CancellationTokenSource Cancel = new CancellationTokenSource();
-        private readonly BlockingCollection<HCommand> CommandQueue = new BlockingCollection<HCommand>();
+        readonly CancellationTokenSource Cancel = new();
+        private readonly BlockingCollection<HCommand> CommandQueue = new();
         private Thread CommandQueueThread;
         public override string Description => "记录图格操作.";
         public override string Name => "History";
@@ -48,7 +48,7 @@ namespace History
         public override void Initialize()
         {
             Connect();
-            this.initBreaks();
+            this.InitBreaks();
             ServerApi.Hooks.GameInitialize.Register(this, this.OnInitialize);
             ServerApi.Hooks.NetGetData.Register(this, this.OnGetData);
             ServerApi.Hooks.WorldSave.Register(this, this.OnSaveWorld);
@@ -69,7 +69,7 @@ namespace History
             Actions.Add(new Action { account = account, action = action, data = data, time = (int)(DateTime.UtcNow - Date).TotalSeconds, x = X, y = Y, paint = paint, style = style, text = text, alt = alternate, direction = direction, random = (sbyte)random });
         }
         // 334 weapon rack done? weapon styles?
-        static void getPlaceData(ushort type, ref int which, ref int div)
+        static void GetPlaceData(ushort type, ref int which, ref int div)
         {
             switch (type)
             {
@@ -264,7 +264,7 @@ namespace History
             }
         }
         //This returns where the furniture is expected to be placed for worldgen
-        static Vector2 destFrame(ushort type)
+        static Vector2 DestFrame(ushort type)
         {
             var dest = type switch//(x,y) is from top left
             {
@@ -289,7 +289,7 @@ namespace History
             };
             return dest;
         }
-        static Vector2 furnitureDimensions(ushort type, byte style)
+        static Vector2 FurnitureDimensions(ushort type, byte style)
         {
             var dim = new Vector2(0, 0);
             switch (type)
@@ -495,7 +495,7 @@ namespace History
             return dim;
         }
         //This finds the 0,0 of a furniture
-        static Vector2 adjustDest(ref Vector2 dest, ITile tile, int which, int div, byte style)
+        static Vector2 AdjustDest(ref Vector2 dest, ITile tile, int which, int div, byte style)
         {
             var relative = new Vector2(0, 0);
             if (dest.X < 0)
@@ -596,12 +596,12 @@ namespace History
             return relative;
         }
         //This takes a coordinate on top of a furniture and returns the correct "placement" location it would have used.
-        static void adjustFurniture(ref int x, ref int y, ref byte style, bool origin = false)
+        static void AdjustFurniture(ref int x, ref int y, ref byte style, bool origin = false)
         {
             var which = 10; // An invalid which, to skip cases if it never changes.
             var div = 1;
             var tile = Main.tile[x, y];
-            getPlaceData(tile.type, ref which, ref div);
+            GetPlaceData(tile.type, ref which, ref div);
             switch (which)
             {
                 case 0:
@@ -634,8 +634,8 @@ namespace History
                 div = 0xFFFF;
             }
 
-            var dest = destFrame(tile.type);
-            var relative = adjustDest(ref dest, tile, which, div, style);
+            var dest = DestFrame(tile.type);
+            var relative = AdjustDest(ref dest, tile, which, div, style);
             if (origin)
             {
                 dest = new Vector2(0, 0);
@@ -645,12 +645,12 @@ namespace History
             y += (int)(dest.Y - relative.Y);
 
         }
-        public static void paintFurniture(ushort type, int x, int y, byte paint)
+        public static void PaintFurniture(ushort type, int x, int y, byte paint)
         {
 
             byte style = 0;
-            adjustFurniture(ref x, ref y, ref style, true);
-            var size = furnitureDimensions(type, style);
+            AdjustFurniture(ref x, ref y, ref style, true);
+            var size = FurnitureDimensions(type, style);
             for (var j = x; j <= x + size.X; j++)
             {
                 for (var k = y; k <= y + size.Y; k++)
@@ -676,7 +676,7 @@ namespace History
         public static readonly int[] breakableTopIndex = { 10, 11, 34, 42, 55, 91, 95, 126, 129, 149, 270, 271, 380, 388, 389, 395, 425, 443 };
         public static readonly int[] breakableSidesIndex = { 4, 55, 129, 136, 149, 380, 386, 387, 395, 425 };
         public static readonly int[] breakableWallIndex = { 4, 132, 136, 240, 241, 242, 245, 246, 334, 380, 395, 440 };
-        void initBreaks()
+        void InitBreaks()
         {
             foreach (var index in breakableBottomIndex) { this.breakableBottom[index] = true; }
 
@@ -686,7 +686,7 @@ namespace History
 
             foreach (var index in breakableWallIndex) {this.breakableWall[index] = true; }
         }
-        void logEdit(byte etype, ITile tile, int X, int Y, ushort type, string account, List<Vector2> done, byte style = 0, int alt = 0, int random = -1, bool direction = false)
+        void LogEdit(byte etype, ITile tile, int X, int Y, ushort type, string account, List<Vector2> done, byte style = 0, int alt = 0, int random = -1, bool direction = false)
         {
             switch (etype)
             {
@@ -697,7 +697,7 @@ namespace History
                     byte pStyle = 0;
                     if (Main.tile[X, Y].active() && !Main.tileCut[tileType] && tileType != 127)
                     {
-                        adjustFurniture(ref X, ref Y, ref pStyle);
+                        AdjustFurniture(ref X, ref Y, ref pStyle);
                         //Don't repeat the same tile, and it is possible to create something that breaks thousands of tiles with one edit, is this a sane limit?
                         if (done.Contains(new Vector2(X, Y)) || done.Count > 2000)
                         {
@@ -721,12 +721,12 @@ namespace History
                             case 124: //wooden beam, breaks sides only
                                 if (Main.tile[X - 1, Y].active() && this.breakableSides[Main.tile[X - 1, Y].type])
                                 {
-                                    this.logEdit(0, Main.tile[X - 1, Y], X - 1, Y, 0, account, done);
+                                    this.LogEdit(0, Main.tile[X - 1, Y], X - 1, Y, 0, account, done);
                                 }
 
                                 if (Main.tile[X + 1, Y].active() && this.breakableSides[Main.tile[X + 1, Y].type])
                                 {
-                                    this.logEdit(0, Main.tile[X + 1, Y], X + 1, Y, 0, account, done);
+                                    this.LogEdit(0, Main.tile[X + 1, Y], X + 1, Y, 0, account, done);
                                 }
 
                                 break;
@@ -743,7 +743,7 @@ namespace History
                                 {
                                     if (Main.tile[X + i, Y - 2].active() && this.breakableBottom[Main.tile[X + i, Y - 2].type])
                                     {
-                                        this.logEdit(0, Main.tile[X + i, Y - 2], X + i, Y - 2, 0, account, done);
+                                        this.LogEdit(0, Main.tile[X + i, Y - 2], X + i, Y - 2, 0, account, done);
                                     }
                                 }
 
@@ -751,12 +751,12 @@ namespace History
                                 {
                                     if (Main.tile[X - 2, Y + i].active() && this.breakableSides[Main.tile[X - 2, Y + i].type])
                                     {
-                                        this.logEdit(0, Main.tile[X - 2, Y + i], X - 2, Y + i, 0, account, done);
+                                        this.LogEdit(0, Main.tile[X - 2, Y + i], X - 2, Y + i, 0, account, done);
                                     }
 
                                     if (Main.tile[X, Y + i].active() && this.breakableSides[Main.tile[X, Y + i].type])
                                     {
-                                        this.logEdit(0, Main.tile[X, Y + i], X, Y + i, 0, account, done);
+                                        this.LogEdit(0, Main.tile[X, Y + i], X, Y + i, 0, account, done);
                                     }
                                 }
                                 break;
@@ -765,18 +765,18 @@ namespace History
                                 {
                                     if (Main.tile[X + i, Y - 1].active() && this.breakableBottom[Main.tile[X + i, Y - 1].type])
                                     {
-                                        this.logEdit(0, Main.tile[X + i, Y - 1], X + i, Y - 1, 0, account, done);
+                                        this.LogEdit(0, Main.tile[X + i, Y - 1], X + i, Y - 1, 0, account, done);
                                     }
                                 }
 
                                 if (Main.tile[X - 2, Y].active() && this.breakableSides[Main.tile[X - 2, Y].type])
                                 {
-                                    this.logEdit(0, Main.tile[X - 2, Y], X - 2, Y, 0, account, done);
+                                    this.LogEdit(0, Main.tile[X - 2, Y], X - 2, Y, 0, account, done);
                                 }
 
                                 if (Main.tile[X + 2, Y].active() && this.breakableSides[Main.tile[X + 2, Y].type])
                                 {
-                                    this.logEdit(0, Main.tile[X + 2, Y], X + 2, Y, 0, account, done);
+                                    this.LogEdit(0, Main.tile[X + 2, Y], X + 2, Y, 0, account, done);
                                 }
 
                                 break;
@@ -795,7 +795,7 @@ namespace History
                                 //Break anything at top
                                 if (Main.tile[X, topY].active() && this.breakableBottom[Main.tile[X, topY].type])
                                 {
-                                    this.logEdit(0, Main.tile[X, topY], X, topY, 0, account, done);
+                                    this.LogEdit(0, Main.tile[X, topY], X, topY, 0, account, done);
                                 }
                                 //TO-DO: Atm, we'll just keep the record saying they broke the top block. We lose some data (type of sand), but I don't feel like
                                 // making a workaround for that just yet.
@@ -810,7 +810,7 @@ namespace History
                                 //Break anything at top
                                 if (Main.tile[X, topY].active() && this.breakableBottom[Main.tile[X, topY].type])
                                 {
-                                    this.logEdit(0, Main.tile[X, topY], X, topY, 0, account, done);
+                                    this.LogEdit(0, Main.tile[X, topY], X, topY, 0, account, done);
                                 }
 
                                 topY++;
@@ -819,12 +819,12 @@ namespace History
                                     //log from top of stack down, so reverting goes bottom->top
                                     if (Main.tile[X - 1, topY].active() && this.breakableSides[Main.tile[X - 1, topY].type])
                                     {
-                                        this.logEdit(0, Main.tile[X - 1, topY], X - 1, topY, 0, account, done);
+                                        this.LogEdit(0, Main.tile[X - 1, topY], X - 1, topY, 0, account, done);
                                     }
 
                                     if (Main.tile[X + 1, topY].active() && this.breakableSides[Main.tile[X + 1, topY].type])
                                     {
-                                        this.logEdit(0, Main.tile[X + 1, topY], X + 1, topY, 0, account, done);
+                                        this.LogEdit(0, Main.tile[X + 1, topY], X + 1, topY, 0, account, done);
                                     }
 
                                     this.Queue(account, X, topY, 0, 239, pStyle, (short)(Main.tile[X, topY].color() + ((Main.tile[X, topY].halfBrick() ? 1 : 0) << 7)));
@@ -870,22 +870,22 @@ namespace History
                                 {
                                     if (Main.tile[X, Y - 1].active() && this.breakableBottom[Main.tile[X, Y - 1].type])
                                     {
-                                        this.logEdit(0, Main.tile[X, Y - 1], X, Y - 1, 0, account, done);
+                                        this.LogEdit(0, Main.tile[X, Y - 1], X, Y - 1, 0, account, done);
                                     }
 
                                     if (Main.tile[X, Y + 1].active() && this.breakableTop[Main.tile[X, Y + 1].type])
                                     {
-                                        this.logEdit(0, Main.tile[X, Y + 1], X, Y + 1, 0, account, done);
+                                        this.LogEdit(0, Main.tile[X, Y + 1], X, Y + 1, 0, account, done);
                                     }
 
                                     if (Main.tile[X - 1, Y].active() && this.breakableSides[Main.tile[X - 1, Y].type])
                                     {
-                                        this.logEdit(0, Main.tile[X - 1, Y], X - 1, Y, 0, account, done);
+                                        this.LogEdit(0, Main.tile[X - 1, Y], X - 1, Y, 0, account, done);
                                     }
 
                                     if (Main.tile[X + 1, Y].active() && this.breakableSides[Main.tile[X + 1, Y].type])
                                     {
-                                        this.logEdit(0, Main.tile[X + 1, Y], X + 1, Y, 0, account, done);
+                                        this.LogEdit(0, Main.tile[X + 1, Y], X + 1, Y, 0, account, done);
                                     }
                                 }
                                 else if (Main.tileTable[tileType])
@@ -920,7 +920,7 @@ namespace History
                                     {
                                         if (Main.tile[X + i, Y - height].active() && this.breakableBottom[Main.tile[X + i, Y - height].type])
                                         {
-                                            this.logEdit(0, Main.tile[X + i, Y - height], X + i, Y - height, 0, account, done);
+                                            this.LogEdit(0, Main.tile[X + i, Y - height], X + i, Y - height, 0, account, done);
                                         }
                                     }
                                 }
@@ -941,7 +941,7 @@ namespace History
                         //break things on walls
                         if (Main.tile[X, Y].active() && this.breakableWall[Main.tile[X, Y].type])
                         {
-                            this.logEdit(0, tile, X, Y, 0, account, done);
+                            this.LogEdit(0, tile, X, Y, 0, account, done);
                         }
 
                         this.Queue(account, X, Y, 2, Main.tile[X, Y].wall, 0, Main.tile[X, Y].wallColor());
@@ -1093,7 +1093,7 @@ namespace History
                                 //END DEBUG
                                 if (type == 0 && (etype == 0 || etype == 4))
                                 {
-                                    adjustFurniture(ref X, ref Y, ref style);
+                                    AdjustFurniture(ref X, ref Y, ref style);
                                 }
 
                                 this.CommandQueue.Add(new HistoryCommand(X, Y, ply));
@@ -1107,7 +1107,7 @@ namespace History
                                     return;
                                 }
 
-                                this.logEdit(etype, Main.tile[X, Y], X, Y, type, logName, new List<Vector2>(), style);
+                                this.LogEdit(etype, Main.tile[X, Y], X, Y, type, logName, new List<Vector2>(), style);
                             }
                         }
                         break;
@@ -1137,7 +1137,7 @@ namespace History
                             }
                             else
                             {
-                                this.logEdit(1, Main.tile[X, Y], X, Y, type, logName, new List<Vector2>(), (byte)style, alt, rand, dir);
+                                this.LogEdit(1, Main.tile[X, Y], X, Y, type, logName, new List<Vector2>(), (byte)style, alt, rand, dir);
                             }
                         }
                         break;
@@ -1163,7 +1163,7 @@ namespace History
                                 }
                                 else
                                 {
-                                    this.logEdit(1, Main.tile[X, Y], X, Y, 21, logName, new List<Vector2>(), style2);
+                                    this.LogEdit(1, Main.tile[X, Y], X, Y, 21, logName, new List<Vector2>(), style2);
                                 }
                                 return;
                             }
@@ -1174,12 +1174,12 @@ namespace History
                                 {
                                     this.AwaitingHistory[e.Msg.whoAmI] = false;
                                     ply.SendTileSquareCentered(X, Y, 5);
-                                    adjustFurniture(ref X, ref Y, ref style2);
+                                    AdjustFurniture(ref X, ref Y, ref style2);
                                     this.CommandQueue.Add(new HistoryCommand(X, Y, ply));
                                     e.Handled = true;
                                     return;
                                 }
-                                adjustFurniture(ref X, ref Y, ref style2);
+                                AdjustFurniture(ref X, ref Y, ref style2);
                                 this.Queue(logName, X, Y, 0, Main.tile[X, Y].type, style2, Main.tile[X, Y].color());
                                 return;
                             }
@@ -1195,7 +1195,7 @@ namespace History
                                 }
                                 else
                                 {
-                                    this.logEdit(1, Main.tile[X, Y], X, Y, 88, logName, new List<Vector2>(), style2);
+                                    this.LogEdit(1, Main.tile[X, Y], X, Y, 88, logName, new List<Vector2>(), style2);
                                 }
                                 return;
                             }
@@ -1206,12 +1206,12 @@ namespace History
                                 {
                                     this.AwaitingHistory[e.Msg.whoAmI] = false;
                                     ply.SendTileSquareCentered(X, Y, 5);
-                                    adjustFurniture(ref X, ref Y, ref style2);
+                                    AdjustFurniture(ref X, ref Y, ref style2);
                                     this.CommandQueue.Add(new HistoryCommand(X, Y, ply));
                                     e.Handled = true;
                                     return;
                                 }
-                                adjustFurniture(ref X, ref Y, ref style2);
+                                AdjustFurniture(ref X, ref Y, ref style2);
                                 this.Queue(logName, X, Y, 0, Main.tile[X, Y].type, style2, Main.tile[X, Y].color());
                                 return;
                             }
@@ -1243,7 +1243,7 @@ namespace History
                             int X = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 2);
                             int Y = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 4);
                             byte s = 0;
-                            adjustFurniture(ref X, ref Y, ref s); //Adjust coords so history picks it up, readSign() adjusts back to origin anyway
+                            AdjustFurniture(ref X, ref Y, ref s); //Adjust coords so history picks it up, readSign() adjusts back to origin anyway
                             var logName = TShock.Players[e.Msg.whoAmI].Account == null ? "unregistered" : TShock.Players[e.Msg.whoAmI].Account.Name;
                             this.Queue(logName, X, Y, 27, data: signI, text: Main.sign[signI].text);
                         }
@@ -1277,12 +1277,12 @@ namespace History
                             //We count our own wires since the client may only be able to place a few or even none.
                             if ((toolMode & 32) == 0)
                             {
-                                this.countPlayerWires(Main.player[e.Msg.whoAmI], ref wires, ref acts);
+                                this.CountPlayerWires(Main.player[e.Msg.whoAmI], ref wires, ref acts);
                             }
 
                             for (var starty = minY; starty <= maxY; starty++)
                             {
-                                this.logAdvancedWire(drawX, starty, toolMode, logName, ref wires, ref acts);
+                                this.LogAdvancedWire(drawX, starty, toolMode, logName, ref wires, ref acts);
                             }
                             for (var startx = minX; startx <= maxX; startx++)
                             {
@@ -1291,14 +1291,14 @@ namespace History
                                     continue;
                                 }
 
-                                this.logAdvancedWire(startx, drawY, toolMode, logName, ref wires, ref acts);
+                                this.LogAdvancedWire(startx, drawY, toolMode, logName, ref wires, ref acts);
                             }
                         }
                         break;
                 }
             }
         }
-        void countPlayerWires(Player p, ref int wires, ref int acts)
+        void CountPlayerWires(Player p, ref int wires, ref int acts)
         {
             wires = 0;
             acts = 0;
@@ -1314,7 +1314,7 @@ namespace History
                 }
             }
         }
-        void logAdvancedWire(int x, int y, byte mode, string account, ref int wires, ref int acts)
+        void LogAdvancedWire(int x, int y, byte mode, string account, ref int wires, ref int acts)
         {
             var delete = (mode & 32) == 32;
             if ((mode & 1) == 1 && Main.tile[x, y].wire() == delete) // RED
