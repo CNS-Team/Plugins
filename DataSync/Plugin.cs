@@ -173,6 +173,7 @@ public class Plugin : TerrariaPlugin
     private int _frameCount = 0;
     public override void Initialize()
     {
+        Config.GetConfig();
         EnsureTable();
         ServerApi.Hooks.NpcKilled.Register(this, new HookHandler<NpcKilledEventArgs>(this.NpcKilled));
         ServerApi.Hooks.GameUpdate.Register(this, new HookHandler<EventArgs>((args) =>
@@ -185,7 +186,6 @@ public class Plugin : TerrariaPlugin
         }));
         Commands.ChatCommands.Add(new Command("DataSync", this.Re, "reload"));
         Commands.ChatCommands.Add(new Command("DataSync", this.Remove, "重置进度同步"));
-        Config.GetConfig();
     }
 
     public static bool QueryProgress(string key)

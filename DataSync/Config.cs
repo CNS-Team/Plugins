@@ -4,8 +4,6 @@ using TShockAPI;
 namespace DataSync;
 public class Config
 {
-    public string 进度 = "史莱姆王,克苏鲁之眼,世界吞噬者,克苏鲁之脑,蜂王,骷髅王,独眼巨鹿,血肉墙,史莱姆皇后,双子魔眼,毁灭者,机械骷髅王,世纪之花,石巨人,猪龙鱼公爵,光之女皇,拜月教邪教徒,月亮领主,哥布林军队,海盗入侵,霜月,南瓜月,火星暴乱,日耀柱,星旋柱,星云柱,星尘柱";
-
     public bool 是否同步 = true;
 
     public bool 进度同步哥布林 = true;
@@ -74,9 +72,9 @@ public class Config
             if (!File.Exists(PATH))
             {
                 FileTools.CreateIfNot(PATH, JsonConvert.SerializeObject(Plugin.配置, Formatting.Indented));
-                Plugin.配置 = JsonConvert.DeserializeObject<Config>(File.ReadAllText(PATH))!;
-                File.WriteAllText(PATH, JsonConvert.SerializeObject(Plugin.配置, Formatting.Indented));
             }
+            Plugin.配置 = JsonConvert.DeserializeObject<Config>(File.ReadAllText(PATH))!;
+            File.WriteAllText(PATH, JsonConvert.SerializeObject(Plugin.配置, Formatting.Indented));
         }
         catch
         {
