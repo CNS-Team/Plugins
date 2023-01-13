@@ -170,11 +170,19 @@ public class Plugin : TerrariaPlugin
         }
     }
 
+    private int _frameCount = 0;
     public override void Initialize()
     {
         EnsureTable();
         ServerApi.Hooks.NpcKilled.Register(this, new HookHandler<NpcKilledEventArgs>(this.NpcKilled));
-        ServerApi.Hooks.ServerJoin.Register(this, new HookHandler<JoinEventArgs>((args) => LoadProgress()));
+        ServerApi.Hooks.GameUpdate.Register(this, new HookHandler<EventArgs>((args) =>
+        {
+            this._frameCount++;
+            if (this._frameCount % 300 == 0)
+            {
+                LoadProgress();
+            }
+        }));
         Commands.ChatCommands.Add(new Command("DataSync", this.Re, "reload"));
         Commands.ChatCommands.Add(new Command("DataSync", this.Remove, "重置进度同步"));
         Config.GetConfig();
@@ -206,7 +214,7 @@ public class Plugin : TerrariaPlugin
                 {
                     UploadProgress("哥布林一进行", true);
                 }
-                if (配置.进度同步哥布林 && NPC.downedGoblins)
+                if (配置.进度同步哥布林 && NPC.downedGoblins && !QueryProgress(nameof(NPC.downedGoblins)))
                 {
                     UploadProgress(nameof(NPC.downedGoblins), true);
                 }
@@ -234,7 +242,7 @@ public class Plugin : TerrariaPlugin
                 {
                     UploadProgress("海盗进行", true);
                 }
-                if (配置.进度同步海盗 && NPC.downedPirates)
+                if (配置.进度同步海盗 && NPC.downedPirates && !QueryProgress(nameof(NPC.downedPirates)))
                 {
                     UploadProgress(nameof(NPC.downedPirates), true);
                 }
@@ -292,31 +300,31 @@ public class Plugin : TerrariaPlugin
                 }
                 break;
             case NPCID.KingSlime:
-                if (配置.进度同步萌王 && NPC.downedSlimeKing)
+                if (配置.进度同步萌王 && NPC.downedSlimeKing && !QueryProgress(nameof(NPC.downedSlimeKing)))
                 {
                     UploadProgress(nameof(NPC.downedSlimeKing), true);
                 }
                 break;
             case NPCID.QueenBee:
-                if (配置.进度同步蜂后 && NPC.downedQueenBee)
+                if (配置.进度同步蜂后 && NPC.downedQueenBee && !QueryProgress(nameof(NPC.downedQueenBee)))
                 {
                     UploadProgress(nameof(NPC.downedQueenBee), true);
                 }
                 break;
             case NPCID.Pumpking:
-                if (配置.进度同步南瓜王 && NPC.downedHalloweenKing)
+                if (配置.进度同步南瓜王 && NPC.downedHalloweenKing && !QueryProgress(nameof(NPC.downedHalloweenKing)))
                 {
                     UploadProgress(nameof(NPC.downedHalloweenKing), true);
                 }
                 break;
             case NPCID.IceQueen:
-                if (配置.进度同步霜月后 && NPC.downedChristmasIceQueen)
+                if (配置.进度同步霜月后 && NPC.downedChristmasIceQueen && !QueryProgress(nameof(NPC.downedChristmasIceQueen)))
                 {
                     UploadProgress(nameof(NPC.downedChristmasIceQueen), true);
                 }
                 break;
             case NPCID.HallowBoss:
-                if (配置.进度同步光女前 && NPC.downedEmpressOfLight)
+                if (配置.进度同步光女前 && NPC.downedEmpressOfLight && !QueryProgress(nameof(NPC.downedEmpressOfLight)))
                 {
                     UploadProgress(nameof(NPC.downedEmpressOfLight), true);
                 }
@@ -324,151 +332,145 @@ public class Plugin : TerrariaPlugin
             case NPCID.TheDestroyer:
             case NPCID.TheDestroyerBody:
             case NPCID.TheDestroyerTail:
-                if (配置.进度同步机械虫 && NPC.downedMechBoss1)
+                if (配置.进度同步机械虫 && NPC.downedMechBoss1 && !QueryProgress(nameof(NPC.downedMechBoss1)))
                 {
                     UploadProgress(nameof(NPC.downedMechBoss1), true);
                 }
-                if (配置.进度同步任一三王 && NPC.downedMechBossAny)
+                if (配置.进度同步任一三王 && NPC.downedMechBossAny && !QueryProgress(nameof(NPC.downedMechBossAny)))
                 {
                     UploadProgress(nameof(NPC.downedMechBossAny), true);
                 }
                 break;
             case NPCID.SkeletronPrime:
-                if (配置.进度同步机械骷髅 && NPC.downedMechBoss3)
+                if (配置.进度同步机械骷髅 && NPC.downedMechBoss3 && !QueryProgress(nameof(NPC.downedMechBoss3)))
                 {
                     UploadProgress(nameof(NPC.downedMechBoss3), true);
                 }
-                if (配置.进度同步任一三王 && NPC.downedMechBossAny)
+                if (配置.进度同步任一三王 && NPC.downedMechBossAny && !QueryProgress(nameof(NPC.downedMechBossAny)))
                 {
                     UploadProgress(nameof(NPC.downedMechBossAny), true);
                 }
                 break;
             case NPCID.BrainofCthulhu:
-                if (配置.进度同步虫脑 && NPC.downedBoss2)
+            case NPCID.EaterofWorldsBody:
+            case NPCID.EaterofWorldsTail:
+                if (配置.进度同步虫脑 && NPC.downedBoss2 && !QueryProgress(nameof(NPC.downedBoss2)))
                 {
                     UploadProgress(nameof(NPC.downedBoss2), true);
                 }
                 break;
             case NPCID.EyeofCthulhu:
-                if (配置.进度同步克眼 && NPC.downedBoss1)
+                if (配置.进度同步克眼 && NPC.downedBoss1 && !QueryProgress(nameof(NPC.downedBoss1)))
                 {
                     UploadProgress(nameof(NPC.downedBoss1), true);
                 }
                 break;
             case NPCID.SkeletronHead:
             case NPCID.SkeletronHand:
-                if (配置.进度同步骷髅 && NPC.downedBoss3)
+                if (配置.进度同步骷髅 && NPC.downedBoss3 && !QueryProgress(nameof(NPC.downedBoss3)))
                 {
                     UploadProgress(nameof(NPC.downedBoss3), true);
                 }
                 break;
             case NPCID.GolemHead:
             case NPCID.Golem:
-                if (配置.进度同步石巨人 && NPC.downedGolemBoss)
+                if (配置.进度同步石巨人 && NPC.downedGolemBoss && !QueryProgress(nameof(NPC.downedGolemBoss)))
                 {
                     UploadProgress(nameof(NPC.downedGolemBoss), true);
                 }
                 break;
             case NPCID.QueenSlimeBoss:
-                if (配置.进度同步萌后 && NPC.downedQueenSlime)
+                if (配置.进度同步萌后 && NPC.downedQueenSlime && !QueryProgress(nameof(NPC.downedQueenSlime)))
                 {
                     UploadProgress(nameof(NPC.downedQueenSlime), true);
                 }
                 break;
             case NPCID.Plantera:
-                if (配置.进度同步妖花前 && NPC.downedPlantBoss)
+                if (配置.进度同步妖花前 && NPC.downedPlantBoss && !QueryProgress(nameof(NPC.downedPlantBoss)))
                 {
                     UploadProgress(nameof(NPC.downedPlantBoss), true);
                 }
                 break;
-            case NPCID.EaterofWorldsBody:
-            case NPCID.EaterofWorldsTail:
-
-                if (配置.进度同步虫脑 && NPC.downedBoss2)
-                {
-                    UploadProgress(nameof(NPC.downedBoss2), true);
-                }
-                break;
             case NPCID.Retinazer:
             case NPCID.Spazmatism:
-                if (配置.进度同步机械眼 && NPC.downedMechBoss2)
+                if (配置.进度同步机械眼 && NPC.downedMechBoss2 && !QueryProgress(nameof(NPC.downedMechBoss2)))
                 {
                     UploadProgress(nameof(NPC.downedMechBoss2), true);
                 }
-                if (配置.进度同步任一三王 && NPC.downedMechBossAny)
+                if (配置.进度同步任一三王 && NPC.downedMechBossAny && !QueryProgress(nameof(NPC.downedMechBossAny)))
                 {
                     UploadProgress(nameof(NPC.downedMechBossAny), true);
                 }
                 break;
             case NPCID.WallofFlesh:
-                if (配置.进度同步肉墙 && Main.hardMode)
+                if (配置.进度同步肉墙 && Main.hardMode && !QueryProgress(nameof(Main.hardMode)))
                 {
                     UploadProgress(nameof(Main.hardMode), true);
                 }
                 break;
             case NPCID.MoonLordHead:
             case NPCID.MoonLordHand:
-                if (配置.进度同步月总 && NPC.downedMoonlord)
+                if (配置.进度同步月总 && NPC.downedMoonlord && !QueryProgress(nameof(NPC.downedMoonlord)))
                 {
                     UploadProgress(nameof(NPC.downedMoonlord), true);
                 }
                 break;
             case NPCID.DukeFishron:
-                if (配置.进度同步猪鲨前 && NPC.downedFishron)
+                if (配置.进度同步猪鲨前 && NPC.downedFishron && !QueryProgress(nameof(NPC.downedFishron)))
                 {
                     UploadProgress(nameof(NPC.downedFishron), true);
                 }
                 break;
             case NPCID.LunarTowerVortex:
-                if (配置.进度同步星旋前 && NPC.downedTowerVortex)
+                if (配置.进度同步星旋前 && NPC.downedTowerVortex && !QueryProgress(nameof(NPC.downedTowerVortex)))
                 {
                     UploadProgress(nameof(NPC.downedTowerVortex), true);
                 }
                 break;
             case NPCID.LunarTowerStardust:
-                if (配置.进度同步星尘前 && NPC.downedTowerStardust)
+                if (配置.进度同步星尘前 && NPC.downedTowerStardust && !QueryProgress(nameof(NPC.downedTowerStardust)))
                 {
                     UploadProgress(nameof(NPC.downedTowerStardust), true);
                 }
                 break;
             case NPCID.LunarTowerNebula:
-                if (配置.进度同步星云前 && NPC.downedTowerNebula)
+                if (配置.进度同步星云前 && NPC.downedTowerNebula && !QueryProgress(nameof(NPC.downedTowerNebula)))
                 {
                     UploadProgress(nameof(NPC.downedTowerNebula), true);
                 }
                 break;
             case NPCID.LunarTowerSolar:
-                if (配置.进度同步日耀前 && NPC.downedTowerSolar)
+                if (配置.进度同步日耀前 && NPC.downedTowerSolar && !QueryProgress(nameof(NPC.downedTowerSolar)))
                 {
                     UploadProgress(nameof(NPC.downedTowerSolar), true);
                 }
                 break;
             case NPCID.Deerclops:
-                if (配置.进度同步鹿角怪 && NPC.downedDeerclops)
+                if (配置.进度同步鹿角怪 && NPC.downedDeerclops && !QueryProgress(nameof(NPC.downedDeerclops)))
                 {
                     UploadProgress(nameof(NPC.downedDeerclops), true);
                 }
                 break;
             case NPCID.CultistBoss:
-                if (配置.进度同步教徒前 && NPC.downedAncientCultist)
+                if (配置.进度同步教徒前 && NPC.downedAncientCultist && !QueryProgress(nameof(NPC.downedAncientCultist)))
                 {
                     UploadProgress(nameof(NPC.downedAncientCultist), true);
                 }
                 break;
             case NPCID.MourningWood:
-                if (配置.进度同步南瓜树 && NPC.downedHalloweenTree)
+                if (配置.进度同步南瓜树 && NPC.downedHalloweenTree && !QueryProgress(nameof(NPC.downedHalloweenTree)))
                 {
                     UploadProgress(nameof(NPC.downedHalloweenTree), true);
                 }
                 break;
             case NPCID.SantaNK1:
-                if (配置.进度同步霜月坦 && NPC.downedChristmasSantank)
+                if (配置.进度同步霜月坦 && NPC.downedChristmasSantank && !QueryProgress(nameof(NPC.downedChristmasSantank)))
                 {
                     UploadProgress(nameof(NPC.downedChristmasSantank), true);
                 }
                 break;
             case NPCID.Everscream:
-                if (配置.进度同步霜月树 && NPC.downedChristmasTree)
+                if (配置.进度同步霜月树 && NPC.downedChristmasTree && !QueryProgress(nameof(NPC.downedChristmasTree)))
                 {
                     UploadProgress(nameof(NPC.downedChristmasTree), true);
                 }
@@ -476,7 +478,6 @@ public class Plugin : TerrariaPlugin
             default:
                 return;
         }
-        LoadProgress();
     }
     private void Re(CommandArgs args)
     {
