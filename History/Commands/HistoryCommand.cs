@@ -33,8 +33,8 @@ namespace History.Commands
                     actions.Add(new Action
                     {
                         account = reader.Get<string>("Account"),
-                        action = (byte) reader.Get<int>("Action"),
-                        data = (ushort) reader.Get<int>("Data"),
+                        action = (byte)reader.Get<int>("Action"),
+                        data = (ushort)reader.Get<int>("Data"),
                         time = reader.Get<int>("Time")
                     });
                 }

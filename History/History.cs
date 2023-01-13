@@ -680,32 +680,23 @@ namespace History
         readonly bool[] breakableSides = new bool[693];
         readonly bool[] breakableWall = new bool[693];
         public static readonly int[] breakableBottomIndex = { 4, 10, 11, 13, 14, 15, 16, 17, 18, 21, 26, 27, 29, 33, 35, 49, 50, 55, 77, 78,
-            79, 81, 82, 85, 86, 87, 88, 89, 90, 92, 93, 94, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 114, 125, 128, 129, 132, 133, 
+            79, 81, 82, 85, 86, 87, 88, 89, 90, 92, 93, 94, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 114, 125, 128, 129, 132, 133,
             134, 135, 136, 138, 139, 142, 143, 144, 149, 173, 174, 178, 186, 187, 207, 209, 212, 215, 216, 217, 218, 219, 220, 228, 231, 235,
             237, 239, 243, 244, 247, 254, 269, 275, 276, 278, 279, 280, 281, 283, 285, 286, 287, 296, 297, 298, 299, 300, 301, 302, 303, 304,
             305, 306, 307, 308, 309, 310, 316, 317, 318, 319, 320, 335, 337, 338, 339, 349, 354, 355, 356, 358, 359, 360, 361, 362, 363, 364,
             372, 376, 377, 378, 380, 380, 388, 389, 390, 391, 392, 393, 394, 395, 405, 406, 410, 413, 414, 419, 425, 441, 442, 443 };
         public static readonly int[] breakableTopIndex = { 10, 11, 34, 42, 55, 91, 95, 126, 129, 149, 270, 271, 380, 388, 389, 395, 425, 443 };
-        public static readonly int[] breakableSidesIndex = {4,55,129,136,149,380,386,387,395,425};
+        public static readonly int[] breakableSidesIndex = { 4, 55, 129, 136, 149, 380, 386, 387, 395, 425 };
         public static readonly int[] breakableWallIndex = { 4, 132, 136, 240, 241, 242, 245, 246, 334, 380, 395, 440 };
         void initBreaks()
         {
-            foreach (var index in breakableBottomIndex)
-            {
-                this.breakableBottom[index] = true;
-            }
-            foreach (var index in breakableTopIndex)
-            {
-                this.breakableTop[index] = true;
-            }
-            foreach (var index in breakableSidesIndex)
-            {
-                this.breakableSides[index] = true;
-            }
-            foreach (var index in breakableWallIndex) 
-            {
-                this.breakableWall[index] = true;
-            }
+            foreach (var index in breakableBottomIndex) { this.breakableBottom[index] = true; }
+
+            foreach (var index in breakableTopIndex) { this.breakableTop[index] = true; }
+
+            foreach (var index in breakableSidesIndex) { this.breakableSides[index] = true; }
+
+            foreach (var index in breakableWallIndex) {this.breakableWall[index] = true; }
         }
         void logEdit(byte etype, ITile tile, int X, int Y, ushort type, string account, List<Vector2> done, byte style = 0, int alt = 0, int random = -1, bool direction = false)
         {

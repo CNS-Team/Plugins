@@ -19,6 +19,7 @@ namespace History.Commands
         {
             this.sender?.SendErrorMessage(msg);
         }
+
         public abstract void Execute();
     }
 }
