@@ -7,7 +7,7 @@ namespace History
 {
     public class Action
     {
-        public string account;
+        public string ?account;
         public byte action;
         public ushort data;
         public byte style;

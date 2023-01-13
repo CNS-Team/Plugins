@@ -8,7 +8,7 @@ namespace History.Commands
         private readonly Action[] actions;
 
         public SaveCommand(Action[] actions)
-        : base(null)
+        : base(null!)
         {
             this.actions = actions;
         }

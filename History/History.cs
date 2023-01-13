@@ -16,25 +16,24 @@ namespace History
     public class History : TerrariaPlugin
     {
         public static List<Action> Actions = new List<Action>(SaveCount);
-        public static IDbConnection Database;
+        public static IDbConnection ?Database;
         public static DateTime Date = DateTime.UtcNow;
         public const int SaveCount = 10;
 
         private readonly bool[] AwaitingHistory = new bool[256];
-        public override string Author => "Maintained by Cracker64 & Zaicon 创造 Cai翻新";
+        public override string Author => "Cracker64 & Zaicon & Cai";
 
         readonly CancellationTokenSource Cancel = new CancellationTokenSource();
         private readonly BlockingCollection<HCommand> CommandQueue = new BlockingCollection<HCommand>();
         private Thread CommandQueueThread;
-        public override string Description => "Logs actions such as tile editing.";
+        public override string Description => "记录图格操作.";
         public override string Name => "History";
-        public override Version Version => Assembly.GetExecutingAssembly().GetName().Version;
+        public override Version Version => Assembly.GetExecutingAssembly().GetName().Version!;
 
         public History(Main game) : base(game)
         {
             this.Order = 5;
         }
-
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -60,7 +59,7 @@ namespace History
             var text = Path.Combine(TShock.SavePath, "HistoryDB.sqlite");
             Database = new SqliteConnection($"Data Source={text}");
         }
-        void Queue(string account, int X, int Y, byte action, ushort data = 0, byte style = 0, short paint = 0, string text = null, int alternate = 0, int random = 0, bool direction = false)
+        void Queue(string account, int X, int Y, byte action, ushort data = 0, byte style = 0, short paint = 0, string text = null!, int alternate = 0, int random = 0, bool direction = false)
         {
             if (Actions.Count == SaveCount)
             {
@@ -927,7 +926,7 @@ namespace History
                                 }
                                 break;
                         }
-                        this.Queue(account, X, Y, 0, tileType, pStyle, (short)(Main.tile[X, Y].color() + (Main.tile[X, Y].halfBrick() ? 128 : 0) + (Main.tile[X, Y].slope() << 8)), null, alt, random, direction);
+                        this.Queue(account, X, Y, 0, tileType, pStyle, (short)(Main.tile[X, Y].color() + (Main.tile[X, Y].halfBrick() ? 128 : 0) + (Main.tile[X, Y].slope() << 8)), null!, alt, random, direction);
                     }
                     break;
                 case 1://add tile
@@ -1424,7 +1423,7 @@ namespace History
                     File.WriteAllText(datePath, Date.ToString());
                 }
             }
-            this.CommandQueueThread = new Thread(this.QueueCallback);
+            this.CommandQueueThread = new Thread(this.QueueCallback!);
             this.CommandQueueThread.Start();
         }
         void OnSaveWorld(WorldSaveEventArgs e)
