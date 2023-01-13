@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Terraria;
-using TShockAPI;
-using TShockAPI.DB;
+﻿using TShockAPI;
 
 namespace History.Commands
 {
     public class UndoCommand : HCommand
     {
-        public static List<Action> LastRollBack = null;
+        public static List<Action> LastRollBack = null!;
         public static bool LastWasReenact = false;
 
         public UndoCommand(TSPlayer sender)
@@ -40,7 +34,7 @@ namespace History.Commands
             undo.Execute();
 
             this.sender.SendSuccessMessage("撤消完成! {0} 个操作被撤销.", LastRollBack.Count);
-            LastRollBack = null;
+            LastRollBack = null!;
         }
     }
 }

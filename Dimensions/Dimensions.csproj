@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\template.targets" />
+  <ItemGroup>
+    <ProjectReference Include="..\LazyUtils\LazyUtils.csproj" />
+    <ProjectReference Include="..\PChrome.Core\PChrome.Core.csproj" />
+    <ProjectReference Include="..\StatusTxtMgr\StatusTxtMgr.csproj" />
+  </ItemGroup>
+</Project>

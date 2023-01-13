@@ -1,24 +1,13 @@
-﻿/*
- * Credit to MarioE for original plugin.
-*/
-using History.Commands;
+﻿using History.Commands;
 using Microsoft.Data.Sqlite;
 using Microsoft.Xna.Framework;
 using MySql.Data.MySqlClient;
-using OTAPI;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Data;
-using System.IO;
 using System.Reflection;
-using System.Threading;
 using Terraria;
-using Terraria.DataStructures;
-using Terraria.GameContent.Tile_Entities;
 using TerrariaApi.Server;
 using TShockAPI;
-using TShockAPI.Configuration;
 using TShockAPI.DB;
 
 namespace History
@@ -26,26 +15,25 @@ namespace History
     [ApiVersion(2, 1)]
     public class History : TerrariaPlugin
     {
-        public static List<Action> Actions = new List<Action>(SaveCount);
-        public static IDbConnection Database;
+        public static List<Action> Actions = new(SaveCount);
+        public static IDbConnection ?Database;
         public static DateTime Date = DateTime.UtcNow;
         public const int SaveCount = 10;
 
         private readonly bool[] AwaitingHistory = new bool[256];
-        public override string Author => "Maintained by Cracker64 & Zaicon 创造 Cai翻新";
+        public override string Author => "Cracker64 & Zaicon & Cai";
 
-        readonly CancellationTokenSource Cancel = new CancellationTokenSource();
-        private readonly BlockingCollection<HCommand> CommandQueue = new BlockingCollection<HCommand>();
+        readonly CancellationTokenSource Cancel = new();
+        private readonly BlockingCollection<HCommand> CommandQueue = new();
         private Thread CommandQueueThread;
-        public override string Description => "Logs actions such as tile editing.";
+        public override string Description => "记录图格操作.";
         public override string Name => "History";
-        public override Version Version => Assembly.GetExecutingAssembly().GetName().Version;
+        public override Version Version => Assembly.GetExecutingAssembly().GetName().Version!;
 
         public History(Main game) : base(game)
         {
             this.Order = 5;
         }
-
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -60,7 +48,7 @@ namespace History
         public override void Initialize()
         {
             Connect();
-            this.initBreaks();
+            this.InitBreaks();
             ServerApi.Hooks.GameInitialize.Register(this, this.OnInitialize);
             ServerApi.Hooks.NetGetData.Register(this, this.OnGetData);
             ServerApi.Hooks.WorldSave.Register(this, this.OnSaveWorld);
@@ -71,17 +59,17 @@ namespace History
             var text = Path.Combine(TShock.SavePath, "HistoryDB.sqlite");
             Database = new SqliteConnection($"Data Source={text}");
         }
-        void Queue(string account, int X, int Y, byte action, ushort data = 0, byte style = 0, short paint = 0, string text = null, int alternate = 0, int random = 0, bool direction = false)
+        void Queue(string account, int X, int Y, byte action, ushort data = 0, byte style = 0, short paint = 0, string text = null!, int alternate = 0, int random = 0, bool direction = false)
         {
             if (Actions.Count == SaveCount)
             {
                 this.CommandQueue.Add(new SaveCommand(Actions.ToArray()));
                 Actions.Clear();
             }
-            Actions.Add(new Action { account = account, action = action, data = data, time = (int) (DateTime.UtcNow - Date).TotalSeconds, x = X, y = Y, paint = paint, style = style, text = text, alt = alternate, direction = direction, random = (sbyte) random });
+            Actions.Add(new Action { account = account, action = action, data = data, time = (int)(DateTime.UtcNow - Date).TotalSeconds, x = X, y = Y, paint = paint, style = style, text = text, alt = alternate, direction = direction, random = (sbyte)random });
         }
         // 334 weapon rack done? weapon styles?
-        static void getPlaceData(ushort type, ref int which, ref int div)
+        static void GetPlaceData(ushort type, ref int which, ref int div)
         {
             switch (type)
             {
@@ -276,7 +264,7 @@ namespace History
             }
         }
         //This returns where the furniture is expected to be placed for worldgen
-        static Vector2 destFrame(ushort type)
+        static Vector2 DestFrame(ushort type)
         {
             var dest = type switch//(x,y) is from top left
             {
@@ -301,7 +289,7 @@ namespace History
             };
             return dest;
         }
-        static Vector2 furnitureDimensions(ushort type, byte style)
+        static Vector2 FurnitureDimensions(ushort type, byte style)
         {
             var dim = new Vector2(0, 0);
             switch (type)
@@ -507,7 +495,7 @@ namespace History
             return dim;
         }
         //This finds the 0,0 of a furniture
-        static Vector2 adjustDest(ref Vector2 dest, ITile tile, int which, int div, byte style)
+        static Vector2 AdjustDest(ref Vector2 dest, ITile tile, int which, int div, byte style)
         {
             var relative = new Vector2(0, 0);
             if (dest.X < 0)
@@ -608,25 +596,25 @@ namespace History
             return relative;
         }
         //This takes a coordinate on top of a furniture and returns the correct "placement" location it would have used.
-        static void adjustFurniture(ref int x, ref int y, ref byte style, bool origin = false)
+        static void AdjustFurniture(ref int x, ref int y, ref byte style, bool origin = false)
         {
             var which = 10; // An invalid which, to skip cases if it never changes.
             var div = 1;
             var tile = Main.tile[x, y];
-            getPlaceData(tile.type, ref which, ref div);
+            GetPlaceData(tile.type, ref which, ref div);
             switch (which)
             {
                 case 0:
-                    style = (byte) (tile.frameX / div);
+                    style = (byte)(tile.frameX / div);
                     break;
                 case 1:
-                    style = (byte) (tile.frameY / div);
+                    style = (byte)(tile.frameY / div);
                     break;
                 case 2:
-                    style = (byte) ((tile.frameY / div * 36) + (tile.frameX / div));
+                    style = (byte)((tile.frameY / div * 36) + (tile.frameX / div));
                     break;
                 case 3: //Just statues for now
-                    style = (byte) ((tile.frameX / 36) + (tile.frameY / 54 * 55));
+                    style = (byte)((tile.frameX / 36) + (tile.frameY / 54 * 55));
                     break;
                 default:
                     break;
@@ -646,23 +634,23 @@ namespace History
                 div = 0xFFFF;
             }
 
-            var dest = destFrame(tile.type);
-            var relative = adjustDest(ref dest, tile, which, div, style);
+            var dest = DestFrame(tile.type);
+            var relative = AdjustDest(ref dest, tile, which, div, style);
             if (origin)
             {
                 dest = new Vector2(0, 0);
             }
 
-            x += (int) (dest.X - relative.X);
-            y += (int) (dest.Y - relative.Y);
+            x += (int)(dest.X - relative.X);
+            y += (int)(dest.Y - relative.Y);
 
         }
-        public static void paintFurniture(ushort type, int x, int y, byte paint)
+        public static void PaintFurniture(ushort type, int x, int y, byte paint)
         {
 
             byte style = 0;
-            adjustFurniture(ref x, ref y, ref style, true);
-            var size = furnitureDimensions(type, style);
+            AdjustFurniture(ref x, ref y, ref style, true);
+            var size = FurnitureDimensions(type, style);
             for (var j = x; j <= x + size.X; j++)
             {
                 for (var k = y; k <= y + size.Y; k++)
@@ -679,205 +667,26 @@ namespace History
         readonly bool[] breakableTop = new bool[693];
         readonly bool[] breakableSides = new bool[693];
         readonly bool[] breakableWall = new bool[693];
-        void initBreaks()
+        public static readonly int[] breakableBottomIndex = { 4, 10, 11, 13, 14, 15, 16, 17, 18, 21, 26, 27, 29, 33, 35, 49, 50, 55, 77, 78,
+            79, 81, 82, 85, 86, 87, 88, 89, 90, 92, 93, 94, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 114, 125, 128, 129, 132, 133,
+            134, 135, 136, 138, 139, 142, 143, 144, 149, 173, 174, 178, 186, 187, 207, 209, 212, 215, 216, 217, 218, 219, 220, 228, 231, 235,
+            237, 239, 243, 244, 247, 254, 269, 275, 276, 278, 279, 280, 281, 283, 285, 286, 287, 296, 297, 298, 299, 300, 301, 302, 303, 304,
+            305, 306, 307, 308, 309, 310, 316, 317, 318, 319, 320, 335, 337, 338, 339, 349, 354, 355, 356, 358, 359, 360, 361, 362, 363, 364,
+            372, 376, 377, 378, 380, 380, 388, 389, 390, 391, 392, 393, 394, 395, 405, 406, 410, 413, 414, 419, 425, 441, 442, 443 };
+        public static readonly int[] breakableTopIndex = { 10, 11, 34, 42, 55, 91, 95, 126, 129, 149, 270, 271, 380, 388, 389, 395, 425, 443 };
+        public static readonly int[] breakableSidesIndex = { 4, 55, 129, 136, 149, 380, 386, 387, 395, 425 };
+        public static readonly int[] breakableWallIndex = { 4, 132, 136, 240, 241, 242, 245, 246, 334, 380, 395, 440 };
+        void InitBreaks()
         {
-            this.breakableBottom[4] = true;
-            this.breakableBottom[10] = true;
-            this.breakableBottom[11] = true;
-            this.breakableBottom[13] = true;
-            this.breakableBottom[14] = true;
-            this.breakableBottom[15] = true;
-            this.breakableBottom[16] = true;
-            this.breakableBottom[17] = true;
-            this.breakableBottom[18] = true;
-            this.breakableBottom[21] = true;
-            this.breakableBottom[26] = true;
-            this.breakableBottom[27] = true;
-            this.breakableBottom[29] = true;
-            this.breakableBottom[33] = true;
-            this.breakableBottom[35] = true;
-            this.breakableBottom[49] = true;
-            this.breakableBottom[50] = true;
-            this.breakableBottom[55] = true;
-            this.breakableBottom[77] = true;
-            this.breakableBottom[78] = true;
-            this.breakableBottom[79] = true;
-            this.breakableBottom[81] = true;
-            this.breakableBottom[82] = true;
-            this.breakableBottom[85] = true;
-            this.breakableBottom[86] = true;
-            this.breakableBottom[87] = true;
-            this.breakableBottom[88] = true;
-            this.breakableBottom[89] = true;
-            this.breakableBottom[90] = true;
-            this.breakableBottom[92] = true;
-            this.breakableBottom[93] = true;
-            this.breakableBottom[94] = true;
-            this.breakableBottom[96] = true;
-            this.breakableBottom[97] = true;
-            this.breakableBottom[98] = true;
-            this.breakableBottom[99] = true;
-            this.breakableBottom[100] = true;
-            this.breakableBottom[101] = true;
-            this.breakableBottom[102] = true;
-            this.breakableBottom[103] = true;
-            this.breakableBottom[104] = true;
-            this.breakableBottom[105] = true;
-            this.breakableBottom[106] = true;
-            this.breakableBottom[114] = true;
-            this.breakableBottom[125] = true;
-            this.breakableBottom[128] = true;
-            this.breakableBottom[129] = true;
-            this.breakableBottom[132] = true;
-            this.breakableBottom[133] = true;
-            this.breakableBottom[134] = true;
-            this.breakableBottom[135] = true;
-            this.breakableBottom[136] = true;
-            this.breakableBottom[138] = true;
-            this.breakableBottom[139] = true;
-            this.breakableBottom[142] = true;
-            this.breakableBottom[143] = true;
-            this.breakableBottom[144] = true;
-            this.breakableBottom[149] = true;
-            this.breakableBottom[173] = true;
-            this.breakableBottom[174] = true;
-            this.breakableBottom[178] = true;
-            this.breakableBottom[186] = true;
-            this.breakableBottom[187] = true;
-            this.breakableBottom[207] = true;
-            this.breakableBottom[209] = true;
-            this.breakableBottom[212] = true;
-            this.breakableBottom[215] = true;
-            this.breakableBottom[216] = true;
-            this.breakableBottom[217] = true;
-            this.breakableBottom[218] = true;
-            this.breakableBottom[219] = true;
-            this.breakableBottom[220] = true;
-            //breakableBottom[227] = true; DYES, SOME GROW ON TOP?
-            this.breakableBottom[228] = true;
-            this.breakableBottom[231] = true;
-            this.breakableBottom[235] = true;
-            this.breakableBottom[237] = true;
-            this.breakableBottom[239] = true;
-            this.breakableBottom[243] = true;
-            this.breakableBottom[244] = true;
-            this.breakableBottom[247] = true;
-            this.breakableBottom[254] = true;
-            this.breakableBottom[269] = true;
-            this.breakableBottom[275] = true;
-            this.breakableBottom[276] = true;
-            this.breakableBottom[278] = true;
-            this.breakableBottom[279] = true;
-            this.breakableBottom[280] = true;
-            this.breakableBottom[281] = true;
-            this.breakableBottom[283] = true;
-            this.breakableBottom[285] = true;
-            this.breakableBottom[286] = true;
-            this.breakableBottom[287] = true;
-            this.breakableBottom[296] = true;
-            this.breakableBottom[297] = true;
-            this.breakableBottom[298] = true;
-            this.breakableBottom[299] = true;
-            this.breakableBottom[300] = true;
-            this.breakableBottom[301] = true;
-            this.breakableBottom[302] = true;
-            this.breakableBottom[303] = true;
-            this.breakableBottom[304] = true;
-            this.breakableBottom[305] = true;
-            this.breakableBottom[306] = true;
-            this.breakableBottom[307] = true;
-            this.breakableBottom[308] = true;
-            this.breakableBottom[309] = true;
-            this.breakableBottom[310] = true;
-            this.breakableBottom[316] = true;
-            this.breakableBottom[317] = true;
-            this.breakableBottom[318] = true;
-            this.breakableBottom[319] = true;
-            this.breakableBottom[320] = true;
-            this.breakableBottom[335] = true;
-            this.breakableBottom[337] = true;
-            this.breakableBottom[338] = true;
-            this.breakableBottom[339] = true;
-            this.breakableBottom[349] = true;
-            this.breakableBottom[354] = true;
-            this.breakableBottom[355] = true;
-            this.breakableBottom[356] = true;
-            this.breakableBottom[358] = true;
-            this.breakableBottom[359] = true;
-            this.breakableBottom[360] = true;
-            this.breakableBottom[361] = true;
-            this.breakableBottom[362] = true;
-            this.breakableBottom[363] = true;
-            this.breakableBottom[364] = true;
-            this.breakableBottom[372] = true;
-            this.breakableBottom[376] = true;
-            this.breakableBottom[377] = true;
-            this.breakableBottom[378] = true;
-            this.breakableBottom[380] = true;
-            this.breakableBottom[380] = true;
-            this.breakableBottom[388] = true;
-            this.breakableBottom[389] = true;
-            this.breakableBottom[390] = true;
-            this.breakableBottom[391] = true;
-            this.breakableBottom[392] = true;
-            this.breakableBottom[393] = true;
-            this.breakableBottom[394] = true;
-            this.breakableBottom[395] = true;
-            this.breakableBottom[405] = true;
-            this.breakableBottom[406] = true;
-            this.breakableBottom[410] = true;
-            this.breakableBottom[413] = true;
-            this.breakableBottom[414] = true;
-            this.breakableBottom[419] = true;
-            this.breakableBottom[425] = true;
-            this.breakableBottom[441] = true;
-            this.breakableBottom[442] = true;
-            this.breakableBottom[443] = true;
+            foreach (var index in breakableBottomIndex) { this.breakableBottom[index] = true; }
 
-            this.breakableTop[10] = true;
-            this.breakableTop[11] = true;
-            this.breakableTop[34] = true;
-            this.breakableTop[42] = true;
-            this.breakableTop[55] = true;
-            this.breakableTop[91] = true;
-            this.breakableTop[95] = true;//chinese lantern
-            this.breakableTop[126] = true;
-            this.breakableTop[129] = true;
-            this.breakableTop[149] = true;
-            this.breakableTop[270] = true;
-            this.breakableTop[271] = true;
-            this.breakableTop[380] = true;
-            this.breakableTop[388] = true;
-            this.breakableTop[389] = true;
-            this.breakableTop[395] = true;
-            this.breakableTop[425] = true;
-            this.breakableTop[443] = true;
+            foreach (var index in breakableTopIndex) { this.breakableTop[index] = true; }
 
-            this.breakableSides[4] = true;
-            this.breakableSides[55] = true;
-            this.breakableSides[129] = true;
-            this.breakableSides[136] = true;
-            this.breakableSides[149] = true;
-            this.breakableSides[380] = true;
-            this.breakableSides[386] = true;
-            this.breakableSides[387] = true;
-            this.breakableSides[395] = true;
-            this.breakableSides[425] = true;
+            foreach (var index in breakableSidesIndex) { this.breakableSides[index] = true; }
 
-            this.breakableWall[4] = true;
-            this.breakableWall[132] = true;
-            this.breakableWall[136] = true;
-            this.breakableWall[240] = true;
-            this.breakableWall[241] = true;
-            this.breakableWall[242] = true;
-            this.breakableWall[245] = true;
-            this.breakableWall[246] = true;
-            this.breakableWall[334] = true;
-            this.breakableWall[380] = true;
-            this.breakableWall[395] = true;
-            this.breakableWall[440] = true;
+            foreach (var index in breakableWallIndex) {this.breakableWall[index] = true; }
         }
-        void logEdit(byte etype, ITile tile, int X, int Y, ushort type, string account, List<Vector2> done, byte style = 0, int alt = 0, int random = -1, bool direction = false)
+        void LogEdit(byte etype, ITile tile, int X, int Y, ushort type, string account, List<Vector2> done, byte style = 0, int alt = 0, int random = -1, bool direction = false)
         {
             switch (etype)
             {
@@ -888,7 +697,7 @@ namespace History
                     byte pStyle = 0;
                     if (Main.tile[X, Y].active() && !Main.tileCut[tileType] && tileType != 127)
                     {
-                        adjustFurniture(ref X, ref Y, ref pStyle);
+                        AdjustFurniture(ref X, ref Y, ref pStyle);
                         //Don't repeat the same tile, and it is possible to create something that breaks thousands of tiles with one edit, is this a sane limit?
                         if (done.Contains(new Vector2(X, Y)) || done.Count > 2000)
                         {
@@ -907,17 +716,17 @@ namespace History
                             case 85: //Gravestones
                             case 425: // Announcement
                                 var signI = Sign.ReadSign(X, Y);
-                                this.Queue(account, X, Y, 0, tileType, pStyle, (short) Main.tile[X, Y].color(), text: Main.sign[signI].text);
+                                this.Queue(account, X, Y, 0, tileType, pStyle, (short)Main.tile[X, Y].color(), text: Main.sign[signI].text);
                                 return;
                             case 124: //wooden beam, breaks sides only
                                 if (Main.tile[X - 1, Y].active() && this.breakableSides[Main.tile[X - 1, Y].type])
                                 {
-                                    this.logEdit(0, Main.tile[X - 1, Y], X - 1, Y, 0, account, done);
+                                    this.LogEdit(0, Main.tile[X - 1, Y], X - 1, Y, 0, account, done);
                                 }
 
                                 if (Main.tile[X + 1, Y].active() && this.breakableSides[Main.tile[X + 1, Y].type])
                                 {
-                                    this.logEdit(0, Main.tile[X + 1, Y], X + 1, Y, 0, account, done);
+                                    this.LogEdit(0, Main.tile[X + 1, Y], X + 1, Y, 0, account, done);
                                 }
 
                                 break;
@@ -927,14 +736,14 @@ namespace History
                                 var bodySlot = Main.tile[X, Y - 1].frameX / 100;
                                 var legSlot = Main.tile[X, Y].frameX / 100;
                                 // The vars 'style' and 'random' cause mannequins to place improperly and can't be used.
-                                this.Queue(account, X, Y, 0, tileType, paint: (short) headSlot, alternate: bodySlot + (legSlot << 10), direction: (Main.tile[X, Y].frameX % 100) > 0);
+                                this.Queue(account, X, Y, 0, tileType, paint: (short)headSlot, alternate: bodySlot + (legSlot << 10), direction: (Main.tile[X, Y].frameX % 100) > 0);
                                 return;
                             case 138: //boulder, 2x2
                                 for (var i = -1; i <= 0; i++)
                                 {
                                     if (Main.tile[X + i, Y - 2].active() && this.breakableBottom[Main.tile[X + i, Y - 2].type])
                                     {
-                                        this.logEdit(0, Main.tile[X + i, Y - 2], X + i, Y - 2, 0, account, done);
+                                        this.LogEdit(0, Main.tile[X + i, Y - 2], X + i, Y - 2, 0, account, done);
                                     }
                                 }
 
@@ -942,12 +751,12 @@ namespace History
                                 {
                                     if (Main.tile[X - 2, Y + i].active() && this.breakableSides[Main.tile[X - 2, Y + i].type])
                                     {
-                                        this.logEdit(0, Main.tile[X - 2, Y + i], X - 2, Y + i, 0, account, done);
+                                        this.LogEdit(0, Main.tile[X - 2, Y + i], X - 2, Y + i, 0, account, done);
                                     }
 
                                     if (Main.tile[X, Y + i].active() && this.breakableSides[Main.tile[X, Y + i].type])
                                     {
-                                        this.logEdit(0, Main.tile[X, Y + i], X, Y + i, 0, account, done);
+                                        this.LogEdit(0, Main.tile[X, Y + i], X, Y + i, 0, account, done);
                                     }
                                 }
                                 break;
@@ -956,18 +765,18 @@ namespace History
                                 {
                                     if (Main.tile[X + i, Y - 1].active() && this.breakableBottom[Main.tile[X + i, Y - 1].type])
                                     {
-                                        this.logEdit(0, Main.tile[X + i, Y - 1], X + i, Y - 1, 0, account, done);
+                                        this.LogEdit(0, Main.tile[X + i, Y - 1], X + i, Y - 1, 0, account, done);
                                     }
                                 }
 
                                 if (Main.tile[X - 2, Y].active() && this.breakableSides[Main.tile[X - 2, Y].type])
                                 {
-                                    this.logEdit(0, Main.tile[X - 2, Y], X - 2, Y, 0, account, done);
+                                    this.LogEdit(0, Main.tile[X - 2, Y], X - 2, Y, 0, account, done);
                                 }
 
                                 if (Main.tile[X + 2, Y].active() && this.breakableSides[Main.tile[X + 2, Y].type])
                                 {
-                                    this.logEdit(0, Main.tile[X + 2, Y], X + 2, Y, 0, account, done);
+                                    this.LogEdit(0, Main.tile[X + 2, Y], X + 2, Y, 0, account, done);
                                 }
 
                                 break;
@@ -986,7 +795,7 @@ namespace History
                                 //Break anything at top
                                 if (Main.tile[X, topY].active() && this.breakableBottom[Main.tile[X, topY].type])
                                 {
-                                    this.logEdit(0, Main.tile[X, topY], X, topY, 0, account, done);
+                                    this.LogEdit(0, Main.tile[X, topY], X, topY, 0, account, done);
                                 }
                                 //TO-DO: Atm, we'll just keep the record saying they broke the top block. We lose some data (type of sand), but I don't feel like
                                 // making a workaround for that just yet.
@@ -1001,7 +810,7 @@ namespace History
                                 //Break anything at top
                                 if (Main.tile[X, topY].active() && this.breakableBottom[Main.tile[X, topY].type])
                                 {
-                                    this.logEdit(0, Main.tile[X, topY], X, topY, 0, account, done);
+                                    this.LogEdit(0, Main.tile[X, topY], X, topY, 0, account, done);
                                 }
 
                                 topY++;
@@ -1010,15 +819,15 @@ namespace History
                                     //log from top of stack down, so reverting goes bottom->top
                                     if (Main.tile[X - 1, topY].active() && this.breakableSides[Main.tile[X - 1, topY].type])
                                     {
-                                        this.logEdit(0, Main.tile[X - 1, topY], X - 1, topY, 0, account, done);
+                                        this.LogEdit(0, Main.tile[X - 1, topY], X - 1, topY, 0, account, done);
                                     }
 
                                     if (Main.tile[X + 1, topY].active() && this.breakableSides[Main.tile[X + 1, topY].type])
                                     {
-                                        this.logEdit(0, Main.tile[X + 1, topY], X + 1, topY, 0, account, done);
+                                        this.LogEdit(0, Main.tile[X + 1, topY], X + 1, topY, 0, account, done);
                                     }
 
-                                    this.Queue(account, X, topY, 0, 239, pStyle, (short) (Main.tile[X, topY].color() + ((Main.tile[X, topY].halfBrick() ? 1 : 0) << 7)));
+                                    this.Queue(account, X, topY, 0, 239, pStyle, (short)(Main.tile[X, topY].color() + ((Main.tile[X, topY].halfBrick() ? 1 : 0) << 7)));
                                     topY++;
                                 }
                                 return;
@@ -1029,7 +838,7 @@ namespace History
                                     {
                                         if (Main.tile[X + i, Y + j].active() && Main.tile[X + i, Y + j].type == 314)
                                         {
-                                            this.Queue(account, X + i, Y + j, 0, 314, (byte) (Main.tile[X + i, Y + j].frameX + 1), (short) (Main.tile[X + i, Y + j].color() + ((Main.tile[X + i, Y + j].frameY + 1) << 8)));
+                                            this.Queue(account, X + i, Y + j, 0, 314, (byte)(Main.tile[X + i, Y + j].frameX + 1), (short)(Main.tile[X + i, Y + j].color() + ((Main.tile[X + i, Y + j].frameY + 1) << 8)));
                                         }
                                     }
                                 }
@@ -1037,7 +846,7 @@ namespace History
                                 return;
                             case 334: //Weapon Racks
                                       //X and Y are already normalized to the center, Center is item prefix, X-1 is NetID
-                                var prefix = (short) (Main.tile[X, Y].frameX % 5000);
+                                var prefix = (short)(Main.tile[X, Y].frameX % 5000);
                                 var netID = (Main.tile[X - 1, Y].frameX % 5000) - 100;
                                 if (netID < 0)
                                 {
@@ -1061,22 +870,22 @@ namespace History
                                 {
                                     if (Main.tile[X, Y - 1].active() && this.breakableBottom[Main.tile[X, Y - 1].type])
                                     {
-                                        this.logEdit(0, Main.tile[X, Y - 1], X, Y - 1, 0, account, done);
+                                        this.LogEdit(0, Main.tile[X, Y - 1], X, Y - 1, 0, account, done);
                                     }
 
                                     if (Main.tile[X, Y + 1].active() && this.breakableTop[Main.tile[X, Y + 1].type])
                                     {
-                                        this.logEdit(0, Main.tile[X, Y + 1], X, Y + 1, 0, account, done);
+                                        this.LogEdit(0, Main.tile[X, Y + 1], X, Y + 1, 0, account, done);
                                     }
 
                                     if (Main.tile[X - 1, Y].active() && this.breakableSides[Main.tile[X - 1, Y].type])
                                     {
-                                        this.logEdit(0, Main.tile[X - 1, Y], X - 1, Y, 0, account, done);
+                                        this.LogEdit(0, Main.tile[X - 1, Y], X - 1, Y, 0, account, done);
                                     }
 
                                     if (Main.tile[X + 1, Y].active() && this.breakableSides[Main.tile[X + 1, Y].type])
                                     {
-                                        this.logEdit(0, Main.tile[X + 1, Y], X + 1, Y, 0, account, done);
+                                        this.LogEdit(0, Main.tile[X + 1, Y], X + 1, Y, 0, account, done);
                                     }
                                 }
                                 else if (Main.tileTable[tileType])
@@ -1111,13 +920,13 @@ namespace History
                                     {
                                         if (Main.tile[X + i, Y - height].active() && this.breakableBottom[Main.tile[X + i, Y - height].type])
                                         {
-                                            this.logEdit(0, Main.tile[X + i, Y - height], X + i, Y - height, 0, account, done);
+                                            this.LogEdit(0, Main.tile[X + i, Y - height], X + i, Y - height, 0, account, done);
                                         }
                                     }
                                 }
                                 break;
                         }
-                        this.Queue(account, X, Y, 0, tileType, pStyle, (short) (Main.tile[X, Y].color() + (Main.tile[X, Y].halfBrick() ? 128 : 0) + (Main.tile[X, Y].slope() << 8)), null, alt, random, direction);
+                        this.Queue(account, X, Y, 0, tileType, pStyle, (short)(Main.tile[X, Y].color() + (Main.tile[X, Y].halfBrick() ? 128 : 0) + (Main.tile[X, Y].slope() << 8)), null!, alt, random, direction);
                     }
                     break;
                 case 1://add tile
@@ -1132,7 +941,7 @@ namespace History
                         //break things on walls
                         if (Main.tile[X, Y].active() && this.breakableWall[Main.tile[X, Y].type])
                         {
-                            this.logEdit(0, tile, X, Y, 0, account, done);
+                            this.LogEdit(0, tile, X, Y, 0, account, done);
                         }
 
                         this.Queue(account, X, Y, 2, Main.tile[X, Y].wall, 0, Main.tile[X, Y].wallColor());
@@ -1197,7 +1006,7 @@ namespace History
                     break;
                 case 14:
                     //save previous state of slope
-                    this.Queue(account, X, Y, 14, type, 0, (short) (((Main.tile[X, Y].halfBrick() ? 1 : 0) << 7) + (Main.tile[X, Y].slope() << 8)));
+                    this.Queue(account, X, Y, 14, type, 0, (short)(((Main.tile[X, Y].halfBrick() ? 1 : 0) << 7) + (Main.tile[X, Y].slope() << 8)));
                     break;
                 case 15:
                     this.Queue(account, X, Y, 15);
@@ -1221,14 +1030,14 @@ namespace History
                     if (Main.tile[X, Y].active())
                     {
                         var combinedInt = Main.tile[X, Y].type | (type << 16);
-                        this.Queue(account, X, Y, 21, (ushort) combinedInt, style);
+                        this.Queue(account, X, Y, 21, (ushort)combinedInt, style);
                     }
                     break;
                 case 22: //ReplaceWall
                     if (Main.tile[X, Y].wall > 0)
                     {
                         var combinedInt = Main.tile[X, Y].wall | (type << 16);
-                        this.Queue(account, X, Y, 22, (ushort) combinedInt);
+                        this.Queue(account, X, Y, 22, (ushort)combinedInt);
                     }
                     break;
                 case 23: //SlopePoundTile
@@ -1254,242 +1063,242 @@ namespace History
                         //TSPlayer.All.SendInfoMessage("Updating tile entity!");
                         break;
                     case PacketTypes.Tile:
-                    {
-                        var etype = e.Msg.readBuffer[e.Index];
-                        int X = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 1);
-                        int Y = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 3);
-                        var type = BitConverter.ToUInt16(e.Msg.readBuffer, e.Index + 5);
-                        var style = e.Msg.readBuffer[e.Index + 7];
-                        if (type == 1 && (etype == 0 || etype == 4))
                         {
-                            if (Main.tile[X, Y].type == 21 || Main.tile[X, Y].type == 88)
+                            var etype = e.Msg.readBuffer[e.Index];
+                            int X = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 1);
+                            int Y = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 3);
+                            var type = BitConverter.ToUInt16(e.Msg.readBuffer, e.Index + 5);
+                            var style = e.Msg.readBuffer[e.Index + 7];
+                            if (type == 1 && (etype == 0 || etype == 4))
                             {
-                                return; //Chests and dressers handled separately
+                                if (Main.tile[X, Y].type == 21 || Main.tile[X, Y].type == 88)
+                                {
+                                    return; //Chests and dressers handled separately
+                                }
+                                //else if (Main.tile[X, Y].type == 2699)
+                                //TSPlayer.All.SendInfoMessage("Weapon rack place");
                             }
-                            //else if (Main.tile[X, Y].type == 2699)
-                            //TSPlayer.All.SendInfoMessage("Weapon rack place");
-                        }
-                        //DEBUG
-                        //TSPlayer.All.SendInfoMessage($"Type: {type}");
-
-                        var ply = TShock.Players[e.Msg.whoAmI];
-                        var logName = ply.Account == null ? "unregistered" : ply.Account.Name;
-                        //Checking history now requires build permission in the area due to load order, if needed this could be fixed by having an alternate function check this packet on a higher order.
-                        if (this.AwaitingHistory[e.Msg.whoAmI])
-                        {
-                            this.AwaitingHistory[e.Msg.whoAmI] = false;
-                            ply.SendTileSquareCentered(X, Y, 5);
                             //DEBUG
-                            //TSPlayer.All.SendInfoMessage($"X: {X}, Y: {Y}, FrameX: {Main.tile[X, Y].frameX}, FrameY: {Main.tile[X, Y].frameY}");
-                            //END DEBUG
-                            if (type == 0 && (etype == 0 || etype == 4))
-                            {
-                                adjustFurniture(ref X, ref Y, ref style);
-                            }
+                            //TSPlayer.All.SendInfoMessage($"Type: {type}");
 
-                            this.CommandQueue.Add(new HistoryCommand(X, Y, ply));
-                            e.Handled = true;
-                        }
-                        else
-                        {
-                            //effect only
-                            if (type == 1 && (etype == 0 || etype == 2 || etype == 4))
+                            var ply = TShock.Players[e.Msg.whoAmI];
+                            var logName = ply.Account == null ? "unregistered" : ply.Account.Name;
+                            //Checking history now requires build permission in the area due to load order, if needed this could be fixed by having an alternate function check this packet on a higher order.
+                            if (this.AwaitingHistory[e.Msg.whoAmI])
                             {
-                                return;
-                            }
+                                this.AwaitingHistory[e.Msg.whoAmI] = false;
+                                ply.SendTileSquareCentered(X, Y, 5);
+                                //DEBUG
+                                //TSPlayer.All.SendInfoMessage($"X: {X}, Y: {Y}, FrameX: {Main.tile[X, Y].frameX}, FrameY: {Main.tile[X, Y].frameY}");
+                                //END DEBUG
+                                if (type == 0 && (etype == 0 || etype == 4))
+                                {
+                                    AdjustFurniture(ref X, ref Y, ref style);
+                                }
 
-                            this.logEdit(etype, Main.tile[X, Y], X, Y, type, logName, new List<Vector2>(), style);
+                                this.CommandQueue.Add(new HistoryCommand(X, Y, ply));
+                                e.Handled = true;
+                            }
+                            else
+                            {
+                                //effect only
+                                if (type == 1 && (etype == 0 || etype == 2 || etype == 4))
+                                {
+                                    return;
+                                }
+
+                                this.LogEdit(etype, Main.tile[X, Y], X, Y, type, logName, new List<Vector2>(), style);
+                            }
                         }
-                    }
-                    break;
+                        break;
                     case PacketTypes.PlaceObject:
-                    {
-                        int X = BitConverter.ToInt16(e.Msg.readBuffer, e.Index);
-                        int Y = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 2);
-                        var type = BitConverter.ToUInt16(e.Msg.readBuffer, e.Index + 4);
-                        int style = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 6);
-                        //DEBUG:
-                        //TSPlayer.All.SendInfoMessage($"Style: {style}");
-                        int alt = (byte) e.Msg.readBuffer[e.Index + 8];
-                        //TSPlayer.All.SendInfoMessage($"Alternate: {alt}");
-                        int rand = (sbyte) e.Msg.readBuffer[e.Index + 9];
-                        //TSPlayer.All.SendInfoMessage($"Random: {rand}");
-                        var dir = BitConverter.ToBoolean(e.Msg.readBuffer, e.Index + 10);
+                        {
+                            int X = BitConverter.ToInt16(e.Msg.readBuffer, e.Index);
+                            int Y = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 2);
+                            var type = BitConverter.ToUInt16(e.Msg.readBuffer, e.Index + 4);
+                            int style = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 6);
+                            //DEBUG:
+                            //TSPlayer.All.SendInfoMessage($"Style: {style}");
+                            int alt = (byte)e.Msg.readBuffer[e.Index + 8];
+                            //TSPlayer.All.SendInfoMessage($"Alternate: {alt}");
+                            int rand = (sbyte)e.Msg.readBuffer[e.Index + 9];
+                            //TSPlayer.All.SendInfoMessage($"Random: {rand}");
+                            var dir = BitConverter.ToBoolean(e.Msg.readBuffer, e.Index + 10);
 
-                        var ply = TShock.Players[e.Msg.whoAmI];
-                        var logName = ply.Account == null ? "unregistered" : ply.Account.Name;
-                        //Checking history now requires build permission in the area due to load order, if needed this could be fixed by having an alternate function check this packet on a higher order.
-                        if (this.AwaitingHistory[e.Msg.whoAmI])
-                        {
-                            this.AwaitingHistory[e.Msg.whoAmI] = false;
-                            ply.SendTileSquareCentered(X, Y, 5);
-                            this.CommandQueue.Add(new HistoryCommand(X, Y, ply));
-                            e.Handled = true;
+                            var ply = TShock.Players[e.Msg.whoAmI];
+                            var logName = ply.Account == null ? "unregistered" : ply.Account.Name;
+                            //Checking history now requires build permission in the area due to load order, if needed this could be fixed by having an alternate function check this packet on a higher order.
+                            if (this.AwaitingHistory[e.Msg.whoAmI])
+                            {
+                                this.AwaitingHistory[e.Msg.whoAmI] = false;
+                                ply.SendTileSquareCentered(X, Y, 5);
+                                this.CommandQueue.Add(new HistoryCommand(X, Y, ply));
+                                e.Handled = true;
+                            }
+                            else
+                            {
+                                this.LogEdit(1, Main.tile[X, Y], X, Y, type, logName, new List<Vector2>(), (byte)style, alt, rand, dir);
+                            }
                         }
-                        else
-                        {
-                            this.logEdit(1, Main.tile[X, Y], X, Y, type, logName, new List<Vector2>(), (byte) style, alt, rand, dir);
-                        }
-                    }
-                    break;
+                        break;
                     //chest delete
                     case PacketTypes.PlaceChest:
-                    {
-                        var flag = e.Msg.readBuffer[e.Index];
-                        int X = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 1);
-                        int Y = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 3);
-                        int style = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 5);
-                        var style2 = (byte) style;
-                        var ply = TShock.Players[e.Msg.whoAmI];
-                        var logName = ply.Account == null ? "unregistered" : ply.Account.Name;
-                        //PlaceChest
-                        if (flag == 0)
                         {
-                            if (this.AwaitingHistory[e.Msg.whoAmI])
+                            var flag = e.Msg.readBuffer[e.Index];
+                            int X = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 1);
+                            int Y = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 3);
+                            int style = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 5);
+                            var style2 = (byte)style;
+                            var ply = TShock.Players[e.Msg.whoAmI];
+                            var logName = ply.Account == null ? "unregistered" : ply.Account.Name;
+                            //PlaceChest
+                            if (flag == 0)
                             {
-                                this.AwaitingHistory[e.Msg.whoAmI] = false;
-                                ply.SendTileSquareCentered(X, Y, 5);
-                                this.CommandQueue.Add(new HistoryCommand(X, Y, ply));
-                                e.Handled = true;
-                            }
-                            else
-                            {
-                                this.logEdit(1, Main.tile[X, Y], X, Y, 21, logName, new List<Vector2>(), style2);
-                            }
-                            return;
-                        }
-                        //KillChest
-                        if (flag == 1 && Main.tile[X, Y].type == 21)
-                        {
-                            if (this.AwaitingHistory[e.Msg.whoAmI])
-                            {
-                                this.AwaitingHistory[e.Msg.whoAmI] = false;
-                                ply.SendTileSquareCentered(X, Y, 5);
-                                adjustFurniture(ref X, ref Y, ref style2);
-                                this.CommandQueue.Add(new HistoryCommand(X, Y, ply));
-                                e.Handled = true;
+                                if (this.AwaitingHistory[e.Msg.whoAmI])
+                                {
+                                    this.AwaitingHistory[e.Msg.whoAmI] = false;
+                                    ply.SendTileSquareCentered(X, Y, 5);
+                                    this.CommandQueue.Add(new HistoryCommand(X, Y, ply));
+                                    e.Handled = true;
+                                }
+                                else
+                                {
+                                    this.LogEdit(1, Main.tile[X, Y], X, Y, 21, logName, new List<Vector2>(), style2);
+                                }
                                 return;
                             }
-                            adjustFurniture(ref X, ref Y, ref style2);
-                            this.Queue(logName, X, Y, 0, Main.tile[X, Y].type, style2, Main.tile[X, Y].color());
-                            return;
-                        }
-                        //PlaceDresser
-                        if (flag == 2)
-                        {
-                            if (this.AwaitingHistory[e.Msg.whoAmI])
+                            //KillChest
+                            if (flag == 1 && Main.tile[X, Y].type == 21)
                             {
-                                this.AwaitingHistory[e.Msg.whoAmI] = false;
-                                ply.SendTileSquareCentered(X, Y, 5);
-                                this.CommandQueue.Add(new HistoryCommand(X, Y, ply));
-                                e.Handled = true;
-                            }
-                            else
-                            {
-                                this.logEdit(1, Main.tile[X, Y], X, Y, 88, logName, new List<Vector2>(), style2);
-                            }
-                            return;
-                        }
-                        //KillDresser
-                        if (flag == 3 && Main.tile[X, Y].type == 88)
-                        {
-                            if (this.AwaitingHistory[e.Msg.whoAmI])
-                            {
-                                this.AwaitingHistory[e.Msg.whoAmI] = false;
-                                ply.SendTileSquareCentered(X, Y, 5);
-                                adjustFurniture(ref X, ref Y, ref style2);
-                                this.CommandQueue.Add(new HistoryCommand(X, Y, ply));
-                                e.Handled = true;
+                                if (this.AwaitingHistory[e.Msg.whoAmI])
+                                {
+                                    this.AwaitingHistory[e.Msg.whoAmI] = false;
+                                    ply.SendTileSquareCentered(X, Y, 5);
+                                    AdjustFurniture(ref X, ref Y, ref style2);
+                                    this.CommandQueue.Add(new HistoryCommand(X, Y, ply));
+                                    e.Handled = true;
+                                    return;
+                                }
+                                AdjustFurniture(ref X, ref Y, ref style2);
+                                this.Queue(logName, X, Y, 0, Main.tile[X, Y].type, style2, Main.tile[X, Y].color());
                                 return;
                             }
-                            adjustFurniture(ref X, ref Y, ref style2);
-                            this.Queue(logName, X, Y, 0, Main.tile[X, Y].type, style2, Main.tile[X, Y].color());
-                            return;
+                            //PlaceDresser
+                            if (flag == 2)
+                            {
+                                if (this.AwaitingHistory[e.Msg.whoAmI])
+                                {
+                                    this.AwaitingHistory[e.Msg.whoAmI] = false;
+                                    ply.SendTileSquareCentered(X, Y, 5);
+                                    this.CommandQueue.Add(new HistoryCommand(X, Y, ply));
+                                    e.Handled = true;
+                                }
+                                else
+                                {
+                                    this.LogEdit(1, Main.tile[X, Y], X, Y, 88, logName, new List<Vector2>(), style2);
+                                }
+                                return;
+                            }
+                            //KillDresser
+                            if (flag == 3 && Main.tile[X, Y].type == 88)
+                            {
+                                if (this.AwaitingHistory[e.Msg.whoAmI])
+                                {
+                                    this.AwaitingHistory[e.Msg.whoAmI] = false;
+                                    ply.SendTileSquareCentered(X, Y, 5);
+                                    AdjustFurniture(ref X, ref Y, ref style2);
+                                    this.CommandQueue.Add(new HistoryCommand(X, Y, ply));
+                                    e.Handled = true;
+                                    return;
+                                }
+                                AdjustFurniture(ref X, ref Y, ref style2);
+                                this.Queue(logName, X, Y, 0, Main.tile[X, Y].type, style2, Main.tile[X, Y].color());
+                                return;
+                            }
                         }
-                    }
-                    break;
+                        break;
                     case PacketTypes.PaintTile:
-                    {
-                        int X = BitConverter.ToInt16(e.Msg.readBuffer, e.Index);
-                        int Y = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 2);
-                        var color = e.Msg.readBuffer[e.Index + 4];
+                        {
+                            int X = BitConverter.ToInt16(e.Msg.readBuffer, e.Index);
+                            int Y = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 2);
+                            var color = e.Msg.readBuffer[e.Index + 4];
 
-                        var logName = TShock.Players[e.Msg.whoAmI].Account == null ? "unregistered" : TShock.Players[e.Msg.whoAmI].Account.Name;
-                        this.Queue(logName, X, Y, 25, color, 0, Main.tile[X, Y].color());
-                    }
-                    break;
+                            var logName = TShock.Players[e.Msg.whoAmI].Account == null ? "unregistered" : TShock.Players[e.Msg.whoAmI].Account.Name;
+                            this.Queue(logName, X, Y, 25, color, 0, Main.tile[X, Y].color());
+                        }
+                        break;
                     case PacketTypes.PaintWall:
-                    {
-                        int X = BitConverter.ToInt16(e.Msg.readBuffer, e.Index);
-                        int Y = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 2);
-                        var color = e.Msg.readBuffer[e.Index + 4];
+                        {
+                            int X = BitConverter.ToInt16(e.Msg.readBuffer, e.Index);
+                            int Y = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 2);
+                            var color = e.Msg.readBuffer[e.Index + 4];
 
-                        var logName = TShock.Players[e.Msg.whoAmI].Account == null ? "unregistered" : TShock.Players[e.Msg.whoAmI].Account.Name;
-                        this.Queue(logName, X, Y, 26, color, 0, Main.tile[X, Y].wallColor());
-                    }
-                    break;
+                            var logName = TShock.Players[e.Msg.whoAmI].Account == null ? "unregistered" : TShock.Players[e.Msg.whoAmI].Account.Name;
+                            this.Queue(logName, X, Y, 26, color, 0, Main.tile[X, Y].wallColor());
+                        }
+                        break;
                     case PacketTypes.SignNew:
-                    {
-                        var signI = BitConverter.ToUInt16(e.Msg.readBuffer, e.Index);
-                        int X = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 2);
-                        int Y = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 4);
-                        byte s = 0;
-                        adjustFurniture(ref X, ref Y, ref s); //Adjust coords so history picks it up, readSign() adjusts back to origin anyway
-                        var logName = TShock.Players[e.Msg.whoAmI].Account == null ? "unregistered" : TShock.Players[e.Msg.whoAmI].Account.Name;
-                        this.Queue(logName, X, Y, 27, data: signI, text: Main.sign[signI].text);
-                    }
-                    break;
+                        {
+                            var signI = BitConverter.ToUInt16(e.Msg.readBuffer, e.Index);
+                            int X = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 2);
+                            int Y = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 4);
+                            byte s = 0;
+                            AdjustFurniture(ref X, ref Y, ref s); //Adjust coords so history picks it up, readSign() adjusts back to origin anyway
+                            var logName = TShock.Players[e.Msg.whoAmI].Account == null ? "unregistered" : TShock.Players[e.Msg.whoAmI].Account.Name;
+                            this.Queue(logName, X, Y, 27, data: signI, text: Main.sign[signI].text);
+                        }
+                        break;
                     case PacketTypes.MassWireOperation:
-                    {
-                        int X1 = BitConverter.ToInt16(e.Msg.readBuffer, e.Index);
-                        int Y1 = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 2);
-                        int X2 = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 4);
-                        int Y2 = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 6);
-                        var toolMode = e.Msg.readBuffer[e.Index + 8];
-                        //Modes Red=1, Green=2, Blue=4, Yellow=8, Actuator=16, Cutter=32
+                        {
+                            int X1 = BitConverter.ToInt16(e.Msg.readBuffer, e.Index);
+                            int Y1 = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 2);
+                            int X2 = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 4);
+                            int Y2 = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 6);
+                            var toolMode = e.Msg.readBuffer[e.Index + 8];
+                            //Modes Red=1, Green=2, Blue=4, Yellow=8, Actuator=16, Cutter=32
 
-                        var direction = Main.player[e.Msg.whoAmI].direction == 1;
-                        var ply = TShock.Players[e.Msg.whoAmI];
-                        var logName = ply.Account == null ? "unregistered" : ply.Account.Name;
-                        int minX = X1, maxX = X2, minY = Y1, maxY = Y2;
-                        var drawX = direction ? minX : maxX;
-                        var drawY = direction ? maxY : minY;
-                        if (X2 < X1)
-                        {
-                            minX = X2;
-                            maxX = X1;
-                        }
-                        if (Y2 < Y1)
-                        {
-                            minY = Y2;
-                            maxY = Y1;
-                        }
-                        int wires = 0, acts = 0;
-                        //We count our own wires since the client may only be able to place a few or even none.
-                        if ((toolMode & 32) == 0)
-                        {
-                            this.countPlayerWires(Main.player[e.Msg.whoAmI], ref wires, ref acts);
-                        }
-
-                        for (var starty = minY; starty <= maxY; starty++)
-                        {
-                            this.logAdvancedWire(drawX, starty, toolMode, logName, ref wires, ref acts);
-                        }
-                        for (var startx = minX; startx <= maxX; startx++)
-                        {
-                            if (startx == drawX)
+                            var direction = Main.player[e.Msg.whoAmI].direction == 1;
+                            var ply = TShock.Players[e.Msg.whoAmI];
+                            var logName = ply.Account == null ? "unregistered" : ply.Account.Name;
+                            int minX = X1, maxX = X2, minY = Y1, maxY = Y2;
+                            var drawX = direction ? minX : maxX;
+                            var drawY = direction ? maxY : minY;
+                            if (X2 < X1)
                             {
-                                continue;
+                                minX = X2;
+                                maxX = X1;
+                            }
+                            if (Y2 < Y1)
+                            {
+                                minY = Y2;
+                                maxY = Y1;
+                            }
+                            int wires = 0, acts = 0;
+                            //We count our own wires since the client may only be able to place a few or even none.
+                            if ((toolMode & 32) == 0)
+                            {
+                                this.CountPlayerWires(Main.player[e.Msg.whoAmI], ref wires, ref acts);
                             }
 
-                            this.logAdvancedWire(startx, drawY, toolMode, logName, ref wires, ref acts);
+                            for (var starty = minY; starty <= maxY; starty++)
+                            {
+                                this.LogAdvancedWire(drawX, starty, toolMode, logName, ref wires, ref acts);
+                            }
+                            for (var startx = minX; startx <= maxX; startx++)
+                            {
+                                if (startx == drawX)
+                                {
+                                    continue;
+                                }
+
+                                this.LogAdvancedWire(startx, drawY, toolMode, logName, ref wires, ref acts);
+                            }
                         }
-                    }
-                    break;
+                        break;
                 }
             }
         }
-        void countPlayerWires(Player p, ref int wires, ref int acts)
+        void CountPlayerWires(Player p, ref int wires, ref int acts)
         {
             wires = 0;
             acts = 0;
@@ -1505,7 +1314,7 @@ namespace History
                 }
             }
         }
-        void logAdvancedWire(int x, int y, byte mode, string account, ref int wires, ref int acts)
+        void LogAdvancedWire(int x, int y, byte mode, string account, ref int wires, ref int acts)
         {
             var delete = (mode & 32) == 32;
             if ((mode & 1) == 1 && Main.tile[x, y].wire() == delete) // RED
@@ -1520,7 +1329,7 @@ namespace History
                     wires--;
                 }
                 //5 6
-                this.Queue(account, x, y, (byte) (delete ? 6 : 5));
+                this.Queue(account, x, y, (byte)(delete ? 6 : 5));
             }
             if ((mode & 2) == 2 && Main.tile[x, y].wire3() == delete) // GREEN
             {
@@ -1534,7 +1343,7 @@ namespace History
                     wires--;
                 }
                 //12 13
-                this.Queue(account, x, y, (byte) (delete ? 13 : 12));
+                this.Queue(account, x, y, (byte)(delete ? 13 : 12));
             }
             if ((mode & 4) == 4 && Main.tile[x, y].wire2() == delete) // BLUE
             {
@@ -1548,7 +1357,7 @@ namespace History
                     wires--;
                 }
                 //10 11
-                this.Queue(account, x, y, (byte) (delete ? 11 : 10));
+                this.Queue(account, x, y, (byte)(delete ? 11 : 10));
             }
             if ((mode & 8) == 8 && Main.tile[x, y].wire4() == delete) // YELLOW
             {
@@ -1562,7 +1371,7 @@ namespace History
                     wires--;
                 }
                 //16 and 17
-                this.Queue(account, x, y, (byte) (delete ? 17 : 16));
+                this.Queue(account, x, y, (byte)(delete ? 17 : 16));
             }
             if ((mode & 16) == 16 && Main.tile[x, y].actuator() == delete) // ACTUATOR
             {
@@ -1576,7 +1385,7 @@ namespace History
                     acts--;
                 }
                 //8 9
-                this.Queue(account, x, y, (byte) (delete ? 9 : 8));
+                this.Queue(account, x, y, (byte)(delete ? 9 : 8));
             }
         }
         void OnInitialize(EventArgs e)
@@ -1586,7 +1395,7 @@ namespace History
             TShockAPI.Commands.ChatCommands.Add(new Command("history.reenact", this.Reenact, "reenact", "复现"));
             TShockAPI.Commands.ChatCommands.Add(new Command("history.rollback", this.Rollback, "rollback", "回溯"));
             TShockAPI.Commands.ChatCommands.Add(new Command("history.rollback", this.Undo, "rundo", "撤销"));
-            var sqlcreator = new SqlTableCreator(Database, (IQueryBuilder) new SqliteQueryCreator());
+            var sqlcreator = new SqlTableCreator(Database, (IQueryBuilder)new SqliteQueryCreator());
             sqlcreator.EnsureTableStructure(new SqlTable("History",
                 new SqlColumn("Time", MySqlDbType.Int32),
                 new SqlColumn("Account", MySqlDbType.VarChar) { Length = 50 },
@@ -1614,7 +1423,7 @@ namespace History
                     File.WriteAllText(datePath, Date.ToString());
                 }
             }
-            this.CommandQueueThread = new Thread(this.QueueCallback);
+            this.CommandQueueThread = new Thread(this.QueueCallback!);
             this.CommandQueueThread.Start();
         }
         void OnSaveWorld(WorldSaveEventArgs e)

@@ -1,8 +1,5 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using Terraria;
-using Terraria.DataStructures;
-using Terraria.GameContent.Tile_Entities;
 using Terraria.Localization;
 using TShockAPI;
 
@@ -10,7 +7,7 @@ namespace History
 {
     public class Action
     {
-        public string account;
+        public string ?account;
         public byte action;
         public ushort data;
         public byte style;
@@ -18,7 +15,7 @@ namespace History
         public int time;
         public int x;
         public int y;
-        public string text;
+        public string ?text;
         public int alt;
         public int random;
         public bool direction;
@@ -64,7 +61,7 @@ namespace History
                 case 3://add wall
                     if (Main.tile[this.x, this.y].wall == 0)
                     {
-                        Main.tile[this.x, this.y].wall = (byte) this.data;
+                        Main.tile[this.x, this.y].wall = (byte)this.data;
                         TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
@@ -153,14 +150,14 @@ namespace History
                 case 25://paint tile
                     if (Main.tile[this.x, this.y].active())
                     {
-                        Main.tile[this.x, this.y].color((byte) this.data);
+                        Main.tile[this.x, this.y].color((byte)this.data);
                         NetMessage.SendData(63, -1, -1, NetworkText.Empty, this.x, this.y, this.data, 0f, 0);
                     }
                     break;
                 case 26://paint wall
                     if (Main.tile[this.x, this.y].wall > 0)
                     {
-                        Main.tile[this.x, this.y].wallColor((byte) this.data);
+                        Main.tile[this.x, this.y].wallColor((byte)this.data);
                         NetMessage.SendData(64, -1, -1, NetworkText.Empty, this.x, this.y, this.data, 0f, 0);
                     }
                     break;
@@ -197,7 +194,7 @@ namespace History
                     else if (this.data == 2 || this.data == 23 || this.data == 60 || this.data == 70 || this.data == 109 || this.data == 199)// grasses need to place manually, not from placeTile
                     {
                         Main.tile[this.x, this.y].type = this.data;
-                        Main.tile[this.x, this.y].color((byte) (this.paint & 127));
+                        Main.tile[this.x, this.y].color((byte)(this.paint & 127));
                         Main.tile[this.x, this.y].active(true);
                         TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                         break;
@@ -221,7 +218,7 @@ namespace History
                         WorldGen.PlaceTile(this.x, this.y, this.data, false, true, -1, style: this.style);
                     }
 
-                    History.paintFurniture(this.data, this.x, this.y, (byte) (this.paint & 127));
+                    History.PaintFurniture(this.data, this.x, this.y, (byte)(this.paint & 127));
 
                 frameOnly:
                     //restore slopes
@@ -231,12 +228,12 @@ namespace History
                     }
                     else if (this.data == 314)
                     {
-                        Main.tile[this.x, this.y].frameX = (short) (this.style - 1);
-                        Main.tile[this.x, this.y].frameY = (short) ((this.paint >> 8) - 1);
+                        Main.tile[this.x, this.y].frameX = (short)(this.style - 1);
+                        Main.tile[this.x, this.y].frameY = (short)((this.paint >> 8) - 1);
                     }
                     else
                     {
-                        Main.tile[this.x, this.y].slope((byte) (this.paint >> 8));
+                        Main.tile[this.x, this.y].slope((byte)(this.paint >> 8));
                     }
 
                     //restore sign text
@@ -252,16 +249,16 @@ namespace History
                     else if (this.data == 128 || this.data == 269)
                     {
                         //x,y should be bottom left, Direction is already done via PlaceObject so we add the item values.
-                        Main.tile[this.x, this.y - 2].frameX += (short) (this.paint * 100);
-                        Main.tile[this.x, this.y - 1].frameX += (short) ((this.alt & 0x3FF) * 100);
-                        Main.tile[this.x, this.y].frameX += (short) ((this.alt >> 10) * 100);
+                        Main.tile[this.x, this.y - 2].frameX += (short)(this.paint * 100);
+                        Main.tile[this.x, this.y - 1].frameX += (short)((this.alt & 0x3FF) * 100);
+                        Main.tile[this.x, this.y].frameX += (short)((this.alt >> 10) * 100);
                     }
                     // Restore Weapon Rack if it had a netID
                     else if (this.data == 334 && this.alt > 0)
                     {
                         var mask = 5000;// +(direction ? 15000 : 0);
-                        Main.tile[this.x - 1, this.y].frameX = (short) (this.alt + mask + 100);
-                        Main.tile[this.x, this.y].frameX = (short) (this.paint + mask + 5000);
+                        Main.tile[this.x - 1, this.y].frameX = (short)(this.alt + mask + 100);
+                        Main.tile[this.x, this.y].frameX = (short)(this.paint + mask + 5000);
                     }
                     // Restore Item Frame
                     else if (this.data == 395)
@@ -322,8 +319,8 @@ namespace History
                 case 2://del wall
                     if (Main.tile[this.x, this.y].wall != this.data) //change if not what was deleted
                     {
-                        Main.tile[this.x, this.y].wall = (byte) this.data;
-                        Main.tile[this.x, this.y].wallColor((byte) this.paint);
+                        Main.tile[this.x, this.y].wall = (byte)this.data;
+                        Main.tile[this.x, this.y].wallColor((byte)this.paint);
                         TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
@@ -395,7 +392,7 @@ namespace History
                     }
                     break;
                 case 14://slopetile
-                    Main.tile[this.x, this.y].slope((byte) (this.paint >> 8));
+                    Main.tile[this.x, this.y].slope((byte)(this.paint >> 8));
                     Main.tile[this.x, this.y].halfBrick((this.paint & 128) == 128);
                     TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     break;
@@ -431,21 +428,21 @@ namespace History
                     //int placedWall = (data >> 16) & 0xFFFF;
                     if (Main.tile[this.x, this.y].wall != prevWall) //change if not what was replaced
                     {
-                        Main.tile[this.x, this.y].wall = (byte) prevWall;
+                        Main.tile[this.x, this.y].wall = (byte)prevWall;
                         TSPlayer.All.SendTileSquareCentered(this.x, this.y, 1);
                     }
                     break;
                 case 25://paint tile
                     if (Main.tile[this.x, this.y].active())
                     {
-                        Main.tile[this.x, this.y].color((byte) this.paint);
+                        Main.tile[this.x, this.y].color((byte)this.paint);
                         NetMessage.SendData(63, -1, -1, NetworkText.Empty, this.x, this.y, this.paint, 0f, 0);
                     }
                     break;
                 case 26://paint wall
                     if (Main.tile[this.x, this.y].wall > 0)
                     {
-                        Main.tile[this.x, this.y].wallColor((byte) this.paint);
+                        Main.tile[this.x, this.y].wallColor((byte)this.paint);
                         NetMessage.SendData(64, -1, -1, NetworkText.Empty, this.x, this.y, this.paint, 0f, 0);
                     }
                     break;

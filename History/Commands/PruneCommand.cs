@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Terraria;
+﻿using Terraria;
 using TShockAPI;
 using TShockAPI.DB;
 
@@ -20,7 +16,7 @@ namespace History.Commands
 
         public override void Execute()
         {
-            var time = (int) (DateTime.UtcNow - History.Date).TotalSeconds - this.time;
+            var time = (int)(DateTime.UtcNow - History.Date).TotalSeconds - this.time;
             History.Database.Query("DELETE FROM History WHERE Time < @0 AND WorldID = @1", time, Main.worldID);
             History.Actions.RemoveAll(a => a.time < time);
             this.sender.SendSuccessMessage("历史记录已被删除.");
