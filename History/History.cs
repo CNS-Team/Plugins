@@ -1,24 +1,13 @@
-﻿/*
- * Credit to MarioE for original plugin.
-*/
-using History.Commands;
+﻿using History.Commands;
 using Microsoft.Data.Sqlite;
 using Microsoft.Xna.Framework;
 using MySql.Data.MySqlClient;
-using OTAPI;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Data;
-using System.IO;
 using System.Reflection;
-using System.Threading;
 using Terraria;
-using Terraria.DataStructures;
-using Terraria.GameContent.Tile_Entities;
 using TerrariaApi.Server;
 using TShockAPI;
-using TShockAPI.Configuration;
 using TShockAPI.DB;
 
 namespace History

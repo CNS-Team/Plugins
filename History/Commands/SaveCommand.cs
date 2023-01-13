@@ -1,16 +1,5 @@
-﻿using Microsoft.Data.Sqlite;
-using MySql.Data.MySqlClient;
-using Org.BouncyCastle.Utilities.Collections;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using Terraria;
-using TShockAPI;
+﻿using Terraria;
 using TShockAPI.DB;
-using static MonoMod.InlineRT.MonoModRule;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace History.Commands
 {

@@ -1,8 +1,5 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using Terraria;
-using Terraria.DataStructures;
-using Terraria.GameContent.Tile_Entities;
 using Terraria.Localization;
 using TShockAPI;
 
