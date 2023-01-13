@@ -114,10 +114,12 @@ namespace AsyncSocket
 
         public void AsyncSend(byte[] data, int offset, int size, SocketSendCallback callback, object state = null)
         {
-            this.sendQueue.Add(new SendData
+            byte[] array = LegacyNetBufferPool.RequestBuffer(data, offset, size);
+
+            sendQueue.Add(new SendData
             {
                 callback = callback,
-                data = data,
+                data = array,
                 offset = offset,
                 size = size,
                 state = state
