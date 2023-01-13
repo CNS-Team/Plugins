@@ -198,6 +198,7 @@ public class Plugin : TerrariaPlugin
 
     public static void UploadProgress(string key, object value)
     {
+        TSPlayer.Server.SendInfoMessage($"[DataSync]上传进度 {key} {value}");
         TShock.DB.Query("UPDATE synctable SET value = @1 WHERE `key` = @0", key, value);
     }
 
@@ -517,129 +518,240 @@ public class Plugin : TerrariaPlugin
         {
             return;
         }
-        foreach (var kvp in LoadFromDb())
+        var data = LoadFromDb();
+        if (配置.进度同步哥布林)
         {
-            if (kvp.Key.Contains("进行"))
+            if (data.TryGetValue(nameof(NPC.downedGoblins), out var v) && v != NPC.downedGoblins)
             {
-                continue;
-            }
-            if (配置.进度同步哥布林 && kvp.Key == nameof(NPC.downedGoblins))
-            {
-                NPC.downedGoblins = kvp.Value;
-            }
-            else if (配置.进度同步萌王 && kvp.Key == nameof(NPC.downedSlimeKing))
-            {
-                NPC.downedSlimeKing = kvp.Value;
-            }
-            else if (配置.进度同步鹿角怪 && kvp.Key == nameof(NPC.downedDeerclops))
-            {
-                NPC.downedDeerclops = kvp.Value;
-            }
-            else if (配置.进度同步克眼 && kvp.Key == nameof(NPC.downedBoss1))
-            {
-                NPC.downedBoss1 = kvp.Value;
-            }
-            else if (配置.进度同步虫脑 && kvp.Key == nameof(NPC.downedBoss2))
-            {
-                NPC.downedBoss2 = kvp.Value;
-            }
-            else if (配置.进度同步蜂后 && kvp.Key == nameof(NPC.downedQueenBee))
-            {
-                NPC.downedQueenBee = kvp.Value;
-            }
-            else if (配置.进度同步骷髅 && kvp.Key == nameof(NPC.downedBoss3))
-            {
-                NPC.downedBoss3 = kvp.Value;
-            }
-            else if (配置.进度同步肉墙 && kvp.Key == nameof(Main.hardMode))
-            {
-                Main.hardMode = kvp.Value;
-            }
-            else if (配置.进度同步海盗 && kvp.Key == nameof(NPC.downedPirates))
-            {
-                NPC.downedPirates = kvp.Value;
-            }
-            else if (配置.进度同步萌后 && kvp.Key == nameof(NPC.downedQueenSlime))
-            {
-                NPC.downedQueenSlime = kvp.Value;
-            }
-            else if (配置.进度同步任一三王 && kvp.Key == nameof(NPC.downedMechBossAny))
-            {
-                NPC.downedMechBossAny = kvp.Value;
-            }
-            else if (配置.进度同步机械眼 && kvp.Key == nameof(NPC.downedMechBoss2))
-            {
-                NPC.downedMechBoss2 = kvp.Value;
-            }
-            else if (配置.进度同步机械虫 && kvp.Key == nameof(NPC.downedMechBoss1))
-            {
-                NPC.downedMechBoss1 = kvp.Value;
-            }
-            else if (配置.进度同步机械骷髅 && kvp.Key == nameof(NPC.downedMechBoss3))
-            {
-                NPC.downedMechBoss3 = kvp.Value;
-            }
-            else if (配置.进度同步猪鲨前 && kvp.Key == nameof(NPC.downedFishron))
-            {
-                NPC.downedFishron = kvp.Value;
-            }
-            else if (配置.进度同步妖花前 && kvp.Key == nameof(NPC.downedPlantBoss))
-            {
-                NPC.downedPlantBoss = kvp.Value;
-            }
-            else if (配置.进度同步霜月树 && kvp.Key == nameof(NPC.downedChristmasTree))
-            {
-                NPC.downedChristmasTree = kvp.Value;
-            }
-            else if (配置.进度同步霜月坦 && kvp.Key == nameof(NPC.downedChristmasSantank))
-            {
-                NPC.downedChristmasSantank = kvp.Value;
-            }
-            else if (配置.进度同步霜月后 && kvp.Key == nameof(NPC.downedChristmasIceQueen))
-            {
-                NPC.downedChristmasIceQueen = kvp.Value;
-            }
-            else if (配置.进度同步南瓜树 && kvp.Key == nameof(NPC.downedHalloweenTree))
-            {
-                NPC.downedHalloweenTree = kvp.Value;
-            }
-            else if (配置.进度同步南瓜王 && kvp.Key == nameof(NPC.downedHalloweenKing))
-            {
-                NPC.downedHalloweenKing = kvp.Value;
-            }
-            else if (配置.进度同步光女前 && kvp.Key == nameof(NPC.downedEmpressOfLight))
-            {
-                NPC.downedEmpressOfLight = kvp.Value;
-            }
-            else if (配置.进度同步石巨人 && kvp.Key == nameof(NPC.downedGolemBoss))
-            {
-                NPC.downedGolemBoss = kvp.Value;
-            }
-            else if (配置.进度同步教徒前 && kvp.Key == nameof(NPC.downedAncientCultist))
-            {
-                NPC.downedAncientCultist = kvp.Value;
-            }
-            else if (配置.进度同步日耀前 && kvp.Key == nameof(NPC.downedTowerSolar))
-            {
-                NPC.downedTowerSolar = kvp.Value;
-            }
-            else if (配置.进度同步星旋前 && kvp.Key == nameof(NPC.downedTowerVortex))
-            {
-                NPC.downedTowerVortex = kvp.Value;
-            }
-            else if (配置.进度同步星尘前 && kvp.Key == nameof(NPC.downedTowerStardust))
-            {
-                NPC.downedTowerStardust = kvp.Value;
-            }
-            else if (配置.进度同步星云前 && kvp.Key == nameof(NPC.downedTowerNebula))
-            {
-                NPC.downedTowerNebula = kvp.Value;
-            }
-            else if (配置.进度同步月总 && kvp.Key == nameof(NPC.downedMoonlord))
-            {
-                NPC.downedMoonlord = kvp.Value;
+                TSPlayer.Server.SendInfoMessage($"[DataSync]哥布林进度同步为{v}");
+                NPC.downedGoblins = v;
             }
         }
+        if (配置.进度同步萌王)
+        {
+            if (data.TryGetValue(nameof(NPC.downedSlimeKing), out var v) && v != NPC.downedSlimeKing)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]萌王进度同步为{v}");
+                NPC.downedSlimeKing = v;
+            }
+        }
+        if (配置.进度同步鹿角怪)
+        {
+            if (data.TryGetValue(nameof(NPC.downedDeerclops), out var v) && v != NPC.downedDeerclops)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]鹿角怪进度同步为{v}");
+                NPC.downedDeerclops = v;
+            }
+        }
+        if (配置.进度同步克眼)
+        {
+            if (data.TryGetValue(nameof(NPC.downedBoss1), out var v) && v != NPC.downedBoss1)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]克眼进度同步为{v}");
+                NPC.downedBoss1 = v;
+            }
+        }
+        if (配置.进度同步虫脑)
+        {
+            if (data.TryGetValue(nameof(NPC.downedBoss2), out var v) && v != NPC.downedBoss2)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]虫脑进度同步为{v}");
+                NPC.downedBoss2 = v;
+            }
+        }
+        if (配置.进度同步蜂后)
+        {
+            if (data.TryGetValue(nameof(NPC.downedQueenBee), out var v) && v != NPC.downedQueenBee)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]蜂后进度同步为{v}");
+                NPC.downedQueenBee = v;
+            }
+        }
+        if (配置.进度同步骷髅)
+        {
+            if (data.TryGetValue(nameof(NPC.downedBoss3), out var v) && v != NPC.downedBoss3)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]骷髅进度同步为{v}");
+                NPC.downedBoss3 = v;
+            }
+        }
+        if (配置.进度同步肉墙)
+        {
+            if (data.TryGetValue(nameof(Main.hardMode), out var v) && v != Main.hardMode)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]肉墙进度同步为{v}");
+                Main.hardMode = v;
+            }
+        }
+        if (配置.进度同步海盗)
+        {
+            if (data.TryGetValue(nameof(NPC.downedPirates), out var v) && v != NPC.downedPirates)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]海盗进度同步为{v}");
+                NPC.downedPirates = v;
+            }
+        }
+        if (配置.进度同步萌后)
+        {
+            if (data.TryGetValue(nameof(NPC.downedQueenSlime), out var v) && v != NPC.downedQueenSlime)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]萌后进度同步为{v}");
+                NPC.downedQueenSlime = v;
+            }
+        }
+        if (配置.进度同步任一三王)
+        {
+            if (data.TryGetValue(nameof(NPC.downedMechBossAny), out var v) && v != NPC.downedMechBossAny)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]任一三王进度同步为{v}");
+                NPC.downedMechBossAny = v;
+            }
+        }
+        if (配置.进度同步机械眼)
+        {
+            if (data.TryGetValue(nameof(NPC.downedMechBoss2), out var v) && v != NPC.downedMechBoss2)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]机械眼进度同步为{v}");
+                NPC.downedMechBoss2 = v;
+            }
+        }
+        if (配置.进度同步机械虫)
+        {
+            if (data.TryGetValue(nameof(NPC.downedMechBoss1), out var v) && v != NPC.downedMechBoss1)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]机械虫进度同步为{v}");
+                NPC.downedMechBoss1 = v;
+            }
+        }
+        if (配置.进度同步机械骷髅)
+        {
+            if (data.TryGetValue(nameof(NPC.downedMechBoss3), out var v) && v != NPC.downedMechBoss3)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]机械骷髅进度同步为{v}");
+                NPC.downedMechBoss3 = v;
+            }
+        }
+        if (配置.进度同步猪鲨前)
+        {
+            if (data.TryGetValue(nameof(NPC.downedFishron), out var v) && v != NPC.downedFishron)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]猪鲨前进度同步为{v}");
+                NPC.downedFishron = v;
+            }
+        }
+        if (配置.进度同步妖花前)
+        {
+            if (data.TryGetValue(nameof(NPC.downedPlantBoss), out var v) && v != NPC.downedPlantBoss)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]妖花前进度同步为{v}");
+                NPC.downedPlantBoss = v;
+            }
+        }
+        if (配置.进度同步霜月树)
+        {
+            if (data.TryGetValue(nameof(NPC.downedChristmasTree), out var v) && v != NPC.downedChristmasTree)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]霜月树进度同步为{v}");
+                NPC.downedChristmasTree = v;
+            }
+        }
+        if (配置.进度同步霜月坦)
+        {
+            if (data.TryGetValue(nameof(NPC.downedChristmasSantank), out var v) && v != NPC.downedChristmasSantank)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]霜月坦进度同步为{v}");
+                NPC.downedChristmasSantank = v;
+            }
+        }
+        if (配置.进度同步霜月后)
+        {
+            if (data.TryGetValue(nameof(NPC.downedChristmasIceQueen), out var v) && v != NPC.downedChristmasIceQueen)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]霜月后进度同步为{v}");
+                NPC.downedChristmasIceQueen = v;
+            }
+        }
+        if (配置.进度同步南瓜树)
+        {
+            if (data.TryGetValue(nameof(NPC.downedHalloweenTree), out var v) && v != NPC.downedHalloweenTree)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]南瓜树进度同步为{v}");
+                NPC.downedHalloweenTree = v;
+            }
+        }
+        if (配置.进度同步南瓜王)
+        {
+            if (data.TryGetValue(nameof(NPC.downedHalloweenKing), out var v) && v != NPC.downedHalloweenKing)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]南瓜王进度同步为{v}");
+                NPC.downedHalloweenKing = v;
+            }
+        }
+        if (配置.进度同步光女前)
+        {
+            if (data.TryGetValue(nameof(NPC.downedEmpressOfLight), out var v) && v != NPC.downedEmpressOfLight)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]光女前进度同步为{v}");
+                NPC.downedEmpressOfLight = v;
+            }
+        }
+        if (配置.进度同步石巨人)
+        {
+            if (data.TryGetValue(nameof(NPC.downedGolemBoss), out var v) && v != NPC.downedGolemBoss)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]石巨人进度同步为{v}");
+                NPC.downedGolemBoss = v;
+            }
+        }
+        if (配置.进度同步教徒前)
+        {
+            if (data.TryGetValue(nameof(NPC.downedAncientCultist), out var v) && v != NPC.downedAncientCultist)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]教徒前进度同步为{v}");
+                NPC.downedAncientCultist = v;
+            }
+        }
+        if (配置.进度同步日耀前)
+        {
+            if (data.TryGetValue(nameof(NPC.downedTowerSolar), out var v) && v != NPC.downedTowerSolar)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]日耀前进度同步为{v}");
+                NPC.downedTowerSolar = v;
+            }
+        }
+        if (配置.进度同步星旋前)
+        {
+            if (data.TryGetValue(nameof(NPC.downedTowerVortex), out var v) && v != NPC.downedTowerVortex)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]星旋前进度同步为{v}");
+                NPC.downedTowerVortex = v;
+            }
+        }
+        if (配置.进度同步星尘前)
+        {
+            if (data.TryGetValue(nameof(NPC.downedTowerStardust), out var v) && v != NPC.downedTowerStardust)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]星尘前进度同步为{v}");
+                NPC.downedTowerStardust = v;
+            }
+        }
+        if (配置.进度同步星云前)
+        {
+            if (data.TryGetValue(nameof(NPC.downedTowerNebula), out var v) && v != NPC.downedTowerNebula)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]星云前进度同步为{v}");
+                NPC.downedTowerNebula = v;
+            }
+        }
+        if (配置.进度同步月总)
+        {
+            if (data.TryGetValue(nameof(NPC.downedMoonlord), out var v) && v != NPC.downedMoonlord)
+            {
+                TSPlayer.Server.SendInfoMessage($"[DataSync]月总进度同步为{v}");
+                NPC.downedMoonlord = v;
+            }
+        }
+
         Monitor.Exit(kg);
     }
 
