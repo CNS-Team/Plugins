@@ -58,7 +58,6 @@ public abstract class LazyPlugin : TerrariaPlugin
             {
                 var name = type.BaseType.GetMethod("Load").Invoke(null, new object[0]); ;
                 TShock.Log.ConsoleInfo($"[{this.Name}] config registered: {name}");
-
             }
             else if (type.IsDefined(typeof(CommandAttribute), false))
             {
