@@ -1,0 +1,25 @@
+{
+    "Commands": {
+        "Use": {
+            "Names": [ "bear" ],
+            "Permissions": "custom.use"
+        },
+        "Admin": {
+            "Names": [ "custom" ],
+            "Permissions": "custom.admin"
+        }
+    },
+    "ServerId": 0,
+    "MysqlHost": "127.0.0.1",
+    "MysqlPort": 3306,
+    "MysqlDatabase": "Custom",
+    "MysqlUser": "root",
+    "MysqlPass": "123456",
+    "Debug": true,
+    "EnableGroup": true,
+    "EnablePrefix": true,
+    "EnableSuffix": true,
+    "EnablePermission": true,
+    "CoverGroup": true,
+    "对接称号插件": false
+}
