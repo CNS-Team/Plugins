@@ -75,7 +75,7 @@ namespace Dimension
             OTAPI.Hooks.MessageBuffer.GetData += PingClass.Hook_Ping_GetData;
             ServerApi.Hooks.GameInitialize.Register(this, OnGameInvitatize);
             ServerApi.Hooks.ServerLeave.Register(this, OnServerLeave);
-            new Thread((ThreadStart) delegate
+            new Thread((ThreadStart)delegate
             {
                 while (true)
                 {
@@ -92,7 +92,7 @@ namespace Dimension
                 TSPlayer tsplayer = args.tsplayer;
                 StringBuilder statusTextBuilder = args.statusTextBuilder;
                 statusTextBuilder.Append(online);
-                statusTextBuilder.AppendLine("主城等级:[" + tsplayer.Group.Prefix + "] [" + tsplayer.Group.Name + "] [" + tsplayer.Group.Suffix + "]");
+                statusTextBuilder.AppendLine("主城等级:" + tsplayer.Group.Prefix + tsplayer.Group.Name + tsplayer.Group.Suffix);
                 statusTextBuilder.AppendLine("Ping(延迟):" + PingClass.PingPlayer(tsplayer));
                 if (tsplayer.Account != null)
                 {
