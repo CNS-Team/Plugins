@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Chireiden.TShock.Omni;
 using LazyUtils;
 using MaxMind;
 using Newtonsoft.Json;
@@ -52,6 +53,7 @@ namespace Dimension
             base.Order = 1;
         }
 
+        public static string[] pings { get; set; } = new string[255];
         public override void Initialize()
         {
             //IL_0199: Unknown result type (might be due to invalid IL or missing references)
@@ -71,9 +73,25 @@ namespace Dimension
             TShockAPI.Commands.ChatCommands.Add(new Command("", listPlayers, "list"));
             TShockAPI.Commands.ChatCommands.Add(new Command("", advtp, "advtp"));
             TShockAPI.Commands.ChatCommands.Add(new Command("", advwarp, "advwarp"));
+            OTAPI.Hooks.MessageBuffer.GetData += PingClass.Hook_Ping_GetData;
             ServerApi.Hooks.GameInitialize.Register(this, OnGameInvitatize);
             ServerApi.Hooks.ServerLeave.Register(this, OnServerLeave);
-            new Thread((ThreadStart)delegate
+            new Thread((ThreadStart)async delegate
+            {
+                while (true)
+                {
+                    foreach (var i in TShock.Players)
+                    {
+                        if (i != null && i.Active)
+                        {
+                            pings[i.Index] = await PingClass.PingPlayer(i);
+                        }
+                    }
+                    Thread.Sleep(1000);
+
+                }
+            }).Start();
+            new Thread((ThreadStart) delegate
             {
                 while (true)
                 {
@@ -83,14 +101,16 @@ namespace Dimension
                     stringBuilder2.AppendLine("当前世界在线:" + TShock.Players.ToList().FindAll((TSPlayer pl) => pl?.Active ?? false).Count + "/" + TShock.Config.Settings.MaxSlots);
                     online = stringBuilder2.ToString();
                     Thread.Sleep(1000);
+                    
                 }
             }).Start();
             StatusTxtMgr.StatusTxtMgr.Hooks.StatusTextUpdate.Register((StatusTextUpdateDelegate)delegate (StatusTextUpdateEventArgs args)
             {
                 TSPlayer tsplayer = args.tsplayer;
-                StringBuilder statusTextBuilder = args.statusTextBuilder;
+                StringBuilder statusTextBuilder = args.statusTextBuilder; 
                 statusTextBuilder.Append(online);
-                statusTextBuilder.AppendLine("主城等级:[" + tsplayer.Group.Prefix + "] [" + tsplayer.Group.Name + "] [" + tsplayer.Group.Suffix + "]");
+                statusTextBuilder.AppendLine("主城等级:" + tsplayer.Group.Prefix + tsplayer.Group.Name + tsplayer.Group.Suffix);
+                statusTextBuilder.AppendLine("Ping(延迟):" + pings[tsplayer.Index]);
                 if (tsplayer.Account != null)
                 {
                     DisposableQuery<Money> val = Db.Get<Money>(tsplayer, null!);
@@ -206,8 +226,9 @@ namespace Dimension
         {
             if (disposing)
             {
-                base.Dispose(disposing);
+                OTAPI.Hooks.MessageBuffer.GetData -= PingClass.Hook_Ping_GetData;
             }
+            base.Dispose(disposing);
         }
 
         private void Reload(CommandArgs e)
