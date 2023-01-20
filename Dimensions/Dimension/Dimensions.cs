@@ -87,13 +87,13 @@ namespace Dimension
                     Thread.Sleep(1000);
                 }
             }).Start();
-            StatusTxtMgr.StatusTxtMgr.Hooks.StatusTextUpdate.Register((StatusTextUpdateDelegate)delegate (StatusTextUpdateEventArgs args)
+            StatusTxtMgr.StatusTxtMgr.Hooks.StatusTextUpdate.Register((StatusTextUpdateDelegate)async delegate (StatusTextUpdateEventArgs args)
             {
                 TSPlayer tsplayer = args.tsplayer;
                 StringBuilder statusTextBuilder = args.statusTextBuilder;
                 statusTextBuilder.Append(online);
                 statusTextBuilder.AppendLine("主城等级:" + tsplayer.Group.Prefix + tsplayer.Group.Name + tsplayer.Group.Suffix);
-                statusTextBuilder.AppendLine("Ping(延迟):" + PingClass.PingPlayer(tsplayer));
+                statusTextBuilder.AppendLine("Ping(延迟):" + await PingClass.PingPlayer(tsplayer));
                 if (tsplayer.Account != null)
                 {
                     DisposableQuery<Money> val = Db.Get<Money>(tsplayer, null!);
