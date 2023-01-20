@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Chireiden.TShock.Omni;
 using LazyUtils;
 using MaxMind;
 using Newtonsoft.Json;
@@ -71,9 +72,10 @@ namespace Dimension
             TShockAPI.Commands.ChatCommands.Add(new Command("", listPlayers, "list"));
             TShockAPI.Commands.ChatCommands.Add(new Command("", advtp, "advtp"));
             TShockAPI.Commands.ChatCommands.Add(new Command("", advwarp, "advwarp"));
+            OTAPI.Hooks.MessageBuffer.GetData += PingClass.Hook_Ping_GetData;
             ServerApi.Hooks.GameInitialize.Register(this, OnGameInvitatize);
             ServerApi.Hooks.ServerLeave.Register(this, OnServerLeave);
-            new Thread((ThreadStart)delegate
+            new Thread((ThreadStart) delegate
             {
                 while (true)
                 {
@@ -91,6 +93,7 @@ namespace Dimension
                 StringBuilder statusTextBuilder = args.statusTextBuilder;
                 statusTextBuilder.Append(online);
                 statusTextBuilder.AppendLine("主城等级:[" + tsplayer.Group.Prefix + "] [" + tsplayer.Group.Name + "] [" + tsplayer.Group.Suffix + "]");
+                statusTextBuilder.AppendLine("Ping(延迟):" + PingClass.PingPlayer(tsplayer));
                 if (tsplayer.Account != null)
                 {
                     DisposableQuery<Money> val = Db.Get<Money>(tsplayer, null!);
@@ -206,6 +209,7 @@ namespace Dimension
         {
             if (disposing)
             {
+                OTAPI.Hooks.MessageBuffer.GetData -= PingClass.Hook_Ping_GetData;
                 base.Dispose(disposing);
             }
         }
