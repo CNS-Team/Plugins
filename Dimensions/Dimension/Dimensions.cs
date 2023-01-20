@@ -77,18 +77,21 @@ namespace Dimension
             ServerApi.Hooks.GameInitialize.Register(this, OnGameInvitatize);
             ServerApi.Hooks.ServerLeave.Register(this, OnServerLeave);
             new Thread((ThreadStart)async delegate
-            {
+            { 
                 while (true)
                 {
-                    foreach (var i in TShock.Players)
+                    try
                     {
-                        if (i != null && i.Active)
+                        foreach (var i in TShock.Players)
                         {
-                            pings[i.Index] = await PingClass.PingPlayer(i);
+                            if (i != null && i.Active)
+                            {
+                                pings[i.Index] = await PingClass.PingPlayer(i);
+                            }
                         }
                     }
+                    catch{}
                     Thread.Sleep(1000);
-
                 }
             }).Start();
             new Thread((ThreadStart) delegate
