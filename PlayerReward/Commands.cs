@@ -1,42 +1,37 @@
-﻿using System.Text;
-using LazyUtils;
+﻿using LazyUtils;
 using LazyUtils.Commands;
-using LinqToDB;
+using System.Text;
+using Mono.CompilerServices.SymbolWriter;
+using Terraria;
 using TShockAPI;
+using LinqToDB;
+
+namespace PlayerReward;
 
 // ReSharper disable UnusedType.Global
 // ReSharper disable UnusedMember.Global
 
-namespace PlayerReward;
-
 [Command("pr")]
 public static class PlayerRewardCommand
 {
+    #region User Commands
+
     [RealPlayer]
     [Permission("playerreward.user")]
     public static void Get(CommandArgs args)
     {
-        var (availableGroupPacks, availableSponsorPacks) = args.Player.GetAvailablePacks();
-
-        switch (availableGroupPacks.Length + availableSponsorPacks.Length)
+        var availablePacks = args.Player.GetAvailablePlayerPacks();
+        if (availablePacks == null || availablePacks.Length < 1)
         {
-            case 0:
-                args.Player.SendWarningMessage("当前无礼包可获取");
-                return;
-
-            case > 1:
-                args.Player.SendWarningMessage("你有多于一个礼包等待领取，请指定礼包ID");
-                return;
-
-            default:
-                IPack selectedPack =
-                    availableGroupPacks.Length == 1 ? availableGroupPacks[0] : availableSponsorPacks[0];
-                if (ValidateInventorySlotsAvailableFailed(args, selectedPack.Items.Count))
-                    return;
-                args.Player.GivePack(selectedPack);
-                args.Player.SendSuccessMessage($"成功获取 {selectedPack.Name} 礼包");
-                break;
+            args.Player.SendWarningMessage("当前无可获取的玩家礼包");
+            return;
         }
+        var selectedPack = availablePacks[0];
+        if (CommandHelper.ValidateInventorySlotsAvailableFailed(args, selectedPack.Items.Count))
+            return;
+        PlayerRewardInfo.AddObtainedPlayerPacks(args.Player.Account.Name, selectedPack.Name);
+        args.Player.Give(selectedPack);
+        args.Player.SendSuccessMessage($"成功获取 {selectedPack.Name} 礼包");
     }
 
     [RealPlayer]
@@ -49,22 +44,23 @@ public static class PlayerRewardCommand
             return;
         }
 
-        var (groupPacks, sponsorPacks) = args.Player.GetAvailablePacks();
-        if (groupPacks.Length + sponsorPacks.Length == 0)
+        var availablePacks = args.Player.GetAvailablePlayerPacks();
+        if (availablePacks == null || availablePacks.Length == 0)
         {
-            args.Player.SendWarningMessage("当前没有可获取的礼包");
+            args.Player.SendWarningMessage("当前无可获取的玩家礼包");
             return;
         }
-        if (id >= groupPacks.Length + sponsorPacks.Length)
+        if (id >= availablePacks.Length)
         {
-            args.Player.SendWarningMessage("ID超出范围");
+            args.Player.SendWarningMessage($"ID超出范围, 最大ID值为 {availablePacks.Length - 1}");
             return;
         }
 
-        IPack selectedPack = id < groupPacks.Length ? groupPacks[id] : sponsorPacks[id - groupPacks.Length];
-        if (ValidateInventorySlotsAvailableFailed(args, selectedPack.Items.Count))
+        var selectedPack = availablePacks[id];
+        if (CommandHelper.ValidateInventorySlotsAvailableFailed(args, selectedPack.Items.Count))
             return;
-        args.Player.GivePack(selectedPack);
+        PlayerRewardInfo.AddObtainedPlayerPacks(args.Player.Account.Name, selectedPack.Name);
+        args.Player.Give(selectedPack);
         args.Player.SendSuccessMessage($"成功获取 {selectedPack.Name} 礼包");
     }
 
@@ -72,119 +68,47 @@ public static class PlayerRewardCommand
     [Permissions("playerreward.user")]
     public static void List(CommandArgs args)
     {
-        var (availableGroupPacks, availableSponsorPacks) = args.Player.GetAvailablePacks();
-
-        var i = 0;
+        var availablePacks = args.Player.GetAvailablePlayerPacks();
         var sb = new StringBuilder();
-        sb.Append("当前可获得的组别奖励为：\n");
-        availableGroupPacks.ForEach(x => sb.Append($"  {i++}: {x.Name}\n"));
-        sb.Append("当前可获得的赞助奖励为：\n");
-        availableSponsorPacks.ForEach(x => sb.Append($"  {i++}: {x.Name}\n"));
+        var i = 0;
+        sb.Append("当前可获得的玩家奖励为：\n");
+        availablePacks.ForEach(x => sb.Append($"  {i++}: {x.Name}\n"));
         args.Player.SendInfoMessage(sb.ToString());
     }
 
-    private static bool ValidateInventorySlotsAvailableFailed(CommandArgs args, int slotsRequired)
-    {
-        var slotsLeft = args.TPlayer.inventory.Take(50).Count(x => x.type == 0);
-        if (slotsRequired <= slotsLeft)
-            return false;
-        args.Player.SendWarningMessage($"背包空间不足，还需要 {slotsRequired - slotsLeft} 个空位，请清理后再试");
-        return true;
-    }
-}
+    #endregion
 
-[Command("pra")]
-public static class PlayerRewardAdminCommand
-{
-    [Permission("playerreward.admin")]
-    public static void List(CommandArgs args, string playerName)
+    #region Admin Commands
+
+    public static class Admin
     {
-        var tuple = Utils.GetAvailablePacksByPlayerName(playerName);
-        if (tuple == null)
+        [Permission("playerreward.admin")]
+        public static void List(CommandArgs args, string playerName)
         {
-            args.Player.SendWarningMessage($"未找到名为 {playerName} 的玩家");
-            return;
+            var availablePacks = Utils.GetAvailablePlayerPacks(playerName);
+            if (availablePacks == null)
+            {
+                args.Player.SendWarningMessage($"未找到名为 {playerName} 的玩家");
+                return;
+            }
+
+            var sb = new StringBuilder();
+            var i = 0;
+            sb.Append($"玩家 {playerName} 当前可获得的玩家奖励为：\n");
+            availablePacks.ForEach(x => sb.Append($"  {i++}: {x.Name}\n"));
+            args.Player.SendInfoMessage(sb.ToString());
         }
 
-        var (availableGroupPacks, availableSponsorPacks) = tuple.Value;
-
-        var i = 0;
-        var sb = new StringBuilder();
-        sb.Append($"玩家{playerName}当前可获得的组别奖励为：\n");
-        availableGroupPacks.ForEach(x => sb.Append($"  {i++}: {x.Name}\n"));
-        sb.Append($"玩家{playerName}当前可获得的赞助奖励为：\n");
-        availableSponsorPacks.ForEach(x => sb.Append($"  {i++}: {x.Name}\n"));
-        args.Player.SendInfoMessage(sb.ToString());
-    }
-
-    [Permission("playerreward.admin")]
-    public static void Give(CommandArgs args, string playerName, string packName)
-    {
-        if (ValidatePlayerAccountFailed(args, playerName)) return;
-        if (ValidateSponsorPackNameFailed(args, packName)) return;
-
-        PlayerRewardInfo.AddSponsorPack(playerName, packName);
-        args.Player.SendSuccessMessage($"成功为 {playerName} 玩家添加 {packName} 赞助礼包");
-    }
-
-    [Permission("playerreward.admin")]
-    public static void Remove(CommandArgs args, string playerName, string packName)
-    {
-        if (ValidatePlayerAccountFailed(args, playerName)) return;
-        if (ValidateSponsorPackNameFailed(args, packName)) return;
-
-        PlayerRewardInfo.RemoveSponsorPack(playerName, packName);
-        args.Player.SendSuccessMessage($"成功为 {playerName} 玩家移除 {packName} 赞助礼包");
-    }
-
-    public static class Reset
-    {
-        public static class Player
+        public static class Reset
         {
             [Permission("playerreward.admin")]
-            public static void Group(CommandArgs args, string playerName)
+            public static void Player(CommandArgs args, string playerName)
             {
-                if (ValidatePlayerAccountFailed(args, playerName)) return;
+                if (CommandHelper.ValidatePlayerAccountFailed(args, playerName))
+                    return;
 
-                PlayerRewardInfo.ClearObtainedPack(playerName);
-            }
-
-            [Permission("playerreward.admin")]
-            public static void Sponsor(CommandArgs args, string playerName)
-            {
-                if (ValidatePlayerAccountFailed(args, playerName)) return;
-
-                PlayerRewardInfo.ClearSponsorPack(playerName);
-            }
-
-            [Permission("playerreward.admin")]
-            public static void All(CommandArgs args, string playerName)
-            {
-                if (ValidatePlayerAccountFailed(args, playerName)) return;
-
-                PlayerRewardInfo.ClearSponsorPack(playerName);
-                PlayerRewardInfo.ClearSponsorPack(playerName);
-            }
-        }
-
-        public static class AllPlayer
-        {
-            [Permission("playerreward.admin")]
-            public static void Group(CommandArgs args)
-            {
-                using var context = new PlayerRewardInfo.Context(null);
-                context.Config
-                    .Set(x => x.ObtainedGroupPacks, "")
-                    .Update();
-            }
-
-            [Permission("playerreward.admin")]
-            public static void Sponsor(CommandArgs args)
-            {
-                using var context = new PlayerRewardInfo.Context(null);
-                context.Config
-                    .Set(x => x.AvailableSponsorPacks, "")
-                    .Update();
+                PlayerRewardInfo.ClearObtainedPlayerPacks(playerName);
+                args.Player.SendSuccessMessage($"成功重置玩家 {playerName} 的玩家礼包");
             }
 
             [Permission("playerreward.admin")]
@@ -192,27 +116,147 @@ public static class PlayerRewardAdminCommand
             {
                 using var context = new PlayerRewardInfo.Context(null);
                 context.Config
-                    .Set(x => x.ObtainedGroupPacks, "")
-                    .Set(x => x.AvailableSponsorPacks, "")
+                    .Set(x => x.ObtainedPlayerPacks, "")
                     .Update();
+                args.Player.SendSuccessMessage("成功重置所有玩家的玩家礼包");
             }
         }
     }
 
-    private static bool ValidatePlayerAccountFailed(CommandArgs args, string playerName)
+    #endregion
+}
+
+[Command("sr")]
+public static class SponsorRewardCommand
+{
+    #region User Commands
+
+    [RealPlayer]
+    [Permission("playerreward.user")]
+    public static void Get(CommandArgs args)
+    {
+        var availablePacks = args.Player.GetAvailableSponsorPacks();
+        if (availablePacks == null || availablePacks.Length < 1)
+        {
+            args.Player.SendWarningMessage("当前无可获取的赞助礼包");
+            return;
+        }
+        var selectedPack = availablePacks[0];
+        if (CommandHelper.ValidateInventorySlotsAvailableFailed(args, selectedPack.Items.Count))
+            return;
+        PlayerRewardInfo.AddObtainedSponsorPacks(args.Player.Account.Name, selectedPack.Name);
+        args.Player.Give(selectedPack);
+        args.Player.SendSuccessMessage($"成功获取 {selectedPack.Name} 赞助礼包");
+    }
+
+    [RealPlayer]
+    [Permission("playerreward.user")]
+    public static void Get(CommandArgs args, int id)
+    {
+        if (id < 0)
+        {
+            args.Player.SendWarningMessage("ID不得小于0");
+            return;
+        }
+
+        var availablePacks = args.Player.GetAvailableSponsorPacks();
+        if (availablePacks == null || availablePacks.Length == 0)
+        {
+            args.Player.SendWarningMessage("当前无可获取的赞助礼包");
+            return;
+        }
+        if (id >= availablePacks.Length)
+        {
+            args.Player.SendWarningMessage($"ID超出范围, 最大ID值为 {availablePacks.Length - 1}");
+            return;
+        }
+
+        var selectedPack = availablePacks[id];
+        if (CommandHelper.ValidateInventorySlotsAvailableFailed(args, selectedPack.Items.Count))
+            return;
+        PlayerRewardInfo.AddObtainedSponsorPacks(args.Player.Account.Name, selectedPack.Name);
+        args.Player.Give(selectedPack);
+        args.Player.SendSuccessMessage($"成功获取 {selectedPack.Name} 赞助礼包");
+    }
+
+    [RealPlayer]
+    [Permissions("playerreward.user")]
+    public static void List(CommandArgs args)
+    {
+        var availablePacks = args.Player.GetAvailableSponsorPacks();
+        var sb = new StringBuilder();
+        var i = 0;
+        sb.Append("当前可获得的赞助奖励为：\n");
+        availablePacks.ForEach(x => sb.Append($"  {i++}: {x.Name}\n"));
+        args.Player.SendInfoMessage(sb.ToString());
+    }
+
+    #endregion
+
+    #region Admin Commands
+
+    public static class Admin
+    {
+        [Permission("playerreward.admin")]
+        public static void List(CommandArgs args, string playerName)
+        {
+            var availablePacks = Utils.GetAvailableSponsorPacks(playerName);
+            if (availablePacks == null)
+            {
+                args.Player.SendWarningMessage($"未找到名为 {playerName} 的玩家");
+                return;
+            }
+
+            var sb = new StringBuilder();
+            var i = 0;
+            sb.Append($"玩家 {playerName} 当前可获得的赞助奖励为：\n");
+            availablePacks.ForEach(x => sb.Append($"  {i++}: {x.Name}\n"));
+            args.Player.SendInfoMessage(sb.ToString());
+        }
+
+        public static class Reset
+        {
+            [Permission("playerreward.admin")]
+            public static void Player(CommandArgs args, string playerName)
+            {
+                if (CommandHelper.ValidatePlayerAccountFailed(args, playerName))
+                    return;
+
+                PlayerRewardInfo.ClearObtainedSponsorPacks(playerName);
+                args.Player.SendSuccessMessage($"成功重置玩家 {playerName} 的赞助礼包");
+            }
+
+            [Permission("playerreward.admin")]
+            public static void All(CommandArgs args)
+            {
+                using var context = new PlayerRewardInfo.Context(null);
+                context.Config
+                    .Set(x => x.ObtainedSponsorPacks, "")
+                    .Update();
+                args.Player.SendSuccessMessage("成功重置所有玩家的赞助礼包");
+            }
+        }
+    }
+
+    #endregion
+}
+
+internal static class CommandHelper
+{
+    public static bool ValidateInventorySlotsAvailableFailed(CommandArgs args, int slotsRequired)
+    {
+        var slotsLeft = args.TPlayer.inventory.Take(50).Count(x => x.type == 0);
+        if (slotsRequired <= slotsLeft)
+            return false;
+        args.Player.SendWarningMessage($"背包空间不足，还需要 {slotsRequired - slotsLeft} 个空位，请清理后再试");
+        return true;
+    }
+
+    public static bool ValidatePlayerAccountFailed(CommandArgs args, string playerName)
     {
         if (TShock.UserAccounts.GetUserAccountByName(playerName) != null)
             return false;
         args.Player.SendInfoMessage($"未找到名为 {playerName} 的玩家");
         return true;
-    }
-
-    private static bool ValidateSponsorPackNameFailed(CommandArgs args, string packName)
-    {
-        if (Config.Instance.SponsorPacks.Any(x => x.Name == packName))
-            return false;
-        args.Player.SendInfoMessage($"未找到名为 {packName} 的赞助礼包");
-        return true;
-
     }
 }
