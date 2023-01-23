@@ -90,7 +90,7 @@ namespace Dimension
                             }
                         }
                     }
-                    catch{}
+                    catch (Exception ex) { TShockAPI.TShock.Log.ConsoleError($"PingException {ex}"); }
                     Thread.Sleep(1000);
                 }
             }).Start();
