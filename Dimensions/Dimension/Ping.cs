@@ -74,7 +74,7 @@ public class PingClass
         try
         {
             var player = plr;
-            var result = await Ping(player);
+            var result = await Ping(player, new System.Threading.CancellationTokenSource(1000).Token);
             if (result.TotalMilliseconds >= 200)
             {
                 return ($"[c/FF0000:{result.TotalMilliseconds:F1}ms]");
