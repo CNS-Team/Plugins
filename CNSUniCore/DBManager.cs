@@ -197,20 +197,7 @@ public class DBManager
     // Token: 0x0600000E RID: 14 RVA: 0x000026B8 File Offset: 0x000008B8
     public void AddSponsor(SponsorInfo plr)
     {
-        var defaultInterpolatedStringHandler = new DefaultInterpolatedStringHandler(94, 5);
-        defaultInterpolatedStringHandler.AppendLiteral("INSERT INTO unisponsors (Name,OriginGroup,NowGroup,StartTime,EndTime) VALUES ('");
-        defaultInterpolatedStringHandler.AppendFormatted(plr.name);
-        defaultInterpolatedStringHandler.AppendLiteral("','");
-        defaultInterpolatedStringHandler.AppendFormatted(plr.originGroup);
-        defaultInterpolatedStringHandler.AppendLiteral("','");
-        defaultInterpolatedStringHandler.AppendFormatted(plr.group);
-        defaultInterpolatedStringHandler.AppendLiteral("','");
-        defaultInterpolatedStringHandler.AppendFormatted<DateTime>(plr.startTime);
-        defaultInterpolatedStringHandler.AppendLiteral("','");
-        defaultInterpolatedStringHandler.AppendFormatted<DateTime>(plr.endTime);
-        defaultInterpolatedStringHandler.AppendLiteral("');");
-        var text = defaultInterpolatedStringHandler.ToStringAndClear();
-        DbExt.Query(this.connection, text, Array.Empty<object>());
+        DbExt.Query(query: $"INSERT INTO unisponsors (Name,OriginGroup,NowGroup,StartTime,EndTime) VALUES ('{plr.name}','{plr.originGroup}','{plr.group}','{plr.startTime}','{plr.endTime}');", olddb: connection, args: Array.Empty<object>());
     }
 
     // Token: 0x0600000F RID: 15 RVA: 0x00002780 File Offset: 0x00000980
@@ -223,22 +210,7 @@ public class DBManager
     // Token: 0x06000010 RID: 16 RVA: 0x000027B4 File Offset: 0x000009B4
     public void UpdateSponsor(SponsorInfo plr)
     {
-        var defaultInterpolatedStringHandler = new DefaultInterpolatedStringHandler(96, 6);
-        defaultInterpolatedStringHandler.AppendLiteral("UPDATE unisponsors SET Name='");
-        defaultInterpolatedStringHandler.AppendFormatted(plr.name);
-        defaultInterpolatedStringHandler.AppendLiteral("',OriginGroup='");
-        defaultInterpolatedStringHandler.AppendFormatted(plr.originGroup);
-        defaultInterpolatedStringHandler.AppendLiteral("',NowGroup='");
-        defaultInterpolatedStringHandler.AppendFormatted(plr.group);
-        defaultInterpolatedStringHandler.AppendLiteral("',StartTime='");
-        defaultInterpolatedStringHandler.AppendFormatted<DateTime>(plr.startTime);
-        defaultInterpolatedStringHandler.AppendLiteral("',EndTime='");
-        defaultInterpolatedStringHandler.AppendFormatted<DateTime>(plr.endTime);
-        defaultInterpolatedStringHandler.AppendLiteral("' WHERE Name='");
-        defaultInterpolatedStringHandler.AppendFormatted(plr.name);
-        defaultInterpolatedStringHandler.AppendLiteral("';");
-        var text = defaultInterpolatedStringHandler.ToStringAndClear();
-        DbExt.Query(this.connection, text, Array.Empty<object>());
+        DbExt.Query(query: $"UPDATE unisponsors SET Name='{plr.name}',OriginGroup='{plr.originGroup}',NowGroup='{plr.group}',StartTime='{plr.startTime}',EndTime='{plr.endTime}' WHERE Name='{plr.name}';", olddb: connection, args: Array.Empty<object>());
     }
 
     // Token: 0x06000011 RID: 17 RVA: 0x00002898 File Offset: 0x00000A98

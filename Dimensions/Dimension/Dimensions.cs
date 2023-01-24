@@ -77,7 +77,7 @@ namespace Dimension
             ServerApi.Hooks.GameInitialize.Register(this, OnGameInvitatize);
             ServerApi.Hooks.ServerLeave.Register(this, OnServerLeave);
             new Thread((ThreadStart)async delegate
-            { 
+            {
                 while (true)
                 {
                     try
@@ -104,13 +104,13 @@ namespace Dimension
                     stringBuilder2.AppendLine($"[c/FFD766:当][c/FFBE66:前][c/FFA466:世][c/FF8B66:界][c/FF7166:在][c/FF6674:线]: [c/C8FF66:{TShock.Players.ToList().FindAll((TSPlayer pl) => pl?.Active ?? false).Count}]/[c/FF7866:{TShock.Config.Settings.MaxSlots}]");
                     online = stringBuilder2.ToString();
                     Thread.Sleep(1000);
-                    
+
                 }
             }).Start();
             StatusTxtMgr.StatusTxtMgr.Hooks.StatusTextUpdate.Register((StatusTextUpdateDelegate)delegate (StatusTextUpdateEventArgs args)
             {
                 TSPlayer tsplayer = args.tsplayer;
-                StringBuilder statusTextBuilder = args.statusTextBuilder; 
+                StringBuilder statusTextBuilder = args.statusTextBuilder;
                 statusTextBuilder.Append(online);
                 statusTextBuilder.AppendLine("[c/66FFF6:主][c/66FFDC:城][c/66FFC3:等][c/66FFA9:级]:" + tsplayer.Group.Prefix + tsplayer.Group.Name + tsplayer.Group.Suffix);
                 statusTextBuilder.AppendLine($"[c/FFC566:P][c/FF8B66:i][c/FF667A:n][c/FF66B3:g][c/FF66ED:(][c/D866FF:延][c/9F66FF:迟][c/6667FF:)]:" + pings[tsplayer.Index]);
@@ -181,39 +181,30 @@ namespace Dimension
 
         private void server(CommandArgs args)
         {
-            if (args.Parameters.Count == 1)
+            CommandArgs args2 = args;
+            if (args2.Parameters.Count == 1)
             {
                 MemoryStream memoryStream = new MemoryStream();
                 using (BinaryWriter binaryWriter = new BinaryWriter(memoryStream))
                 {
-                    binaryWriter.Write((short)0);
-                    binaryWriter.Write((byte)67);
-                    binaryWriter.Write((short)2);
-                    binaryWriter.Write(args.Parameters[0]);
+                    binaryWriter.Write((short) 0);
+                    binaryWriter.Write((byte) 67);
+                    binaryWriter.Write((short) 2);
+                    binaryWriter.Write(args2.Parameters[0]);
                     binaryWriter.BaseStream.Position = 0L;
-                    binaryWriter.Write((short)memoryStream.ToArray().Length);
+                    binaryWriter.Write((short) memoryStream.ToArray().Length);
                 }
-                Netplay.Clients[args.Player.Index].Socket.AsyncSend(memoryStream.ToArray(), 0, memoryStream.ToArray().Length, delegate
+                Netplay.Clients[args2.Player.Index].Socket.AsyncSend(memoryStream.ToArray(), 0, memoryStream.ToArray().Length, delegate
                 {
                 });
                 new Task(delegate
                 {
-                    Rest[] rests = Config.Read(path).Rests;
-                    Rest[] array = rests;
-                    Rest[] array2 = array;
-                    foreach (Rest rest in array2)
+                    Rest[] rests = Dimension.Config.Read(path).Rests;
+                    foreach (Rest rest in rests)
                     {
-                        if (rest.Name == args.Parameters[0])
+                        if (rest.Name == args2.Parameters[0])
                         {
-                            HttpClient httpClient = new HttpClient();
-                            DefaultInterpolatedStringHandler defaultInterpolatedStringHandler = new DefaultInterpolatedStringHandler(30, 3);
-                            defaultInterpolatedStringHandler.AppendLiteral("http://");
-                            defaultInterpolatedStringHandler.AppendFormatted(rest.IP);
-                            defaultInterpolatedStringHandler.AppendLiteral(":");
-                            defaultInterpolatedStringHandler.AppendFormatted(rest.Port);
-                            defaultInterpolatedStringHandler.AppendLiteral("/RestLogin/Add?Player=");
-                            defaultInterpolatedStringHandler.AppendFormatted(args.Player.Name);
-                            httpClient.GetAsync(defaultInterpolatedStringHandler.ToStringAndClear());
+                            new HttpClient().GetAsync($"http://{rest.IP}:{rest.Port}/RestLogin/Add?Player={args2.Player.Name}");
                             break;
                         }
                     }
@@ -221,7 +212,7 @@ namespace Dimension
             }
             else
             {
-                TShockAPI.Commands.HandleCommand(TSPlayer.FindByNameOrID(args.Parameters[1])[0], "/server " + args.Parameters[0]);
+                TShockAPI.Commands.HandleCommand(TSPlayer.FindByNameOrID(args2.Parameters[1])[0], "/server " + args2.Parameters[0]);
             }
         }
 
@@ -256,18 +247,11 @@ namespace Dimension
             if (binaryReader.ReadInt16() == 0)
             {
                 string[] array = binaryReader.ReadString().Split(':');
-                TcpAddress? tcpAddress = Netplay.Clients[args.Msg.whoAmI].Socket.GetRemoteAddress() as TcpAddress;
-                tcpAddress!.Address = IPAddress.Parse(array[0]);
+                TcpAddress tcpAddress = Netplay.Clients[args.Msg.whoAmI].Socket.GetRemoteAddress() as TcpAddress;
+                tcpAddress.Address = IPAddress.Parse(array[0]);
                 TSPlayer tSPlayer = TShock.Players[args.Msg.whoAmI];
-                Type type = tSPlayer.GetType();
-                type.GetField("CacheIP", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(tSPlayer, tcpAddress.Address.ToString());
-                ILog log = TShock.Log;
-                DefaultInterpolatedStringHandler defaultInterpolatedStringHandler = new DefaultInterpolatedStringHandler(34, 2);
-                defaultInterpolatedStringHandler.AppendLiteral("remote address of client #");
-                defaultInterpolatedStringHandler.AppendFormatted(args.Msg.whoAmI);
-                defaultInterpolatedStringHandler.AppendLiteral(" set to ");
-                defaultInterpolatedStringHandler.AppendFormatted(tcpAddress.GetFriendlyName());
-                log.ConsoleInfo(defaultInterpolatedStringHandler.ToStringAndClear());
+                tSPlayer.GetType().GetField("CacheIP", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(tSPlayer, tcpAddress.Address.ToString());
+                TShock.Log.ConsoleInfo($"remote address of client #{args.Msg.whoAmI} set to {tcpAddress.GetFriendlyName()}");
             }
         }
 
