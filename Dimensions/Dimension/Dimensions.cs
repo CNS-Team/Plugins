@@ -96,12 +96,12 @@ namespace Dimension
             }).Start();
             new Thread((ThreadStart) delegate
             {
-                while (true)
-                {
-                    StringBuilder stringBuilder2 = new StringBuilder();
-                    stringBuilder2.AppendLine(Utils.GetOnline());
-                    stringBuilder2.AppendLine("当前世界:" + Main.worldName);
-                    stringBuilder2.AppendLine("当前世界在线:" + TShock.Players.ToList().FindAll((TSPlayer pl) => pl?.Active ?? false).Count + "/" + TShock.Config.Settings.MaxSlots);
+            while (true)
+            {
+                StringBuilder stringBuilder2 = new StringBuilder();
+                stringBuilder2.AppendLine(Utils.GetOnline());
+                stringBuilder2.AppendLine($"[c/66FF94:当][c/71FF66:前][c/ABFF66:世][c/E4FF66:界]:[c/FFAE66:{Main.worldName}]");
+                    stringBuilder2.AppendLine($"[c/FFD766:当][c/FFBE66:前][c/FFA466:世][c/FF8B66:界][c/FF7166:在][c/FF6674:线]: [c/C8FF66:{TShock.Players.ToList().FindAll((TSPlayer pl) => pl?.Active ?? false).Count}]/[c/FF7866:{TShock.Config.Settings.MaxSlots}]");
                     online = stringBuilder2.ToString();
                     Thread.Sleep(1000);
                     
@@ -112,8 +112,8 @@ namespace Dimension
                 TSPlayer tsplayer = args.tsplayer;
                 StringBuilder statusTextBuilder = args.statusTextBuilder; 
                 statusTextBuilder.Append(online);
-                statusTextBuilder.AppendLine("主城等级:" + tsplayer.Group.Prefix + tsplayer.Group.Name + tsplayer.Group.Suffix);
-                statusTextBuilder.AppendLine("Ping(延迟):" + pings[tsplayer.Index]);
+                statusTextBuilder.AppendLine("[c/66FFF6:主][c/66FFDC:城][c/66FFC3:等][c/66FFA9:级]:" + tsplayer.Group.Prefix + tsplayer.Group.Name + tsplayer.Group.Suffix);
+                statusTextBuilder.AppendLine($"[c/FFC566:P][c/FF8B66:i][c/FF667A:n][c/FF66B3:g][c/FF66ED:(][c/D866FF:延][c/9F66FF:迟][c/6667FF:)]:" + pings[tsplayer.Index]);
                 if (tsplayer.Account != null)
                 {
                     DisposableQuery<Money> val = Db.Get<Money>(tsplayer, null!);
@@ -121,8 +121,8 @@ namespace Dimension
                     {
                         StringBuilder stringBuilder = statusTextBuilder;
                         StringBuilder.AppendInterpolatedStringHandler handler = new StringBuilder.AppendInterpolatedStringHandler(3, 1, stringBuilder);
-                        handler.AppendLiteral("经济:");
-                        handler.AppendFormatted(((IQueryable<Money>)val).Single().money);
+                        handler.AppendLiteral($"[c/FFE766:经][c/FFC266:济]:");
+                        handler.AppendFormatted("[c/66FFFC:" + ((IQueryable<Money>)val).Single().money+"]");
                         stringBuilder.AppendLine(ref handler);
                     }
                     finally
