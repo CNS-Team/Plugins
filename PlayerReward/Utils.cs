@@ -1,5 +1,6 @@
 ﻿using LazyUtils;
 using System.Linq.Expressions;
+using CustomPlayer;
 using LinqToDB;
 using Microsoft.Xna.Framework;
 using Terraria;
@@ -50,7 +51,7 @@ internal static class Utils
         var obtainedPlayerPackNames = query.Select(x => x.ObtainedPlayerPacks).Single().Split(',');
         var playerGroupNames = group.GetAllInheritedGroupNames().ToArray();
         return Config.Instance.PlayerPacks
-            .Where(pack => (!pack.IsHardMode || Main.hardMode) && // if is hardmode required, check hardmode in game
+            .Where(pack => (!pack.IsHardMode || Main.hardMode) && // pack.IsHardMode ? Main.hardMode : true
                            !obtainedPlayerPackNames.Contains(pack.Name) &&
                            playerGroupNames.Any(name => pack.Groups.Contains(name)))
             .ToArray();
@@ -65,14 +66,11 @@ internal static class Utils
         using var query = Db.Get<PlayerRewardInfo>(account.Name);
         var obtainedSponsorPackNames = query.Select(x => x.ObtainedSponsorPacks).Single().Split(',');
         var customPlayerGroupNames = CustomPlayerAdapter.GetCustomPlayer(account.Name)
-            .GetCustomGroup()?
-            .GetAllInheritedGroupNames()
+            .GetCustomGroupNames()
             .ToArray();
-        if (customPlayerGroupNames == null)
-            return null;
 
         return Config.Instance.SponsorPacks
-            .Where(pack => (!pack.IsHardMode || Main.hardMode) && // if is hardmode required, check hardmode in game
+            .Where(pack => (!pack.IsHardMode || Main.hardMode) && // pack.IsHardMode ? Main.hardMode : true
                             !obtainedSponsorPackNames.Contains(pack.Name) &&
                            customPlayerGroupNames.Any(name => pack.Groups.Contains(name)))
             .ToArray();
@@ -97,8 +95,10 @@ internal static class CustomPlayerAdapter
         CustomPlayer.Utils.FindPlayer(playerName) ??
         CustomPlayer.CustomPlayer.Read(playerName, new FakeTSPlayer(playerName));
 
-    public static Group? GetCustomGroup(this CustomPlayer.CustomPlayer cp) =>
-        cp.Player.Group ?? cp.Group;
+    public static IEnumerable<string> GetCustomGroupNames(this CustomPlayer.CustomPlayer cp) =>
+        cp.HaveGroupNames
+            .SelectMany(x => CustomPlayerPluginHelpers.Groups.GetGroupByName(x).GetAllInheritedGroupNames())
+            .Distinct();
 
     private class FakeTSPlayer : TSPlayer
     {

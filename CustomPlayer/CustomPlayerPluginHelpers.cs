@@ -5,7 +5,7 @@ using TShockAPI;
 using CustomPlayer.ModfiyGroup;
 
 namespace CustomPlayer;
-class CustomPlayerPluginHelpers
+public class CustomPlayerPluginHelpers
 {
     public static GroupManager Groups;
     public static CustomPlayer[] Players = new CustomPlayer[255];
