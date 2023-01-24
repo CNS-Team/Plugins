@@ -1,8 +1,6 @@
 ﻿using LazyUtils;
 using LazyUtils.Commands;
 using System.Text;
-using Mono.CompilerServices.SymbolWriter;
-using Terraria;
 using TShockAPI;
 using LinqToDB;
 
@@ -21,7 +19,7 @@ public static class PlayerRewardCommand
     public static void Get(CommandArgs args)
     {
         var availablePacks = args.Player.GetAvailablePlayerPacks();
-        if (availablePacks == null || availablePacks.Length < 1)
+        if (availablePacks == null || availablePacks.Length == 0)
         {
             args.Player.SendWarningMessage("当前无可获取的玩家礼包");
             return;
@@ -69,9 +67,15 @@ public static class PlayerRewardCommand
     public static void List(CommandArgs args)
     {
         var availablePacks = args.Player.GetAvailablePlayerPacks();
+        if (availablePacks == null || availablePacks.Length == 0)
+        {
+            args.Player.SendWarningMessage("当前无可获取的玩家礼包");
+            return;
+        }
+
         var sb = new StringBuilder();
         var i = 0;
-        sb.Append("当前可获得的玩家奖励为：\n");
+        sb.Append("当前可获得的玩家礼包为：\n");
         availablePacks.ForEach(x => sb.Append($"  {i++}: {x.Name}\n"));
         args.Player.SendInfoMessage(sb.ToString());
     }
@@ -94,7 +98,7 @@ public static class PlayerRewardCommand
 
             var sb = new StringBuilder();
             var i = 0;
-            sb.Append($"玩家 {playerName} 当前可获得的玩家奖励为：\n");
+            sb.Append($"玩家 {playerName} 当前可获得的玩家礼包为：\n");
             availablePacks.ForEach(x => sb.Append($"  {i++}: {x.Name}\n"));
             args.Player.SendInfoMessage(sb.ToString());
         }
@@ -114,7 +118,7 @@ public static class PlayerRewardCommand
             [Permission("playerreward.admin")]
             public static void All(CommandArgs args)
             {
-                using var context = new PlayerRewardInfo.Context(null);
+                using var context = new PlayerRewardInfo.Context(null!);
                 context.Config
                     .Set(x => x.ObtainedPlayerPacks, "")
                     .Update();
@@ -136,7 +140,7 @@ public static class SponsorRewardCommand
     public static void Get(CommandArgs args)
     {
         var availablePacks = args.Player.GetAvailableSponsorPacks();
-        if (availablePacks == null || availablePacks.Length < 1)
+        if (availablePacks == null || availablePacks.Length == 0)
         {
             args.Player.SendWarningMessage("当前无可获取的赞助礼包");
             return;
@@ -185,8 +189,14 @@ public static class SponsorRewardCommand
     {
         var availablePacks = args.Player.GetAvailableSponsorPacks();
         var sb = new StringBuilder();
+        if (availablePacks == null || availablePacks.Length == 0)
+        {
+            args.Player.SendWarningMessage("当前无可获取的赞助礼包");
+            return;
+        }
+
         var i = 0;
-        sb.Append("当前可获得的赞助奖励为：\n");
+        sb.Append("当前可获得的赞助礼包为：\n");
         availablePacks.ForEach(x => sb.Append($"  {i++}: {x.Name}\n"));
         args.Player.SendInfoMessage(sb.ToString());
     }
@@ -209,7 +219,7 @@ public static class SponsorRewardCommand
 
             var sb = new StringBuilder();
             var i = 0;
-            sb.Append($"玩家 {playerName} 当前可获得的赞助奖励为：\n");
+            sb.Append($"玩家 {playerName} 当前可获得的赞助礼包为：\n");
             availablePacks.ForEach(x => sb.Append($"  {i++}: {x.Name}\n"));
             args.Player.SendInfoMessage(sb.ToString());
         }
@@ -229,7 +239,7 @@ public static class SponsorRewardCommand
             [Permission("playerreward.admin")]
             public static void All(CommandArgs args)
             {
-                using var context = new PlayerRewardInfo.Context(null);
+                using var context = new PlayerRewardInfo.Context(null!);
                 context.Config
                     .Set(x => x.ObtainedSponsorPacks, "")
                     .Update();

@@ -1,6 +1,5 @@
 ﻿using LazyUtils;
 using Newtonsoft.Json;
-using TShockAPI;
 
 namespace PlayerReward;
 
