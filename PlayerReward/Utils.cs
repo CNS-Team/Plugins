@@ -11,13 +11,15 @@ namespace PlayerReward;
 
 internal static class Utils
 {
+    // 因应需求取消继承（懒了）
     public static IEnumerable<string> GetAllInheritedGroupNames(this Group group)
     {
-        while (group != null)
-        {
-            yield return group.Name;
-            group = group.Parent;
-        }
+        yield return group.Name;
+        //while (group != null)
+        //{
+        //    yield return group.Name;
+        //    group = group.Parent;
+        //}
     }
 
     public static (UserAccount?, Group?) GetAccountAndGroupByPlayerName(string playerName)
@@ -95,10 +97,12 @@ internal static class CustomPlayerAdapter
         CustomPlayer.Utils.FindPlayer(playerName) ??
         CustomPlayer.CustomPlayer.Read(playerName, new FakeTSPlayer(playerName));
 
+    // 因应需求取消继承（懒了X2）
     public static IEnumerable<string> GetCustomGroupNames(this CustomPlayer.CustomPlayer cp) =>
-        cp.HaveGroupNames
-            .SelectMany(x => CustomPlayerPluginHelpers.Groups.GetGroupByName(x).GetAllInheritedGroupNames())
-            .Distinct();
+        cp.HaveGroupNames;
+        //cp.HaveGroupNames
+        //    .SelectMany(x => CustomPlayerPluginHelpers.Groups.GetGroupByName(x).GetAllInheritedGroupNames())
+        //    .Distinct();
 
     private class FakeTSPlayer : TSPlayer
     {
