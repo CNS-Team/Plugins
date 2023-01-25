@@ -130,12 +130,19 @@ internal static class CustomPlayerAdapter
         CustomPlayer.Utils.FindPlayer(playerName) ??
         CustomPlayer.CustomPlayer.Read(playerName, new FakeTSPlayer(playerName));
 
-    // 因应需求取消继承（懒了X2）
-    public static IEnumerable<string> GetCustomGroupNames(this CustomPlayer.CustomPlayer cp) =>
-        cp.HaveGroupNames;
-    //cp.HaveGroupNames
-    //    .SelectMany(x => CustomPlayerPluginHelpers.Groups.GetGroupByName(x).GetAllInheritedGroupNames())
-    //    .Distinct();
+    public static IEnumerable<string> GetCustomGroupNames(this CustomPlayer.CustomPlayer cp)
+    {
+        var customGroups = cp.HaveGroupNames;
+        var result = customGroups.Select(x => new { Group = x, Grade = CustomPlayerPluginHelpers.GroupGrade[x] })
+            .MaxBy(x => x.Grade);
+        if (result != null)
+            yield return result.Group;
+
+        // 因应需求取消继承（懒了X2）
+        //return cp.HaveGroupNames
+        //    .SelectMany(x => CustomPlayerPluginHelpers.Groups.GetGroupByName(x).GetAllInheritedGroupNames())
+        //    .Distinct();
+    }
 
     private class FakeTSPlayer : TSPlayer
     {
