@@ -4,6 +4,7 @@ using CustomPlayer;
 using LinqToDB;
 using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.ID;
 using TShockAPI;
 using TShockAPI.DB;
 
@@ -81,13 +82,45 @@ internal static class Utils
     public static void Give(this TSPlayer player, PlayerPack pack)
     {
         var items = pack.Items.Select(Item.Parse);
-        items.ForEach(x => player.GiveItem(x.ID, x.Stack, x.Prefix));
+        player.GiveItemsDirectly(items);
         pack.ExecuteCommands.ForEach(x =>
         {
             Commands.HandleCommand(
                 TSPlayer.Server,
                 x.Replace("{name}", player.Name).Replace("{account}", player.Account?.Name));
         });
+    }
+
+    private static void GiveItemsDirectly(this TSPlayer player, IEnumerable<Item> items)
+    {
+        Terraria.Item ConvertToTrItem(Item item)
+        {
+            var trItem = new Terraria.Item();
+            trItem.netDefaults(item.ID);
+            trItem.stack = item.Stack;
+            trItem.prefix = (byte)item.Prefix;
+            return trItem;
+        }
+
+        var slot = 0;
+        foreach (var item in items)
+        {
+            while (player.TPlayer.inventory[slot].type != 0)
+            {
+                slot++;
+            }
+
+            var trItem = ConvertToTrItem(item);
+            player.TPlayer.inventory[slot] = trItem;
+            NetMessage.SendData(
+                MessageID.SyncEquipment,
+                player.Index,
+                -1,
+                null,
+                player.Index,
+                slot,
+                player.TPlayer.inventory[slot].prefix);
+        }
     }
 }
 
@@ -100,9 +133,9 @@ internal static class CustomPlayerAdapter
     // 因应需求取消继承（懒了X2）
     public static IEnumerable<string> GetCustomGroupNames(this CustomPlayer.CustomPlayer cp) =>
         cp.HaveGroupNames;
-        //cp.HaveGroupNames
-        //    .SelectMany(x => CustomPlayerPluginHelpers.Groups.GetGroupByName(x).GetAllInheritedGroupNames())
-        //    .Distinct();
+    //cp.HaveGroupNames
+    //    .SelectMany(x => CustomPlayerPluginHelpers.Groups.GetGroupByName(x).GetAllInheritedGroupNames())
+    //    .Distinct();
 
     private class FakeTSPlayer : TSPlayer
     {
