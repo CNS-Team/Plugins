@@ -55,17 +55,7 @@ public class CommandManager
                 var stringBuilder = new StringBuilder();
                 foreach (var serverInfo in ConfigUtils.servers)
                 {
-                    var stringBuilder2 = stringBuilder;
-                    var stringBuilder3 = stringBuilder2;
-                    var appendInterpolatedStringHandler = new StringBuilder.AppendInterpolatedStringHandler(6, 3, stringBuilder2);
-                    appendInterpolatedStringHandler.AppendLiteral("[");
-                    appendInterpolatedStringHandler.AppendFormatted(serverInfo.ID);
-                    appendInterpolatedStringHandler.AppendLiteral("][");
-                    appendInterpolatedStringHandler.AppendFormatted(serverInfo.IP);
-                    appendInterpolatedStringHandler.AppendLiteral("][");
-                    appendInterpolatedStringHandler.AppendFormatted(serverInfo.Port);
-                    appendInterpolatedStringHandler.AppendLiteral("]");
-                    stringBuilder3.AppendLine(ref appendInterpolatedStringHandler);
+                    stringBuilder.Append($"[{serverInfo.ID}][{serverInfo.IP}][{serverInfo.Port}]");
                 }
                 args.Player.SendInfoMessage(stringBuilder.ToString());
                 break;
