@@ -1,15 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Net.Sockets;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Chireiden.TShock.Omni;
 using LazyUtils;
 using MaxMind;
@@ -17,6 +5,10 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PChrome.Core;
 using StatusTxtMgr;
+using System.Net;
+using System.Net.Sockets;
+using System.Reflection;
+using System.Text;
 using Terraria;
 using Terraria.Net;
 using TerrariaApi.Server;
@@ -31,9 +23,9 @@ namespace Dimension
 
         public static Config Config;
 
-        private int timer;
+        private readonly int timer;
 
-        private string path = Path.Combine(TShock.SavePath, "Dimensions.json");
+        private readonly string path = Path.Combine(TShock.SavePath, "Dimensions.json");
 
         public static Dictionary<string, StringBuilder> status;
 
@@ -58,79 +50,67 @@ namespace Dimension
         {
             //IL_0199: Unknown result type (might be due to invalid IL or missing references)
             //IL_01a6: Expected O, but got Unknown
-            ServerApi.Hooks.NetGetData.Register(this, GetData);
-            string filename = "Dimensions-GeoIP.dat";
-            if (!File.Exists(path))
+            ServerApi.Hooks.NetGetData.Register(this, this.GetData);
+            var filename = "Dimensions-GeoIP.dat";
+            if (!File.Exists(this.path))
             {
-                Config.WriteTemplates(path);
+                Config.WriteTemplates(this.path);
             }
-            Config = Config.Read(path);
+            Config = Config.Read(this.path);
             if (Config.EnableGeoIP && File.Exists(filename))
             {
-                Geo = new GeoIPCountry(filename);
+                this.Geo = new GeoIPCountry(filename);
             }
-            TShockAPI.Commands.ChatCommands.Add(new Command("", server, "server"));
-            TShockAPI.Commands.ChatCommands.Add(new Command("", listPlayers, "list"));
-            TShockAPI.Commands.ChatCommands.Add(new Command("", advtp, "advtp"));
-            TShockAPI.Commands.ChatCommands.Add(new Command("", advwarp, "advwarp"));
+            TShockAPI.Commands.ChatCommands.Add(new Command("", this.server, "server"));
+            TShockAPI.Commands.ChatCommands.Add(new Command("", this.listPlayers, "list"));
+            TShockAPI.Commands.ChatCommands.Add(new Command("", this.advtp, "advtp"));
+            TShockAPI.Commands.ChatCommands.Add(new Command("", this.advwarp, "advwarp"));
             OTAPI.Hooks.MessageBuffer.GetData += PingClass.Hook_Ping_GetData;
-            ServerApi.Hooks.GameInitialize.Register(this, OnGameInvitatize);
-            ServerApi.Hooks.ServerLeave.Register(this, OnServerLeave);
-            new Thread((ThreadStart)async delegate
+            ServerApi.Hooks.GameInitialize.Register(this, this.OnGameInvitatize);
+            ServerApi.Hooks.ServerLeave.Register(this, this.OnServerLeave);
+            new Thread((ThreadStart) delegate
             {
-                while (true)
+                Task.WaitAll(TShock.Players.Select(async i =>
                 {
-                    try
+                    while (true)
                     {
-                        foreach (var i in TShock.Players)
+                        try
                         {
                             if (i != null && i.Active)
                             {
                                 pings[i.Index] = await PingClass.PingPlayer(i);
                             }
+
                         }
+                        catch (Exception ex) { TShockAPI.TShock.Log.ConsoleError($"PingException {ex}"); }
                     }
-                    catch (Exception ex) { TShockAPI.TShock.Log.ConsoleError($"PingException {ex}"); }
-                    Thread.Sleep(1000);
-                }
+                }).ToArray());
             }).Start();
             new Thread((ThreadStart) delegate
             {
-            while (true)
-            {
-                StringBuilder stringBuilder2 = new StringBuilder();
-                stringBuilder2.AppendLine(Utils.GetOnline());
-                stringBuilder2.AppendLine($"[c/66FF94:当][c/71FF66:前][c/ABFF66:世][c/E4FF66:界]:[c/FFAE66:{Main.worldName}]");
+                while (true)
+                {
+                    var stringBuilder2 = new StringBuilder();
+                    stringBuilder2.AppendLine(Utils.GetOnline());
+                    stringBuilder2.AppendLine($"[c/66FF94:当][c/71FF66:前][c/ABFF66:世][c/E4FF66:界]:[c/FFAE66:{Main.worldName}]");
                     stringBuilder2.AppendLine($"[c/FFD766:当][c/FFBE66:前][c/FFA466:世][c/FF8B66:界][c/FF7166:在][c/FF6674:线]: [c/C8FF66:{TShock.Players.ToList().FindAll((TSPlayer pl) => pl?.Active ?? false).Count}]/[c/FF7866:{TShock.Config.Settings.MaxSlots}]");
-                    online = stringBuilder2.ToString();
+                    this.online = stringBuilder2.ToString();
                     Thread.Sleep(1000);
-
                 }
             }).Start();
-            StatusTxtMgr.StatusTxtMgr.Hooks.StatusTextUpdate.Register((StatusTextUpdateDelegate)delegate (StatusTextUpdateEventArgs args)
+            StatusTxtMgr.StatusTxtMgr.Hooks.StatusTextUpdate.Register(delegate (StatusTextUpdateEventArgs args)
             {
-                TSPlayer tsplayer = args.tsplayer;
-                StringBuilder statusTextBuilder = args.statusTextBuilder;
-                statusTextBuilder.Append(online);
-                statusTextBuilder.AppendLine("[c/66FFF6:主][c/66FFDC:城][c/66FFC3:等][c/66FFA9:级]:" + tsplayer.Group.Prefix + tsplayer.Group.Name + tsplayer.Group.Suffix);
-                statusTextBuilder.AppendLine($"[c/FFC566:P][c/FF8B66:i][c/FF667A:n][c/FF66B3:g][c/FF66ED:(][c/D866FF:延][c/9F66FF:迟][c/6667FF:)]:" + pings[tsplayer.Index]);
+                var tsplayer = args.tsplayer;
+                var statusTextBuilder = args.statusTextBuilder;
+                statusTextBuilder.Append(this.online);
+                statusTextBuilder.AppendLine($"[c/66FFF6:主][c/66FFDC:城][c/66FFC3:等][c/66FFA9:级]:{tsplayer.Group.Prefix}{tsplayer.Group.Name}{tsplayer.Group.Suffix}");
+                statusTextBuilder.AppendLine($"[c/FFC566:P][c/FF8B66:i][c/FF667A:n][c/FF66B3:g][c/FF66ED:(][c/D866FF:延][c/9F66FF:迟][c/6667FF:)]:{pings[tsplayer.Index]}");
                 if (tsplayer.Account != null)
                 {
-                    DisposableQuery<Money> val = Db.Get<Money>(tsplayer, null!);
-                    try
-                    {
-                        StringBuilder stringBuilder = statusTextBuilder;
-                        StringBuilder.AppendInterpolatedStringHandler handler = new StringBuilder.AppendInterpolatedStringHandler(3, 1, stringBuilder);
-                        handler.AppendLiteral($"[c/FFE766:经][c/FFC266:济]:");
-                        handler.AppendFormatted("[c/66FFFC:" + ((IQueryable<Money>)val).Single().money+"]");
-                        stringBuilder.AppendLine(ref handler);
-                    }
-                    finally
-                    {
-                        ((IDisposable)val)?.Dispose();
-                    }
+                    using var val = Db.Get<Money>(tsplayer, null!);
+                    statusTextBuilder.Append($"[c/FFE766:经][c/FFC266:济]:[c/66FFFC:{val.Single().money}]");
                 }
-                foreach (StringBuilder value in status.Values)
+                foreach (var value in status.Values)
                 {
                     statusTextBuilder.AppendLine(value.ToString());
                 }
@@ -157,8 +137,8 @@ namespace Dimension
 
         private void advtp(CommandArgs args)
         {
-            TSPlayer player = TSPlayer.FindByNameOrID(args.Parameters[0])[0];
-            int num = int.Parse(args.Parameters[1]);
+            var player = TSPlayer.FindByNameOrID(args.Parameters[0])[0];
+            var num = int.Parse(args.Parameters[1]);
             TShockAPI.Commands.HandleCommand(player, string.Format("/tppos {0} {1}", arg1: int.Parse(args.Parameters[2]), arg0: num));
         }
 
@@ -166,12 +146,12 @@ namespace Dimension
         {
             try
             {
-                byte[] array = new byte[5242880];
-                Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                var array = new byte[5242880];
+                var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 socket.Connect(new IPEndPoint(IPAddress.Parse(Config.HostIP), Config.HostRestPort));
-                int count = socket.Receive(array);
+                var count = socket.Receive(array);
                 socket.Close();
-                JObject jObject = (JObject)JsonConvert.DeserializeObject(Encoding.UTF8.GetString(array, 0, count))!;
+                var jObject = (JObject) JsonConvert.DeserializeObject(Encoding.UTF8.GetString(array, 0, count))!;
                 args.Player.SendInfoMessage("当前在线：" + jObject["players"]);
             }
             catch
@@ -181,11 +161,11 @@ namespace Dimension
 
         private void server(CommandArgs args)
         {
-            CommandArgs args2 = args;
+            var args2 = args;
             if (args2.Parameters.Count == 1)
             {
-                MemoryStream memoryStream = new MemoryStream();
-                using (BinaryWriter binaryWriter = new BinaryWriter(memoryStream))
+                var memoryStream = new MemoryStream();
+                using (var binaryWriter = new BinaryWriter(memoryStream))
                 {
                     binaryWriter.Write((short) 0);
                     binaryWriter.Write((byte) 67);
@@ -199,8 +179,8 @@ namespace Dimension
                 });
                 new Task(delegate
                 {
-                    Rest[] rests = Dimension.Config.Read(path).Rests;
-                    foreach (Rest rest in rests)
+                    var rests = Dimension.Config.Read(this.path).Rests;
+                    foreach (var rest in rests)
                     {
                         if (rest.Name == args2.Parameters[0])
                         {
@@ -227,7 +207,7 @@ namespace Dimension
 
         private void Reload(CommandArgs e)
         {
-            string file = Path.Combine(TShock.SavePath, "Dimensions.json");
+            var file = Path.Combine(TShock.SavePath, "Dimensions.json");
             if (!File.Exists(file))
             {
                 Config.WriteTemplates(file);
@@ -242,15 +222,15 @@ namespace Dimension
             {
                 return;
             }
-            using MemoryStream input = new MemoryStream(args.Msg.readBuffer, args.Index, args.Length);
-            using BinaryReader binaryReader = new BinaryReader(input);
+            using var input = new MemoryStream(args.Msg.readBuffer, args.Index, args.Length);
+            using var binaryReader = new BinaryReader(input);
             if (binaryReader.ReadInt16() == 0)
             {
-                string[] array = binaryReader.ReadString().Split(':');
-                TcpAddress tcpAddress = Netplay.Clients[args.Msg.whoAmI].Socket.GetRemoteAddress() as TcpAddress;
+                var array = binaryReader.ReadString().Split(':');
+                var tcpAddress = (TcpAddress)Netplay.Clients[args.Msg.whoAmI].Socket.GetRemoteAddress();
                 tcpAddress.Address = IPAddress.Parse(array[0]);
-                TSPlayer tSPlayer = TShock.Players[args.Msg.whoAmI];
-                tSPlayer.GetType().GetField("CacheIP", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(tSPlayer, tcpAddress.Address.ToString());
+                var tSPlayer = TShock.Players[args.Msg.whoAmI];
+                tSPlayer.GetType().GetField("CacheIP", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(tSPlayer, tcpAddress.Address.ToString());
                 TShock.Log.ConsoleInfo($"remote address of client #{args.Msg.whoAmI} set to {tcpAddress.GetFriendlyName()}");
             }
         }

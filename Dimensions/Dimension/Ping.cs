@@ -31,7 +31,7 @@ public class PingClass
             SingleWriter = true
         });
         player.SetData("chireiden.data.pingchannel", channel);
-        Terraria.NetMessage.TrySendData((int)PacketTypes.RemoveItemOwner, -1, -1, null, inv);
+        Terraria.NetMessage.TrySendData((int) PacketTypes.RemoveItemOwner, -1, -1, null, inv);
         while (!token.IsCancellationRequested)
         {
             var end = await channel.Reader.ReadAsync(token);
@@ -47,7 +47,7 @@ public class PingClass
 
     public static void Hook_Ping_GetData(object? sender, OTAPI.Hooks.MessageBuffer.GetDataEventArgs args)
     {
-        if (args.PacketId != (byte)PacketTypes.ItemOwner)
+        if (args.PacketId != (byte) PacketTypes.ItemOwner)
         {
             return;
         }
@@ -74,13 +74,13 @@ public class PingClass
         try
         {
             var player = plr;
-            var result = await Ping(player, new System.Threading.CancellationTokenSource(1000).Token);
+            var result = await Ping(player, new System.Threading.CancellationTokenSource(300).Token);
             if (result.TotalMilliseconds >= 200)
             {
                 return ($"[c/FF0000:{result.TotalMilliseconds:F1}ms]");
 
             }
-            else if (result.TotalMilliseconds >80 && result.TotalMilliseconds <200)
+            else if (result.TotalMilliseconds > 80 && result.TotalMilliseconds < 200)
             {
                 return ($"[c/FFA500:{result.TotalMilliseconds:F1}ms]");
             }
