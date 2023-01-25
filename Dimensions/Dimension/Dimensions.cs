@@ -70,24 +70,27 @@ namespace Dimension
             ServerApi.Hooks.ServerLeave.Register(this, this.OnServerLeave);
             new Thread((ThreadStart) delegate
             {
-                Task.WaitAll(TShock.Players.Select(async i =>
+                while (true)
                 {
-                    while (true)
+                    Task.WaitAll(TShock.Players.Select(async i =>
                     {
                         try
                         {
-                            if (i != null && i.Active)
+                            if (i?.Active == true)
                             {
                                 pings[i.Index] = await PingClass.PingPlayer(i);
                             }
                             else
                             {
-                                await Task.Delay(2000);
+                                await Task.Delay(3000);
                             }
                         }
-                        catch (Exception ex) { TShockAPI.TShock.Log.ConsoleError($"PingException {ex}"); }
-                    }
-                }).ToArray());
+                        catch (Exception ex)
+                        {
+                            TShockAPI.TShock.Log.ConsoleError($"PingException {ex}");
+                        }
+                    }).ToArray());
+                }
             }).Start();
             new Thread((ThreadStart) delegate
             {
@@ -107,7 +110,10 @@ namespace Dimension
                 var statusTextBuilder = args.statusTextBuilder;
                 statusTextBuilder.Append(this.online);
                 statusTextBuilder.AppendLine($"[c/66FFF6:主][c/66FFDC:城][c/66FFC3:等][c/66FFA9:级]:{tsplayer.Group.Prefix}{tsplayer.Group.Name}{tsplayer.Group.Suffix}");
-                statusTextBuilder.AppendLine($"[c/FFC566:P][c/FF8B66:i][c/FF667A:n][c/FF66B3:g][c/FF66ED:(][c/D866FF:延][c/9F66FF:迟][c/6667FF:)]:{pings[tsplayer.Index]}");
+                if (!string.IsNullOrWhiteSpace(pings[tsplayer.Index]))
+                {
+                    statusTextBuilder.AppendLine($"[c/FFC566:P][c/FF8B66:i][c/FF667A:n][c/FF66B3:g][c/FF66ED:(][c/D866FF:延][c/9F66FF:迟][c/6667FF:)]:{pings[tsplayer.Index]}");
+                }
                 if (tsplayer.Account != null)
                 {
                     using var val = Db.Get<Money>(tsplayer, null!);
@@ -230,7 +236,7 @@ namespace Dimension
             if (binaryReader.ReadInt16() == 0)
             {
                 var array = binaryReader.ReadString().Split(':');
-                var tcpAddress = (TcpAddress)Netplay.Clients[args.Msg.whoAmI].Socket.GetRemoteAddress();
+                var tcpAddress = (TcpAddress) Netplay.Clients[args.Msg.whoAmI].Socket.GetRemoteAddress();
                 tcpAddress.Address = IPAddress.Parse(array[0]);
                 var tSPlayer = TShock.Players[args.Msg.whoAmI];
                 tSPlayer.GetType().GetField("CacheIP", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(tSPlayer, tcpAddress.Address.ToString());

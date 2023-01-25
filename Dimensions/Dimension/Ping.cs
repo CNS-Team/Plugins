@@ -74,7 +74,7 @@ public class PingClass
         try
         {
             var player = plr;
-            var result = await Ping(player, new System.Threading.CancellationTokenSource(300).Token);
+            var result = await Ping(player, new System.Threading.CancellationTokenSource(3000).Token);
             if (result.TotalMilliseconds >= 200)
             {
                 return ($"[c/FF0000:{result.TotalMilliseconds:F1}ms]");
@@ -93,7 +93,6 @@ public class PingClass
         {
             TShockAPI.TShock.Log.Error(e.ToString());
             return "[c/FF0000:不可用]";
-
         }
     }
 }
