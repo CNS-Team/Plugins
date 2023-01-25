@@ -80,7 +80,10 @@ namespace Dimension
                             {
                                 pings[i.Index] = await PingClass.PingPlayer(i);
                             }
-
+                            else
+                            {
+                                await Task.Delay(2000);
+                            }
                         }
                         catch (Exception ex) { TShockAPI.TShock.Log.ConsoleError($"PingException {ex}"); }
                     }
