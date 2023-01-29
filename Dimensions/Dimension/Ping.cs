@@ -30,7 +30,7 @@ public class PingClass
             SingleReader = true,
             SingleWriter = true
         });
-        player.SetData("chireiden.data.pingchannel", channel);
+        player.SetData("chireiden.data.pingchannel1", channel);
         Terraria.NetMessage.TrySendData((int) PacketTypes.RemoveItemOwner, -1, -1, null, inv);
         while (!token.IsCancellationRequested)
         {
@@ -41,7 +41,7 @@ public class PingClass
                 break;
             }
         }
-        player.SetData<Channel<int>?>("chireiden.data.pingchannel", null);
+        player.SetData<Channel<int>?>("chireiden.data.pingchannel1", null);
         return result;
     }
 
@@ -59,7 +59,7 @@ public class PingClass
         }
 
         var whoami = args.Instance.whoAmI;
-        var pingresponse = TShockAPI.TShock.Players[whoami]?.GetData<Channel<int>?>("chireiden.data.pingchannel");
+        var pingresponse = TShockAPI.TShock.Players[whoami]?.GetData<Channel<int>?>("chireiden.data.pingchannel1");
         if (pingresponse == null)
         {
             return;
