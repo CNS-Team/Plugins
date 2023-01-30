@@ -34,11 +34,17 @@ public class PingClass
         Terraria.NetMessage.TrySendData((int) PacketTypes.RemoveItemOwner, -1, -1, null, inv);
         while (!token.IsCancellationRequested)
         {
-            var end = await channel.Reader.ReadAsync(token);
-            if (end == inv)
+            try
+            {    
+                var end = await channel.Reader.ReadAsync(token);
+                if (end == inv)
+                {
+                    result = DateTime.Now - start;
+                    break;
+                }
+            }
+            catch (System.OperationCanceledException ex)
             {
-                result = DateTime.Now - start;
-                break;
             }
         }
         player.SetData<Channel<int>?>("chireiden.data.pingchannel1", null);
