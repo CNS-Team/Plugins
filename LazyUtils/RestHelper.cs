@@ -57,7 +57,7 @@ public static class RestHelper
             {
                 TShock.RestApi.Register(new SecureRestCommand($"/{name}/{method.Name}", args => ParseCommand(method, args),
                     method.GetCustomAttribute<Permission>().Name));
-                TShock.Log.ConsoleInfo($"[{plugin.Name}] rest endpoint registered: /{name}/{method.Name}");
+                Console.WriteLine($"[{plugin.Name}] rest endpoint registered: /{name}/{method.Name}");
             }
         }
     }

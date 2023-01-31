@@ -57,12 +57,12 @@ public abstract class LazyPlugin : TerrariaPlugin
             if (type.IsDefined(typeof(ConfigAttribute), false))
             {
                 var name = type.BaseType.GetMethod("Load").Invoke(null, new object[0]); ;
-                TShock.Log.ConsoleInfo($"[{this.Name}] config registered: {name}");
+                Console.WriteLine($"[{this.Name}] config registered: {name}");
             }
             else if (type.IsDefined(typeof(CommandAttribute), false))
             {
                 var names = CommandHelper.Register(type);
-                TShock.Log.ConsoleInfo($"[{this.Name}] command registered: {string.Join(",", names)}");
+                Console.WriteLine($"[{this.Name}] command registered: {string.Join(",", names)}");
             }
             else if (type.IsDefined(typeof(RestAttribute), false))
             {
