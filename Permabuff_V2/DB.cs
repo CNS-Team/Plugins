@@ -9,9 +9,9 @@ using System.Linq;
 using TerrariaApi.Server;
 using TShockAPI;
 using TShockAPI.DB;
-namespace Permabuffs_V2
-{
-    public static class DB
+namespace Permabuffs_V2;
+
+public static class DB
 	{
 		private static IDbConnection db => TShock.DB;
 		public static Dictionary<int, DBInfo> PlayerBuffs = new Dictionary<int, DBInfo>();
@@ -46,7 +46,7 @@ namespace Permabuffs_V2
 			PlayerBuffs.Add(userid, new DBInfo(""));
 		}
 
-        public static void UpdatePlayerBuffs(int userid, List<int> bufflist)
+    public static void UpdatePlayerBuffs(int userid, List<int> bufflist)
 		{
 			string buffstring = string.Join(",", bufflist.Select(p => p.ToString()));
 
@@ -65,4 +65,3 @@ namespace Permabuffs_V2
 			PlayerBuffs[userid] = new DBInfo("");
 		}
 	}
-}

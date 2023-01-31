@@ -5,13 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using TShockAPI;
 
-namespace ItemMonitor
+namespace ItemMonitor;
+
+internal static class Extensions
 {
-    internal static class Extensions
+    public static ItemValidator GetValidator(this TSPlayer player)
     {
-        public static ItemValidator GetValidator(this TSPlayer player)
-        {
-            return player.GetData<ItemValidator>("ItemValidator");
-        }
+        return player.GetData<ItemValidator>("ItemValidator");
     }
 }

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Permabuffs_V2
-{
+namespace Permabuffs_V2;
+
 	public class DBInfo
 	{
 		public List<int> bufflist;
@@ -24,4 +24,3 @@ namespace Permabuffs_V2
 			}
 		}
 	}
-}

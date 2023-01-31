@@ -7,13 +7,12 @@ using System.Threading.Tasks;
 using Terraria;
 using TerrariaApi.Server;
 
-namespace PChrome.Core
+namespace PChrome.Core;
+
+[ApiVersion(2, 1)]
+public class Plugin : LazyPlugin
 {
-    [ApiVersion(2, 1)]
-    public class Plugin : LazyPlugin
+    public Plugin(Main game) : base(game)
     {
-        public Plugin(Main game) : base(game)
-        {
-        }
     }
 }

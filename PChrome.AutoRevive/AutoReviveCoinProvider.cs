@@ -8,28 +8,27 @@ using System.Text;
 using System.Threading.Tasks;
 using TShockAPI;
 
-namespace PChrome.AutoRevive
+namespace PChrome.AutoRevive;
+
+internal class AutoReviveCoinProvider : SingleItemProvider
 {
-    internal class AutoReviveCoinProvider : SingleItemProvider
+    public override string Name => "复活币";
+    protected override bool TryTakeFrom(TSPlayer player, int count)
     {
-        public override string Name => "复活币";
-        protected override bool TryTakeFrom(TSPlayer player, int count)
+        using var query = player.Get<AutoReviveCoin>();
+        if (query.Single().count < count)
         {
-            using var query = player.Get<AutoReviveCoin>();
-            if (query.Single().count < count)
-            {
-                return false;
-            }
-
-            query.Set(d => d.count, d => d.count - count).Update();
-            return true;
+            return false;
         }
 
-        protected override bool TryGiveTo(TSPlayer player, int stack)
-        {
-            using var query = player.Get<AutoReviveCoin>();
-            query.Set(d => d.count, d => d.count + stack).Update();
-            return true;
-        }
+        query.Set(d => d.count, d => d.count - count).Update();
+        return true;
+    }
+
+    protected override bool TryGiveTo(TSPlayer player, int stack)
+    {
+        using var query = player.Get<AutoReviveCoin>();
+        query.Set(d => d.count, d => d.count + stack).Update();
+        return true;
     }
 }

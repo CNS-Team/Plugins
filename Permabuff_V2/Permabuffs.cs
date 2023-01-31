@@ -12,8 +12,8 @@ using TShockAPI;
 using TShockAPI.DB;
 using TShockAPI.Hooks;
 
-namespace Permabuffs_V2
-{
+namespace Permabuffs_V2;
+
 	[ApiVersion(2, 1)]
 	public class Permabuffs : TerrariaPlugin
 	{
@@ -242,7 +242,7 @@ namespace Permabuffs_V2
 				}
 				else if (bufftypelist.Count > 1)
 				{
-                    
+                
 					args.Player.SendMultipleMatchError(bufftypelist.Select(p => TShock.Utils.GetBuffName(p)));
 					return;
 				}
@@ -691,18 +691,18 @@ namespace Permabuffs_V2
 					DB.ClearPlayerBuffs(plrs[0].Account.ID);
 					args.Player.SendSuccessMessage($"玩家{plrs[0].Name}所有的PermaBuff都被清除了.");
 					return;
-                }
+            }
 				var acc = TShock.UserAccounts.GetUserAccountByName(args.Parameters[0]);
 				if (acc == null)
 				{
-                    args.Player.SendErrorMessage("没有找到该玩家或账户");
-                    return;
-                }
-                DB.ClearPlayerBuffs(acc.ID);
-                args.Player.SendSuccessMessage($"用户{acc.Name}所有的PermaBuff都被清除了.");
-
+                args.Player.SendErrorMessage("没有找到该玩家或账户");
+                return;
             }
-            else
+            DB.ClearPlayerBuffs(acc.ID);
+            args.Player.SendSuccessMessage($"用户{acc.Name}所有的PermaBuff都被清除了.");
+
+        }
+        else
 			{
 				if (!args.Player.RealPlayer)
 				{
@@ -717,4 +717,3 @@ namespace Permabuffs_V2
 		}
 		#endregion
 	}
-}

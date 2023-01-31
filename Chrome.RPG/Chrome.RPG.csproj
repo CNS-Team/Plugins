@@ -1,4 +1,8 @@
-
 <Project Sdk="Microsoft.NET.Sdk">
 	<Import Project="..\template.targets" />
+	<ItemGroup>
+	  <ProjectReference Include="..\Chrome.Task\Chrome.Task.csproj" />
+	  <ProjectReference Include="..\Chrome.Title\Chrome.Title.csproj" />
+	  <ProjectReference Include="..\StatusTxtMgr\StatusTxtMgr.csproj" />
+	</ItemGroup>
 </Project>
