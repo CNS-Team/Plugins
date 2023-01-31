@@ -9,12 +9,13 @@ namespace Chrome.EntryCondition
         {
             try
             {
-                string path = "tshock/Chrome.EntryCondition.json";
+                var path = "tshock/Chrome.EntryCondition.json";
                 if (!File.Exists(path))
                 {
-                    FileTools.CreateIfNot(Path.Combine(path), JsonConvert.SerializeObject(快速配置rest.配置, Formatting.Indented));
-                    快速配置rest.配置 = JsonConvert.DeserializeObject<Config>(File.ReadAllText(Path.Combine(path)));
-                    File.WriteAllText(path, JsonConvert.SerializeObject(快速配置rest.配置, Formatting.Indented));
+                    FileTools.CreateIfNot(Path.Combine(path), JsonConvert.SerializeObject(EntryCondition.配置, Formatting.Indented));
+                    EntryCondition.配置 = JsonConvert.DeserializeObject<Config>(File.ReadAllText(Path.Combine(path)));
+                    EntryCondition?.配置.NPC召唤限制.Add(50, new() { 1 });
+                    File.WriteAllText(path, JsonConvert.SerializeObject(EntryCondition.配置, Formatting.Indented));
                 }
             }
             catch
@@ -23,9 +24,12 @@ namespace Chrome.EntryCondition
             }
         }
         public bool 启用插件 = false;
-        public bool 允许管理员忽略职业判断 = true;
-        public string 阻止进入提示 = "Chrome.RPG\n您当前职业不够资格进入该服务器";
+        public bool 允许管理员忽略进入判断 = true;
+        public string 职业阻止进入提示 = "Chrome.RPG\n您当前职业不够资格进入该服务器";
         public List<string> 允许进入的职业 = new() { };
+        public string 任务阻止进入提示 = "Chrome.RPG\n您当前需要完成任务\n{0}\n才能进入该服务器";
+        public List<int> 进入需要完成的任务 = new() { };
+        public Dictionary<int, List<int>> NPC召唤限制 = new() { };
     }
 }
 

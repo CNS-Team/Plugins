@@ -5,6 +5,7 @@ using Terraria.Localization;
 using TerrariaApi.Server;
 using TShockAPI;
 using TShockAPI.DB;
+using TShockAPI.Hooks;
 
 namespace Chrome.RPG
 {
@@ -25,7 +26,7 @@ namespace Chrome.RPG
         }
         //插件启动时，用于初始化各种狗子
         public static Config 配置 = new();
-        //public static string 货币名 = 配置.货币名; 
+        //public static string 货币名 = 配置.货币名;
         public override void Initialize()
         {
             ServerApi.Hooks.GameInitialize.Register(this, OnInitialize);//钩住游戏初始化时
@@ -34,6 +35,7 @@ namespace Chrome.RPG
             GetDataHandlers.KillMe += Kill;
             ServerApi.Hooks.ServerChat.Register(this, OnChat);
             global::StatusTxtMgr.StatusTxtMgr.Hooks.StatusTextUpdate.Register(ST, 180uL);
+            GeneralHooks.ReloadEvent += new GeneralHooks.ReloadEventD(this.Reload);
             Config.GetConfig();
             Reload();
         }
@@ -46,9 +48,9 @@ namespace Chrome.RPG
                 ServerApi.Hooks.GameInitialize.Deregister(this, OnInitialize);//销毁游戏初始化狗子
                 ServerApi.Hooks.ServerJoin.Deregister(this, new HookHandler<JoinEventArgs>(this.OnJoin));
                 ServerApi.Hooks.NpcKilled.Deregister(this, new HookHandler<NpcKilledEventArgs>(this.OnNpcKill));//动物死亡钩子
-                GetDataHandlers.KillMe += Kill;
+                GetDataHandlers.KillMe -= Kill;
                 ServerApi.Hooks.ServerChat.Deregister(this, OnChat);
-
+                GeneralHooks.ReloadEvent -= new GeneralHooks.ReloadEventD(this.Reload);
             }
             base.Dispose(disposing);
         }
@@ -130,7 +132,6 @@ namespace Chrome.RPG
         {
             //第一个是权限，第二个是子程序，第三个是指令
             LanguageManager.Instance.SetLanguage(GameCulture.FromCultureName(GameCulture.CultureName.Chinese));
-            Commands.ChatCommands.Add(new Command("QwRPG.use", 重载, "reload") { });
             Commands.ChatCommands.Add(new Command("QwRPG.use", Rank, "升级", "rank", "sj") { HelpText = "升级职业" });
             Commands.ChatCommands.Add(new Command("QwRPG.use", LookRank, "下一级") { HelpText = "查询下一级" });
             Commands.ChatCommands.Add(new Command("QwRPG.use", Query, "查询") { HelpText = "查询货币" });
@@ -269,7 +270,7 @@ public static void Status(TSPlayer plr)
                         }
                         货币 = DB.QueryCost(args.Player.Name);
                         long 给货币;
-                        if (!long.TryParse(args.Parameters[2], out 给货币))
+                        if (!long.TryParse(args.Parameters[2], out 给货币) || 给货币 <= 0)
                         {
                             args.Player.SendErrorMessage($"请输入正确的货币数量");
                             return;
@@ -285,7 +286,7 @@ public static void Status(TSPlayer plr)
                             return;
                         }
                         DB.AddCost(args.Parameters[1], 货币, true);
-                        DB.DelCost(args.Player.Name, 货币, true);
+                        DB.DelCost(args.Player.Name, 给货币, true);
                         args.Player.SendInfoMessage($"转账成功！您还剩{货币名}{货币 - 给货币}");
                         break;
                     case "clear":
@@ -435,7 +436,7 @@ public static void Status(TSPlayer plr)
                             string 升级BUFF = "";
                             foreach (var z in text.升级指令)
                             {
-                             
+
                                 if (z.Contains("/g ") || z.Contains(".g "))//g 1 我 数量 前缀
                                 {
                                     var w = z.Split(" ");
@@ -482,16 +483,7 @@ public static void Status(TSPlayer plr)
             else
             {
                 string 玩家名 = args.Player.Name;
-                string? 当前职业 = "";
-                long 货币 = 0;
-                using (var 表 = TShock.DB.QueryReader("SELECT * FROM Chrome_RPG WHERE `玩家名`=@0", 玩家名))
-                {
-                    if (表.Read())
-                    {
-                        当前职业 = 表.Get<string>("职业");
-                        货币 = 表.Get<long>("点券");
-                    }
-                }
+                string? 当前职业 = DB.QueryRPGGrade(args.Player.Name);
                 string 货币名 = 配置.货币名;
                 List<Config.职业格式> togroup = new();
                 foreach (var 职业 in 配置.职业配置表)
@@ -572,44 +564,8 @@ public static void Status(TSPlayer plr)
                                 }
                                 else
                                 {
-                                    List<string> 进度 = 配置.职业配置表.Find(s => s.职业 == args.Parameters[0] && s.上一职业 == 当前职业).进度限制;
-                                    if (进度.Count > 0)
-                                    {
-                                        List<string> 当前进度 = Progress(args);
-                                        foreach (var b in 进度)
-                                        {
-                                            if (当前进度.Exists(a => a == b))
-                                            {
-
-                                            }
-                                            else
-                                            {
-                                                args.Player.SendInfoMessage($"升级失败。需要打败[c/FF3333:{b}]");
-                                                return;
-                                            }
-                                        }
-                                    }
-                                    long 升级货币 = 配置.职业配置表.Find(s => s.职业 == args.Parameters[0] && s.上一职业 == 当前职业).升级货币;
-                                    if (货币 < 升级货币)
-                                    {
-                                        args.Player.SendInfoMessage($"升级失败,你当前拥有{货币名}{货币},升级所需{货币名}{升级货币}");
-                                    }
-                                    else
-                                    {
-                                        DB.DelCost(玩家名, 升级货币, true);
-                                        DB.RankGrade(玩家名, args.Parameters[0]);
-                                        //args.Player.tempGroup = TShock.Groups.GetGroupByName("superadmin");
-                                        var 职业 = 配置.职业配置表.Find(s => s.职业 == args.Parameters[0]);
-                                        if (职业 != null)
-                                            foreach (var z in 职业.升级指令)
-                                            {
-                                                if (z == null) { continue; }
-                                                string text = string.Format(z, 玩家名);
-                                                Commands.HandleCommand(TSPlayer.Server, text);
-                                            }
-                                        //args.Player.tempGroup = null;
-                                        if (配置.升级广播) TShock.Utils.Broadcast($"恭喜[c/FFFF66:{玩家名}]从[c/FFFF33:{当前职业}]升级为[c/FF8000:{args.Parameters[0]}]", 55, 169, 226);
-                                    }
+                                    var 职业 = togroup.Find(s => s.职业 == args.Parameters[0]);
+                                    RankGrabe(args.Player, 职业);
                                 }
                             }
                         }
@@ -624,49 +580,133 @@ public static void Status(TSPlayer plr)
                                 else
                                 {
                                     var 职业 = togroup[0];
-                                    string 升级职业 = togroup[0].职业;
-                                    long 升级货币 = togroup[0].升级货币;
-                                    List<string> 进度 = 职业.进度限制;
-                                    if (进度.Count > 0)
-                                    {
-                                        List<string> 当前进度 = Progress(args);
-                                        foreach (var b in 进度)
-                                        {
-                                            if (当前进度.Exists(a => a == b))
-                                            {
-
-                                            }
-                                            else
-                                            {
-                                                args.Player.SendInfoMessage($"升级失败。需要打败[c/FF3333:{b}]");
-                                                return;
-                                            }
-                                        }
-                                    }
-                                    if (货币 < 升级货币)
-                                    {
-                                        args.Player.SendInfoMessage($"升级失败,你当前{货币名}{货币},升级所需{货币名}{升级货币}");
-                                    }
-                                    else
-                                    {
-                                        DB.DelCost(args.Player.Name, 升级货币, true);
-                                        DB.RankGrade(args.Player.Name, 升级职业);
-                                        //args.Player.tempGroup = TShock.Groups.GetGroupByName("superadmin");
-                                        foreach (var z in 职业.升级指令)
-                                        {
-                                            if (z == null) { continue; }
-                                            string text = string.Format(z, 玩家名);
-                                            Commands.HandleCommand(TSPlayer.Server, text);
-                                        }
-                                        //args.Player.tempGroup = null;
-                                        if (配置.升级广播) TShock.Utils.Broadcast($"恭喜[c/FFFF66:{玩家名}]从[c/FFFF33:{当前职业}]升级为[c/FF8000:{职业.职业}]", 55, 169, 226);
-                                    }
+                                    RankGrabe(args.Player, 职业);
                                 }
                             }
                         }
                     }
                 }
             }
+        }
+        public void RankGrabe(TSPlayer plr, Config.职业格式 职业)
+        {
+            string 升级职业 = 职业.职业;
+            long 升级货币 = 职业.升级货币;
+            List<string> 进度 = 职业.进度限制;
+            List<int> 任务 = 职业.任务限制;
+            string 玩家名 = plr.Name;
+            long 货币 = DB.QueryCost(plr.Name);
+            string? 当前职业 = DB.QueryRPGGrade(plr.Name);
+            string 货币名 = 配置.货币名;
+            if (进度.Count > 0)
+            {
+                List<string> 当前进度 = Progress();
+                foreach (var b in 进度)
+                {
+                    if (!当前进度.Contains(b))
+                    {
+                        plr.SendInfoMessage($"升级失败。需要打败[c/FF3333:{b}]");
+                        return;
+                    }
+                }
+            }
+            if (任务.Count > 0)
+            {
+                List<int> 完成任务 = DB.QueryFinishTask(玩家名);
+                string text = "";
+                foreach (var b in 任务)
+                {
+                    if (!完成任务.Contains(b))
+                    {
+                        var r = 任务系统.任务系统.GetTask(b);
+                        text += $"{r.任务ID}.{r.任务名称}\n";
+                        plr.SendMessage($"[c/DCE923:升级失败。需要完成任务]\n{text}",18,252,221);
+                        return;
+                    }
+                }
+            }
+            if (职业.使用物品升级.Count != 0)
+            {
+                {
+                    foreach (var r in 职业.使用物品升级)
+                    {
+                        var _item = r.Split(',');
+                        bool item_bool = false;
+                        for (int i = 10; i < 49; i++) //背包从第二排开始到最后一个背包位置
+                        {
+                            if (plr.TPlayer.inventory[i].netID == Convert.ToInt32(_item[0]))
+                            {
+                                if (plr.TPlayer.inventory[i].stack >= Convert.ToInt32(_item[1]))
+                                {
+                                    item_bool = true;
+                                    break;
+                                }
+                                else
+                                {
+
+                                    plr.SendErrorMessage("没有足够的物品");
+                                    return;
+                                }
+                            }
+                        }
+                        if (!item_bool)
+                        {
+                            plr.SendErrorMessage($"[c/FF6103:您的背包中没有任务物品:][i/s{Convert.ToInt32(_item[1])}:{Convert.ToInt32(_item[0])}]");
+                            plr.SendInfoMessage("[c/A066D3:任务物品请不要放在背包最上排中]");
+                            return;
+                        }
+                    }
+                }
+                //消耗任务物品
+                {
+                    foreach (var r in 职业.使用物品升级)
+                    {
+                        var _item = r.Split(',');
+                        for (int i = 10; i < 49; i++) //背包从第二排开始到最后一个背包位置
+                        {
+                            if (plr.TPlayer.inventory[i].netID == Convert.ToInt32(_item[0]))
+                            {
+                                if (plr.TPlayer.inventory[i].stack >= Convert.ToInt32(_item[1]))
+                                {
+                                    var stack = plr.TPlayer.inventory[i].stack -= Convert.ToInt32(_item[1]);
+                                    任务系统.任务系统.PlayItemSet(plr.Index, i, Convert.ToInt32(_item[0]), stack);
+                                    break;
+                                }
+                                else
+                                {
+
+                                    plr.SendErrorMessage("没有足够的物品");
+                                    return;
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+            else
+            {
+                if (货币 < 升级货币)
+                {
+                    plr.SendInfoMessage($"升级失败,你当前{货币名}{货币},升级所需{货币名}{升级货币}");
+                    return;
+                }
+            }
+
+
+
+            DB.DelCost(plr.Name, 升级货币, true);
+            DB.RankGrade(plr.Name, 升级职业);
+            //args.Player.tempGroup = TShock.Groups.GetGroupByName("superadmin");
+            foreach (var z in 职业.升级指令)
+            {
+                if (z == null) { continue; }
+                string text = string.Format(z, 玩家名);
+                Commands.HandleCommand(TSPlayer.Server, text);
+            }
+            //args.Player.tempGroup = null;
+            if (配置.升级广播) TShock.Utils.Broadcast($"恭喜[c/FFFF66:{玩家名}]从[c/FFFF33:{当前职业}]升级为[c/FF8000:{职业.职业}]", 55, 169, 226);
+
         }
         private async void OnJoin(JoinEventArgs args)
         {
@@ -715,7 +755,7 @@ public static void Status(TSPlayer plr)
             var 怪物血量 = args.npc.lifeMax;
             DB.AddCost(plr.Name, (long)(怪物血量 * 配置.获取货币血量比例), true);
         }
-        private void Kill(object o, GetDataHandlers.KillMeEventArgs args)
+        private void Kill(object? o, GetDataHandlers.KillMeEventArgs args)
         {
             if (!args.Player.IsLoggedIn)
             {
@@ -754,16 +794,16 @@ public static void Status(TSPlayer plr)
                 称号插件.称号插件.称号信息[plr.Name].后后缀 = z.后缀;
             }
         }
-        private void 重载(CommandArgs args)
+        private void Reload(ReloadEventArgs args)
         {
             try
             {
                 Reload();
-                args.Player.SendErrorMessage($"[Chrome_RPG]重载成功！");
+                args.Player.SendErrorMessage($"[Chrome.RPG]重载成功！");
             }
             catch
             {
-                TSPlayer.Server.SendErrorMessage($"[Chrome_RPG]配置文件读取错误");
+                TSPlayer.Server.SendErrorMessage($"[Chrome.RPG]配置文件读取错误");
             }
         }
         public static void Reload()
@@ -772,7 +812,7 @@ public static void Status(TSPlayer plr)
             配置 = JsonConvert.DeserializeObject<Config>(File.ReadAllText(Path.Combine("tshock/Chrome.RPG.json")));
             File.WriteAllText("tshock/Chrome.RPG.json", JsonConvert.SerializeObject(配置, Formatting.Indented));
         }
-        private List<string> Progress(CommandArgs args)//获取进度详情
+        private List<string> Progress()//获取进度详情
         {
             List<string> list = new List<string>();
             if (NPC.downedSlimeKing)//史莱姆王

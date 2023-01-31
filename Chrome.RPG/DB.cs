@@ -254,5 +254,49 @@ namespace Chrome.RPG
                 }
             }
         }
+        /// <summary>
+        /// 查已完成任务
+        /// </summary>
+        /// <param name="玩家名"></param>
+        /// <returns></returns>
+        public static List<int> QueryFinishTask(string 玩家名)
+        {
+            string 已完成任务 = "";
+            using (var 表 = TShock.DB.QueryReader("SELECT * FROM " + "任务系统" + " WHERE `玩家名` = @0", 玩家名))
+            {
+                if (表.Read())
+                {
+                    已完成任务 = 表.Get<string>("已完成任务");
+                }
+            }
+            string[] 任务 = 已完成任务.Split(",");
+            List<int> list = new();
+            foreach (var z in 任务)
+            {
+                if (int.TryParse(z, out int id))
+                {
+                    list.Add(id);
+                }
+            }
+            return list;
+        }
+        /// <summary>
+        /// 查职业
+        /// </summary>
+        /// <param name="玩家名"></param>
+        /// <returns></returns>
+
+        public static string QueryRPGGrade(string 玩家名)
+        {
+            string 职业 = "";
+            using (var 表 = TShock.DB.QueryReader("SELECT * FROM Chrome_RPG WHERE `玩家名` = @0", 玩家名))
+            {
+                if (表.Read())
+                {
+                    职业 = 表.Get<string>("职业");
+                }
+            }
+            return 职业;
+        }
     }
 }

@@ -13,7 +13,7 @@ namespace QwRPG.shop
                 {
                     FileTools.CreateIfNot(Path.Combine("tshock/Chrome.Shop.json"), JsonConvert.SerializeObject(shop.Shop.配置, Formatting.Indented));
                     shop.Shop.配置 = JsonConvert.DeserializeObject<Config>(File.ReadAllText(Path.Combine("tshock/Chrome.Shop.json")));
-                    shop.Shop.配置.Shops.Add(new() { 价格 = 1000, 显示名 = "木材", 进度限制 = new() { "史莱姆王" }, 商品 = new() { new() { 数量 = 100, 前缀 = 0, 物品 = 9 } } });
+                    shop?.Shop.配置.Shops.Add(new() { 价格 = 1000, 显示名 = "木材", 进度限制 = new() { "史莱姆王" }, 商品 = new() { new() { 数量 = 100, 前缀 = 0, 物品 = 9 } } });
                     File.WriteAllText("tshock/Chrome.Shop.json", JsonConvert.SerializeObject(shop.Shop.配置, Formatting.Indented));
                 }
             }
@@ -37,7 +37,7 @@ namespace QwRPG.shop
             public int 数量 = 0;
             public int 前缀 = 0;
         }
-         public class QwRPG配置表
+        public class QwRPG配置表
         {
             public string 货币名 = "点券";
             public bool 是否头顶显示货币变化 = true;

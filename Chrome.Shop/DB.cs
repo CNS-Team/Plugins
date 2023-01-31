@@ -1,13 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
-using MySql.Data.MySqlClient;
-using System.Runtime.CompilerServices;
 using Terraria.Localization;
 using TShockAPI;
 using TShockAPI.DB;
 
 namespace QwRPG
 {
-    public class DB
+    public static class DB
     {
         /// <summary>
         /// -货币
@@ -18,7 +16,7 @@ namespace QwRPG
             var plr = TSPlayer.FindByNameOrID(玩家名);
             if (是否头顶显示 && plr.Count != 0 && shop.Shop.Qw配置.是否头顶显示货币变化)
             {
-                Utils.SendCombatMsg(String.Format(shop.Shop.Qw配置.货币减少时头顶显示, 点券), Color.AliceBlue, plr[0].TPlayer.position);
+                Utils.SendCombatMsg(string.Format(shop.Shop.Qw配置.货币减少时头顶显示, 点券), Color.AliceBlue, plr[0].TPlayer.position);
             }
             //QwRPG.Status(plr[0]);
             TShock.Log.Info($"{玩家名} 货币 - {点券}");
@@ -36,12 +34,12 @@ namespace QwRPG
             }
             */
         }
-        public class Utils
+        public static class Utils
         {
             // Token: 0x06000048 RID: 72 RVA: 0x00003D2C File Offset: 0x00001F2C
             public static void SendCombatMsg(string msg, Color color, Vector2 position)
             {
-                Terraria.NetMessage.SendData(119, -1, -1, NetworkText.FromLiteral(msg), (int)color.PackedValue, position.X, position.Y, 0f, 0, 0, 0);
+                Terraria.NetMessage.SendData(119, -1, -1, NetworkText.FromLiteral(msg), (int) color.PackedValue, position.X, position.Y, 0f, 0, 0, 0);
             }
         }
         /// <summary>

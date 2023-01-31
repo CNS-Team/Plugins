@@ -1,8 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
-
-using TShockAPI;
-
 using Newtonsoft.Json;
+using TShockAPI;
 
 namespace 称号插件
 {
@@ -12,7 +10,7 @@ namespace 称号插件
         {
             try
             {
-                string path = "tshock/Chrome.Title.json";
+                var path = "tshock/Chrome.Title.json";
                 if (!File.Exists(path))
                 {
                     FileTools.CreateIfNot(Path.Combine(path), JsonConvert.SerializeObject(称号插件.配置, Formatting.Indented));
@@ -65,4 +63,3 @@ namespace 称号插件
         }
     }
 }
-

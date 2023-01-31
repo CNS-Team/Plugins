@@ -8,15 +8,25 @@ namespace QwRPG.shop
     [ApiVersion(2, 1)]//api版本
     public class Shop : TerrariaPlugin
     {
+        /// <summary>
         /// 插件作者
+        /// </summary>
         public override string Author => "奇威复反";
+        /// <summary>
         /// 插件说明
+        /// </summary>
         public override string Description => "Chrome.RPG配套商店插件";
+        /// <summary>
         /// 插件名字
+        /// </summary>
         public override string Name => "Chrome.Shop";
+        /// <summary>
         /// 插件版本
+        /// </summary>
         public override Version Version => new(1, 2, 0, 0);
+        /// <summary>
         /// 插件处理
+        /// </summary>
         public Shop(Main game) : base(game)
         {
         }
@@ -25,17 +35,19 @@ namespace QwRPG.shop
         public static Config.QwRPG配置表 Qw配置 = new();
         public override void Initialize()
         {
-            ServerApi.Hooks.GameInitialize.Register(this, OnInitialize);//钩住游戏初始化时
+            ServerApi.Hooks.GameInitialize.Register(this, this.OnInitialize);//钩住游戏初始化时
             Config.GetConfig();
             Reload();
         }
+        /// <summary>
         /// 插件关闭时
+        /// </summary>
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
                 // Deregister hooks here
-                ServerApi.Hooks.GameInitialize.Deregister(this, OnInitialize);//销毁游戏初始化狗子
+                ServerApi.Hooks.GameInitialize.Deregister(this, this.OnInitialize);//销毁游戏初始化狗子
 
             }
             base.Dispose(disposing);
@@ -44,8 +56,8 @@ namespace QwRPG.shop
         private void OnInitialize(EventArgs args)//游戏初始化的狗子
         {
             //第一个是权限，第二个是子程序，第三个是指令
-            Commands.ChatCommands.Add(new Command("QwRPG.admin", 重载, "reload") { });
-            Commands.ChatCommands.Add(new Command("QwRPG.shop", ShopCommand, "shop") { });
+            Commands.ChatCommands.Add(new Command("QwRPG.admin", this.重载, "reload") { });
+            Commands.ChatCommands.Add(new Command("QwRPG.shop", this.ShopCommand, "shop") { });
         }
         private void ShopCommand(CommandArgs args)
         {
@@ -70,7 +82,7 @@ namespace QwRPG.shop
                         }
                         else
                         {
-                            if(int.TryParse(args.Parameters[1],out y) && int.TryParse(args.Parameters[1],out s))
+                            if (int.TryParse(args.Parameters[1], out y) && int.TryParse(args.Parameters[1], out s))
                             {
                                 s--;
                             }
@@ -85,7 +97,7 @@ namespace QwRPG.shop
                             args.Player.SendErrorMessage("这页没有商品");
                             return;
                         }
-                        int i = 0;
+                        var i = 0;
                         for (s = 10 * s; s < 配置.Shops.Count; s++, i++)
                         {
                             if (i >= 10)
@@ -124,13 +136,13 @@ namespace QwRPG.shop
                             return;
                         }
                         var 商品 = 配置.Shops[s];
-                        long 货币 = DB.QueryCost(args.Player.Name);
-                        string 货币名 = Qw配置.货币名;
+                        var 货币 = DB.QueryCost(args.Player.Name);
+                        var 货币名 = Qw配置.货币名;
                         long 价格 = 商品.价格;
-                        List<string> 进度 = 商品.进度限制;
+                        var 进度 = 商品.进度限制;
                         if (进度.Count > 0)
                         {
-                            List<string> 当前进度 = Progress(args);
+                            var 当前进度 = this.Progress(args);
                             foreach (var b in 进度)
                             {
                                 if (当前进度.Exists(a => a == b))
@@ -194,7 +206,7 @@ namespace QwRPG.shop
         }
         private List<string> Progress(CommandArgs args)//获取进度详情
         {
-            List<string> list = new List<string>();
+            var list = new List<string>();
             if (NPC.downedSlimeKing)//史莱姆王
             {
                 list.Add("史莱姆王");

@@ -1,29 +1,36 @@
 ﻿using Microsoft.Xna.Framework;
-
+using Newtonsoft.Json;
 using Terraria;
 using TerrariaApi.Server;
-
 using TShockAPI;
-
-using Newtonsoft.Json;
 
 namespace 称号插件
 {
     [ApiVersion(2, 1)]//api版本
     public class 称号插件 : TerrariaPlugin
     {
+        /// <summary>
         /// 插件作者
+        /// </summary>
         public override string Author => "奇威复反";
+        /// <summary>
         /// 插件说明
+        /// </summary>
         public override string Description => "可高自由给玩家设置称号的称号插件";
+        /// <summary>
         /// 插件名字
+        /// </summary>
         public override string Name => "称号插件";
+        /// <summary>
         /// 插件版本
+        /// </summary>
         public override Version Version => new(1, 3, 0, 0);
+        /// <summary>
         /// 插件处理
+        /// </summary>
         public 称号插件(Main game) : base(game)
         {
-            Order = 1;//设置插件优先级为1，tshock为0，数字越大越优先
+            this.Order = 1;//设置插件优先级为1，tshock为0，数字越大越优先
         }
         //插件启动时，用于初始化各种狗子
         public static Config 配置 = new();//配置表信息，包含玩家称号信息
@@ -45,7 +52,7 @@ namespace 称号插件
 
         public override void Initialize()
         {
-            ServerApi.Hooks.GameInitialize.Register(this, OnInitialize);
+            ServerApi.Hooks.GameInitialize.Register(this, this.OnInitialize);
             ServerApi.Hooks.ServerChat.Register(this, 聊天);
             ServerApi.Hooks.NetGreetPlayer.Register(this, OnJoin);
             ServerApi.Hooks.ServerLeave.Register(this, OnLeave);
@@ -53,13 +60,15 @@ namespace 称号插件
             Config.GetConfig();
             Reload();
         }
+        /// <summary>
         /// 插件关闭时
+        /// </summary>
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
                 // Deregister hooks here
-                ServerApi.Hooks.GameInitialize.Deregister(this, OnInitialize);
+                ServerApi.Hooks.GameInitialize.Deregister(this, this.OnInitialize);
                 ServerApi.Hooks.ServerChat.Deregister(this, 聊天);
                 ServerApi.Hooks.NetGreetPlayer.Deregister(this, OnJoin);
                 ServerApi.Hooks.ServerLeave.Deregister(this, OnLeave);
@@ -71,16 +80,18 @@ namespace 称号插件
         {
             //第一个是权限，第二个是子程序，第三个是指令
             Commands.ChatCommands.Add(new Command("称号", 指令1, "称号", "给称号", "ch") { });
-            Commands.ChatCommands.Add(new Command("称号", 重载, "reload", "称号重载") { });
+            Commands.ChatCommands.Add(new Command("称号", this.重载, "reload", "称号重载") { });
             Commands.ChatCommands.Add(new Command("改称号", 指令2, "改称号", "gch") { });
         }
         private static void OnLeave(LeaveEventArgs args)
         {
             var plr = TShock.Players[args.Who];
-            if(plr != null)
-            if (称号信息.ContainsKey(plr.Name))//如果有该玩家信息，则删除
+            if (plr != null)
             {
-                称号信息.Remove(plr.Name);
+                if (称号信息.ContainsKey(plr.Name))//如果有该玩家信息，则删除
+                {
+                    称号信息.Remove(plr.Name);
+                }
             }
         }
         private static void OnJoin(GreetPlayerEventArgs args)
@@ -88,7 +99,7 @@ namespace 称号插件
             var plr = TShock.Players[args.Who];
             if (!称号信息.ContainsKey(plr.Name))//如果没有该玩家信息，则添加
             {
-                称号信息.Add(plr.Name, new Config.聊天信息() {前前缀 = "", 前缀 = null, 角色名 = null, 后缀 = null, 后后缀 = "" });
+                称号信息.Add(plr.Name, new Config.聊天信息() { 前前缀 = "", 前缀 = null, 角色名 = null, 后缀 = null, 后后缀 = "" });
             }
         }
         private static void 指令1(CommandArgs args)
@@ -100,21 +111,21 @@ namespace 称号插件
                     args.Player.SendInfoMessage($"远程配置开启中，该指令失效！");
                     return;
                 }
-                string? 玩家用户名 = args.Parameters[0];
-                string? 称号名 = "";
+                var 玩家用户名 = args.Parameters[0];
+                var 称号名 = "";
                 if (args.Parameters.Count == 1)
                 {
                     查称号(args, 玩家用户名);
                     return;
                 }
-                string? 称号位置 = args.Parameters[1];
+                var 称号位置 = args.Parameters[1];
                 if (args.Parameters[1] != "sc" && args.Parameters[1] != "删除" && args.Parameters[1] != "qqz" &&
                     args.Parameters[1] != "前前缀" && args.Parameters[1] != "qz" && args.Parameters[1] != "前缀" &&
                     args.Parameters[1] != "js" && args.Parameters[1] != "角色名" && args.Parameters[1] != "jsm" && args.Parameters[1] != "角色"
                     && args.Parameters[1] != "hz" && args.Parameters[1] != "后缀" && args.Parameters[1] != "" && args.Parameters[1] != "后后缀")//我已经忘记为什么这样写了，能用就行/doge
                 {
 
-                    int max = args.Parameters.Count - 1;
+                    var max = args.Parameters.Count - 1;
                     称号名 = string.Join(" ", args.Parameters.GetRange(1, max));
                     if (称号名.Length <= 配置.称号最大字符数)
                     {
@@ -135,7 +146,7 @@ namespace 称号插件
                 }
                 if (称号位置 != "sc" && 称号位置 != "删除")
                 {
-                    int max = args.Parameters.Count - 2;
+                    var max = args.Parameters.Count - 2;
                     称号名 = string.Join(" ", args.Parameters.GetRange(2, max));
                 }
                 if (称号名.Length <= 配置.称号最大字符数)
@@ -179,12 +190,12 @@ namespace 称号插件
             }
             try
             {
-                string? 玩家用户名 = args.Player.Name;
-                string? 称号位置 = args.Parameters[0];
-                string? 称号名 = "";
-                if (称号位置 != "sc" && 称号位置 != "删除" || 配置.是否允许无称号玩家给自己称号)
+                var 玩家用户名 = args.Player.Name;
+                var 称号位置 = args.Parameters[0];
+                var 称号名 = "";
+                if ((称号位置 != "sc" && 称号位置 != "删除") || 配置.是否允许无称号玩家给自己称号)
                 {
-                    int max = args.Parameters.Count - 1;
+                    var max = args.Parameters.Count - 1;
                     称号名 = string.Join(" ", args.Parameters.GetRange(1, max));//将指令后面的部分合起来
                 }
                 else
@@ -221,11 +232,11 @@ namespace 称号插件
         {
             if (配置.称号设置.Exists(a => a.玩家用户名 == 玩家用户名))
             {
-                string? 前前缀 = "";
+                var 前前缀 = "";
                 string? 前缀 = null;
                 string? 角色名 = null;
                 string? 后缀 = null;
-                string? 后后缀 = "";
+                var 后后缀 = "";
                 var z = 配置.称号设置.Find(s => s.玩家用户名 == 玩家用户名);
                 if (z == null)
                 {
@@ -247,11 +258,11 @@ namespace 称号插件
         }
         public static void 设置称号(CommandArgs args, string 玩家用户名, string? 称号位置, string? 称号名)
         {
-            string? 前前缀 = "";
+            var 前前缀 = "";
             string? 前缀 = null;
             string? 角色名 = null;
             string? 后缀 = null;
-            string? 后后缀 = "";
+            var 后后缀 = "";
             if (配置.称号设置.Exists(s => s.玩家用户名 == 玩家用户名))
             {
                 var z = 配置.称号设置.Find(s => s.玩家用户名 == 玩家用户名);
@@ -334,10 +345,11 @@ namespace 称号插件
                 TSPlayer.Server.SendErrorMessage($"[称号插件]配置文件读取错误");
             }
         }
-        static readonly HttpClient client = new HttpClient();
+
+        private static readonly HttpClient client = new HttpClient();
         public static void Remove(string 玩家用户名)//删除称号
         {
-            配置.称号设置.RemoveAll(s => (s.玩家用户名 == 玩家用户名));
+            配置.称号设置.RemoveAll(s => s.玩家用户名 == 玩家用户名);
             File.WriteAllText(path, JsonConvert.SerializeObject(配置, Formatting.Indented));
         }
         public static void Add(string 玩家用户名, string? 前前缀, string? 前缀, string? 角色名, string? 后缀, string? 后后缀)//添加称号
@@ -360,9 +372,21 @@ namespace 称号插件
 
         private static void 聊天(ServerChatEventArgs args)
         {
-            if (!配置.是否开启称号插件) return;
-            if (!聊天检测(args)) return;
-            if (args.Handled) return;
+            if (!配置.是否开启称号插件)
+            {
+                return;
+            }
+
+            if (!聊天检测(args))
+            {
+                return;
+            }
+
+            if (args.Handled)
+            {
+                return;
+            }
+
             var plr = TShock.Players[args.Who];
             if (!称号信息.ContainsKey(plr.Name))
             {
@@ -418,14 +442,7 @@ namespace 称号插件
 
                     前缀 = c.前缀 ?? plr.Group.Prefix;
                     角色名 = c.角色名 ?? plr.Name;
-                    if (c.后缀 == null)
-                    {
-                        后缀 = plr.Group.Suffix;
-                    }
-                    else
-                    {
-                        后缀 = c.后缀;
-                    }
+                    后缀 = c.后缀 ?? plr.Group.Suffix;
                     c.后后缀 ??= "";
                     后后缀 = c.后后缀;
                     发送聊天(args, args.Text, 前前缀, 前缀, 角色名, 后缀, 后后缀, c.颜色);
@@ -455,8 +472,8 @@ namespace 称号插件
             string 发送内容;
             if (聊天检测(args))
             {
-                string 聊天格式 = 配置.聊天格式.Replace("{前前缀}", "{0}").Replace("{前缀}", "{1}").Replace("{角色名}", "{2}").Replace("{后缀}", "{3}").Replace("{后后缀}", "{4}").Replace("{聊天内容}", "{5}");
-                发送内容 = String.Format(聊天格式, 前前缀, 前缀, 角色名, 后缀, 后后缀, 聊天内容);
+                var 聊天格式 = 配置.聊天格式.Replace("{前前缀}", "{0}").Replace("{前缀}", "{1}").Replace("{角色名}", "{2}").Replace("{后缀}", "{3}").Replace("{后后缀}", "{4}").Replace("{聊天内容}", "{5}");
+                发送内容 = string.Format(聊天格式, 前前缀, 前缀, 角色名, 后缀, 后后缀, 聊天内容);
                 if (args.Handled)
                 {
                     return false;
@@ -527,19 +544,19 @@ namespace 称号插件
         {
             if (配置.是否开启聊天气泡)
             {
-                string 名称格式 = 配置.聊天气泡启用时玩家名称格式.Replace("{前前缀}", "{0}").Replace("{前缀}", "{1}").Replace("{角色名}", "{2}").Replace("{后缀}", "{3}").Replace("{后后缀}", "{4}");
-                TSPlayer tsplr = TShock.Players[args.Who];
-                string 玩家名称 = String.Format(名称格式, 前前缀, 前缀, 角色名, 后缀, 后后缀);
-                string 玩家原名称 = tsplr.Name;
+                var 名称格式 = 配置.聊天气泡启用时玩家名称格式.Replace("{前前缀}", "{0}").Replace("{前缀}", "{1}").Replace("{角色名}", "{2}").Replace("{后缀}", "{3}").Replace("{后后缀}", "{4}");
+                var tsplr = TShock.Players[args.Who];
+                var 玩家名称 = string.Format(名称格式, 前前缀, 前缀, 角色名, 后缀, 后后缀);
+                var 玩家原名称 = tsplr.Name;
                 Main.player[args.Who].name = 玩家名称;
-                NetMessage.SendData((int)PacketTypes.PlayerInfo, -1, -1, Terraria.Localization.NetworkText.FromLiteral(玩家名称), args.Who, 0, 0, 0, 0);//发送数据包修改玩家名称
+                NetMessage.SendData((int) PacketTypes.PlayerInfo, -1, -1, Terraria.Localization.NetworkText.FromLiteral(玩家名称), args.Who, 0, 0, 0, 0);//发送数据包修改玩家名称
                 Main.player[args.Who].name = 玩家原名称;
-                Terraria.Net.NetPacket packet = Terraria.GameContent.NetModules.NetTextModule.SerializeServerMessage
+                var packet = Terraria.GameContent.NetModules.NetTextModule.SerializeServerMessage
                 (
-                    Terraria.Localization.NetworkText.FromLiteral(args.Text), new Microsoft.Xna.Framework.Color(tsplr.Group.R, tsplr.Group.G, tsplr.Group.B), (byte)args.Who
+                    Terraria.Localization.NetworkText.FromLiteral(args.Text), new Microsoft.Xna.Framework.Color(tsplr.Group.R, tsplr.Group.G, tsplr.Group.B), (byte) args.Who
                 );
                 Terraria.Net.NetManager.Instance.Broadcast(packet);
-                NetMessage.SendData((int)PacketTypes.PlayerInfo, -1, -1, Terraria.Localization.NetworkText.FromLiteral(玩家原名称), args.Who, 0, 0, 0, 0);//发送数据包修改玩家名称
+                NetMessage.SendData((int) PacketTypes.PlayerInfo, -1, -1, Terraria.Localization.NetworkText.FromLiteral(玩家原名称), args.Who, 0, 0, 0, 0);//发送数据包修改玩家名称
                 //玩家视野[c/FFFFFF:]不生效,[i:]生效
                 TSPlayer.Server.SendMessage($"<{玩家名称}> " + args.Text, tsplr.Group.R, tsplr.Group.G, tsplr.Group.B);//在控制台，[c/FFFFFF:],[i:]仍然生效
                 TShock.Log.Info($"{玩家原名称}>>> <{玩家名称}> " + args.Text

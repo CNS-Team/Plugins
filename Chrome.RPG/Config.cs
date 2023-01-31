@@ -52,8 +52,10 @@ namespace Chrome.RPG
             public string 上一职业 = "";
             public string 前缀 = "";
             public string 后缀 = "";
+            public List<int> 任务限制 = new() { };
             public List<string> 进度限制 = new() { };
             public List<string> 升级指令 = new() { };
+            public List<string> 使用物品升级 = new() { }; 
             public long 升级货币 = 0;
         }
     }
