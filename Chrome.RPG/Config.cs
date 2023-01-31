@@ -13,9 +13,9 @@ public class Config
             {
                 FileTools.CreateIfNot(Path.Combine("tshock/Chrome.RPG.json"), JsonConvert.SerializeObject(ChromePlugin.配置, Formatting.Indented));
                 ChromePlugin.配置 = JsonConvert.DeserializeObject<Config>(File.ReadAllText(Path.Combine("tshock/Chrome.RPG.json")));
-                ChromePlugin?.配置.杀死不给货币NPC.Add(488);
-                ChromePlugin?.配置.重置职业指令.Add("/clearbuffs");
-                ChromePlugin?.配置.职业配置表.Add(new() { 职业 = "战士", 前缀 = "【战士】", 升级货币 = 1000, 上一职业 = "无职业" });
+                ChromePlugin.配置?.杀死不给货币NPC.Add(488);
+                ChromePlugin.配置?.重置职业指令.Add("/clearbuffs");
+                ChromePlugin.配置?.职业配置表.Add(new() { 职业 = "战士", 前缀 = "【战士】", 升级货币 = 1000, 上一职业 = "无职业" });
                 File.WriteAllText("tshock/Chrome.RPG.json", JsonConvert.SerializeObject(ChromePlugin.配置, Formatting.Indented));
             }
         }

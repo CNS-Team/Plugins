@@ -9,15 +9,25 @@ namespace Chrome.EntryCondition;
 [ApiVersion(2, 1)]//api版本
 public class Plugin : TerrariaPlugin
 {
+    /// <summary>
     /// 插件作者
+    /// </summary>
     public override string Author => "奇威复反";
+    /// <summary>
     /// 插件说明
+    /// </summary>
     public override string Description => "Chrome.EntryCondition";
+    /// <summary>
     /// 插件名字
+    /// </summary>
     public override string Name => "Chrome.EntryCondition";
+    /// <summary>
     /// 插件版本
+    /// </summary>
     public override Version Version => new(1, 0, 0, 0);
+    /// <summary>
     /// 插件处理
+    /// </summary>
     public Plugin(Main game) : base(game)
     {
     }
@@ -35,7 +45,9 @@ public class Plugin : TerrariaPlugin
     }
 
 
+    /// <summary>
     /// 插件关闭时
+    /// </summary>
     protected override void Dispose(bool disposing)
     {
         if (disposing)
@@ -72,8 +84,12 @@ public class Plugin : TerrariaPlugin
     // Token: 0x06000021 RID: 33 RVA: 0x00002660 File Offset: 0x00000860
     private void OnNetGetdata(GetDataEventArgs args)
     {
-        TSPlayer plr = TShock.Players[args.Msg.whoAmI];
-        if (plr == null) return;
+        var plr = TShock.Players[args.Msg.whoAmI];
+        if (plr == null)
+        {
+            return;
+        }
+
         if ((int) args.MsgID == 61)
         {
 
@@ -83,24 +99,36 @@ public class Plugin : TerrariaPlugin
     {
 
         var plr = TShock.Players[args.Who];
-        if (plr == null) return;
-        if (!配置.启用插件) return;
-        if (plr.HasPermission("Chrome.EntryCondition") && 配置.允许管理员忽略进入判断) return;
-        string 阻止提示 = "";
+        if (plr == null)
+        {
+            return;
+        }
+
+        if (!配置.启用插件)
+        {
+            return;
+        }
+
+        if (plr.HasPermission("Chrome.EntryCondition") && 配置.允许管理员忽略进入判断)
+        {
+            return;
+        }
+
+        var 阻止提示 = "";
         if (配置.允许进入的职业.Count > 0)
         {
-            string 职业 = DB.QueryGrade(plr.Name);
+            var 职业 = DB.QueryGrade(plr.Name);
             if (!配置.允许进入的职业.Contains(职业))
             {
                 阻止提示 = 配置.职业阻止进入提示 + "\n";
             }
         }
-        List<int> 任务 = 任务系统.DB.QueryFinishTask(plr.Name);
+        var 任务 = Quest.DB.QueryFinishTask(plr.Name);
         foreach (var z in 配置.进入需要完成的任务)
         {
             if (!任务.Contains(z))
             {
-                var r = 任务系统.QuestPlugin.GetTask(z);
+                var r = Quest.QuestPlugin.GetTask(z);
                 if (r.是否主线)
                 {
                     阻止提示 += string.Format(配置.任务阻止进入提示, "您需要完成主线任务   " + r.任务名称 + "\n");
