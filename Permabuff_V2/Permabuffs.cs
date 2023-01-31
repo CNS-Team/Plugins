@@ -96,22 +96,22 @@ namespace Permabuffs_V2;
 
 			int id = TShock.Players[args.Who].Account.ID;
 
-			if (!DB.PlayerBuffs.ContainsKey(id))
-			{
-				if (DB.LoadUserBuffs(id))
-				{
-					if (DB.PlayerBuffs[id].bufflist.Count > 0)
-						TShock.Players[args.Who].SendInfoMessage("你上一个会话({0})的PeraBuff仍处于有效状态!", string.Join(", ", DB.PlayerBuffs[id].bufflist.Select(p => TShock.Utils.GetBuffName(p))));
-				}
-				else
-					DB.AddNewUser(TShock.Players[args.Who].Account.ID);
-			}
-			else
-			{
-				//loadDBInfo(args.Who);
-				if (DB.PlayerBuffs[id].bufflist.Count > 0)
-					TShock.Players[args.Who].SendInfoMessage("你上一个会话({0})的PeraBuff仍处于有效状态!", string.Join(", ", DB.PlayerBuffs[id].bufflist.Select(p => TShock.Utils.GetBuffName(p))));
-			}
+// 			if (!DB.PlayerBuffs.ContainsKey(id))
+// 			{
+// 				if (DB.LoadUserBuffs(id))
+// 				{
+// 					if (DB.PlayerBuffs[id].bufflist.Count > 0)
+// 						TShock.Players[args.Who].SendInfoMessage("你上一个会话({0})的PeraBuff仍处于有效状态!", string.Join(", ", DB.PlayerBuffs[id].bufflist.Select(p => TShock.Utils.GetBuffName(p))));
+// 				}
+// 				else
+// 					DB.AddNewUser(TShock.Players[args.Who].Account.ID);
+// 			}
+// 			else
+// 			{
+// 				//loadDBInfo(args.Who);
+// 				if (DB.PlayerBuffs[id].bufflist.Count > 0)
+// 					TShock.Players[args.Who].SendInfoMessage("你上一个会话({0})的PeraBuff仍处于有效状态!", string.Join(", ", DB.PlayerBuffs[id].bufflist.Select(p => TShock.Utils.GetBuffName(p))));
+// 			}
 		}
 
 		public static void OnPostLogin(PlayerPostLoginEventArgs args)
