@@ -43,11 +43,11 @@ public abstract class LazyPlugin : TerrariaPlugin
 
     protected LazyPlugin(Main game) : base(game)
     {
+        AutoLoad();
     }
 
     public override void Initialize()
     {
-        this.AutoLoad();
     }
 
     internal void AutoLoad()
