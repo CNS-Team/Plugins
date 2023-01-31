@@ -8,28 +8,27 @@ using System.Text;
 using System.Threading.Tasks;
 using Terraria;
 
-namespace PChrome.ProgressedShop
+namespace PChrome.ProgressedShop;
+
+public class Config : Config<Config>
 {
-    public class Config : Config<Config>
-    {
-        public ProgressItem[] items;
-    }
-    public class ProgressItem
-    {
-        public string[] include;
-        public string[] exclude;
-        public ProtoItemWithPrice[] items;
+    public ProgressItem[] items;
+}
+public class ProgressItem
+{
+    public string[] include;
+    public string[] exclude;
+    public ProtoItemWithPrice[] items;
 
-        private Func<bool> predict;
-        internal bool lastpred;
+    private Func<bool> predict;
+    internal bool lastpred;
 
-        internal bool Predict
+    internal bool Predict
+    {
+        get
         {
-            get
-            {
-                this.predict ??= LazyUtils.Utils.Eval(this.include, this.exclude);
-                return this.predict();
-            }
+            this.predict ??= LazyUtils.Utils.Eval(this.include, this.exclude);
+            return this.predict();
         }
     }
 }

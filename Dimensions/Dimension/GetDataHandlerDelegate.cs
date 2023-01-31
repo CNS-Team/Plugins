@@ -1,4 +1,3 @@
-namespace Dimension
-{
-    internal delegate bool GetDataHandlerDelegate(GetDataHandlerArgs args);
-}
+namespace Dimension;
+
+internal delegate bool GetDataHandlerDelegate(GetDataHandlerArgs args);

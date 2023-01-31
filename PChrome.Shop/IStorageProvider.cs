@@ -1,12 +1,11 @@
 ﻿using TShockAPI;
 
-namespace PChrome.Shop
+namespace PChrome.Shop;
+
+public interface IStorageProvider
 {
-    public interface IStorageProvider
-    {
-        string Name { get; }
-        bool TryGiveTo(TSPlayer player, string content);
-        bool TryTakeFrom(TSPlayer player, int count, out string content, bool inf);
-        string SerializeToText(string content);
-    }
+    string Name { get; }
+    bool TryGiveTo(TSPlayer player, string content);
+    bool TryTakeFrom(TSPlayer player, int count, out string content, bool inf);
+    string SerializeToText(string content);
 }

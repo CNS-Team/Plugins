@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Permabuffs_V2
+namespace Permabuffs_V2;
+
+public class BuffGroup
 {
-    public class BuffGroup
-    {
-        public string groupName = string.Empty;
+    public string groupName = string.Empty;
 
-        public string groupPerm = string.Empty;
+    public string groupPerm = string.Empty;
 
-        public List<int> buffIDs = new();
-    }
+    public List<int> buffIDs = new();
 }

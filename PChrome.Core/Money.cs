@@ -6,11 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PChrome.Core
+namespace PChrome.Core;
+
+public class Money : PlayerConfigBase<Money>
 {
-    public class Money : PlayerConfigBase<Money>
-    {
-        [Column]
-        public int money { get; set; }
-    }
+    [Column]
+    public int money { get; set; }
 }

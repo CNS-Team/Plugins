@@ -9,50 +9,49 @@ using System.Threading.Tasks;
 using TShockAPI;
 using TShockAPI.DB;
 
-namespace PChrome.OnlineTime
+namespace PChrome.OnlineTime;
+
+[Command("onlinetime")]
+public static class Commands
 {
-    [Command("onlinetime")]
-    public static class Commands
+    [Permissions("onlinetime.admin")]
+    public static void Reset(CommandArgs args)
     {
-        [Permissions("onlinetime.admin")]
-        public static void Reset(CommandArgs args)
+        using var context = Db.Context<OnlineTimeR>();
+        var time = Config.Instance.timetoadmin;
+        var time2 = Config.Instance.timetodowgrade;
+        var times = Config.Instance.timestodowgrade;
+        var ups = context.Config.Where(d => d.total > time).Select(d => d.name).ToArray();
+        context.Config.Where(d => d.total < time2)
+            .Set(d => d.downgrade_count, d => d.downgrade_count + 1)
+            .Update();
+        context.Config.Where(d => d.total >= time2).Set(d => d.downgrade_count, _ => 0).Update();
+        var downs = context.Config.Where(d => d.downgrade_count >= times).Select(d => d.name).ToArray();
+
+        context.Config.Set(d => d.total, _ => 0).Update();
+
+        foreach (var name in ups)
         {
-            using var context = Db.Context<OnlineTimeR>();
-            var time = Config.Instance.timetoadmin;
-            var time2 = Config.Instance.timetodowgrade;
-            var times = Config.Instance.timestodowgrade;
-            var ups = context.Config.Where(d => d.total > time).Select(d => d.name).ToArray();
-            context.Config.Where(d => d.total < time2)
-                .Set(d => d.downgrade_count, d => d.downgrade_count + 1)
-                .Update();
-            context.Config.Where(d => d.total >= time2).Set(d => d.downgrade_count, _ => 0).Update();
-            var downs = context.Config.Where(d => d.downgrade_count >= times).Select(d => d.name).ToArray();
-
-            context.Config.Set(d => d.total, _ => 0).Update();
-
-            foreach (var name in ups)
+            var account = TShock.UserAccounts.GetUserAccountByName(name);
+            var nowgroup = Config.Instance.groups.IndexOf(account.Group);
+            if (nowgroup < 0 || nowgroup == Config.Instance.groups.Count - 1)
             {
-                var account = TShock.UserAccounts.GetUserAccountByName(name);
-                var nowgroup = Config.Instance.groups.IndexOf(account.Group);
-                if (nowgroup < 0 || nowgroup == Config.Instance.groups.Count - 1)
-                {
-                    continue;
-                }
-
-                TShock.UserAccounts.SetUserGroup(account, Config.Instance.groups[nowgroup + 1]);
+                continue;
             }
 
-            foreach (var name in downs)
-            {
-                var account = TShock.UserAccounts.GetUserAccountByName(name);
-                var nowgroup = Config.Instance.groups.IndexOf(account.Group);
-                if (nowgroup < 0 || nowgroup == 0)
-                {
-                    continue;
-                }
+            TShock.UserAccounts.SetUserGroup(account, Config.Instance.groups[nowgroup + 1]);
+        }
 
-                TShock.UserAccounts.SetUserGroup(account, Config.Instance.groups[nowgroup - 1]);
+        foreach (var name in downs)
+        {
+            var account = TShock.UserAccounts.GetUserAccountByName(name);
+            var nowgroup = Config.Instance.groups.IndexOf(account.Group);
+            if (nowgroup < 0 || nowgroup == 0)
+            {
+                continue;
             }
+
+            TShock.UserAccounts.SetUserGroup(account, Config.Instance.groups[nowgroup - 1]);
         }
     }
 }

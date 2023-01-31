@@ -1,12 +1,11 @@
-﻿namespace StatusTxtMgr.Utils.Attrs
-{
-    public class ImplementsAttribute : Attribute
-    {
-        public Type[] ImplementsTypes;
+﻿namespace StatusTxtMgr.Utils.Attrs;
 
-        public ImplementsAttribute(params Type[] implementsTypes)
-        {
-            ImplementsTypes = implementsTypes;
-        }
+public class ImplementsAttribute : Attribute
+{
+    public Type[] ImplementsTypes;
+
+    public ImplementsAttribute(params Type[] implementsTypes)
+    {
+        ImplementsTypes = implementsTypes;
     }
 }
