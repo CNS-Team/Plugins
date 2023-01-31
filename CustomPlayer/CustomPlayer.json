@@ -15,8 +15,11 @@
     "MysqlDatabase": "Custom",
     "MysqlUser": "root",
     "MysqlPass": "123456",
+    "Debug": true,
     "EnableGroup": true,
     "EnablePrefix": true,
     "EnableSuffix": true,
-    "EnablePermission": true
+    "EnablePermission": true,
+    "CoverGroup": true,
+    "对接称号插件": false
 }

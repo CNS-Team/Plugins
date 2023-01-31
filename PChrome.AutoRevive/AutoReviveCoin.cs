@@ -5,10 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PChrome.AutoRevive
+namespace PChrome.AutoRevive;
+
+public class AutoReviveCoin : PlayerConfigBase<AutoReviveCoin>
 {
-    public class AutoReviveCoin : PlayerConfigBase<AutoReviveCoin>
-    {
-        public int count { get; set; }
-    }
+    public int count { get; set; }
 }

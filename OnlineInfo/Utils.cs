@@ -12,66 +12,65 @@ using System.Runtime.CompilerServices;
 using TShockAPI;
 using TShockAPI.DB;
 
-namespace OnlineInfo
+namespace OnlineInfo;
+
+internal static class Utils
 {
-    internal static class Utils
+    public static IDataProvider DBProvider => OIConfig.Instance.DBType switch
     {
-        public static IDataProvider DBProvider => OIConfig.Instance.DBType switch
+        SqlType.Mysql => MySqlTools.GetDataProvider(),
+        SqlType.Sqlite => SQLiteTools.GetDataProvider("SQLite.Classic"),
+        _ => null,
+    };
+
+    public static string DBConnectionString => OIConfig.Instance.DBType switch
+    {
+        SqlType.Mysql => new MySqlConnectionStringBuilder()
         {
-            SqlType.Mysql => MySqlTools.GetDataProvider(),
-            SqlType.Sqlite => SQLiteTools.GetDataProvider("SQLite.Classic"),
-            _ => null,
-        };
+            Server = OIConfig.Instance.MySqlHost,
+            Port = OIConfig.Instance.MySqlPort,
+            Database = OIConfig.Instance.MySqlName,
+            UserID = OIConfig.Instance.MySqlUser,
+            Password = OIConfig.Instance.MySqlPassword
+        }.ConnectionString,
 
-        public static string DBConnectionString => OIConfig.Instance.DBType switch
+        SqlType.Sqlite => new SqliteConnectionStringBuilder()
         {
-            SqlType.Mysql => new MySqlConnectionStringBuilder()
-            {
-                Server = OIConfig.Instance.MySqlHost,
-                Port = OIConfig.Instance.MySqlPort,
-                Database = OIConfig.Instance.MySqlName,
-                UserID = OIConfig.Instance.MySqlUser,
-                Password = OIConfig.Instance.MySqlPassword
-            }.ConnectionString,
+            DataSource = Path.IsPathRooted(OIConfig.Instance.SqlitePath) ? OIConfig.Instance.SqlitePath : Path.Combine(TShock.SavePath, OIConfig.Instance.SqlitePath),
+            Pooling = true
+        }.ConnectionString,
 
-            SqlType.Sqlite => new SqliteConnectionStringBuilder()
-            {
-                DataSource = Path.IsPathRooted(OIConfig.Instance.SqlitePath) ? OIConfig.Instance.SqlitePath : Path.Combine(TShock.SavePath, OIConfig.Instance.SqlitePath),
-                Pooling = true
-            }.ConnectionString,
+        _ => string.Empty
+    };
 
-            _ => string.Empty
-        };
-
-        public static DataConnection GetDBConnection()
-        {
-            return new DataConnection(DBProvider, DBConnectionString);
-        }
-
-        public static DisposableQuery<T> GetDBQuery<T>() where T : class
-        {
-            var dbconn = GetDBConnection();
-            return new DisposableQuery<T>(dbconn.GetTable<T>(), dbconn);
-        }
+    public static DataConnection GetDBConnection()
+    {
+        return new DataConnection(DBProvider, DBConnectionString);
     }
 
-    internal static class Logger
+    public static DisposableQuery<T> GetDBQuery<T>() where T : class
     {
-        private static readonly string AssemblyName = Assembly.GetExecutingAssembly().GetName().Name;
+        var dbconn = GetDBConnection();
+        return new DisposableQuery<T>(dbconn.GetTable<T>(), dbconn);
+    }
+}
 
-        public static void ConsoleInfo(string message)
-        {
-            TShock.Log.ConsoleInfo($"[{AssemblyName}] [INFO] {message}");
-        }
+internal static class Logger
+{
+    private static readonly string AssemblyName = Assembly.GetExecutingAssembly().GetName().Name;
 
-        public static void ConsoleError(string message, [CallerMemberName] string callerName = "")
-        {
-            TShock.Log.ConsoleError($"[{AssemblyName}] [ERROR] [{callerName}] {message}");
-        }
+    public static void ConsoleInfo(string message)
+    {
+        TShock.Log.ConsoleInfo($"[{AssemblyName}] [INFO] {message}");
+    }
 
-        public static void ConsoleDebug(string message, [CallerMemberName] string callerName = "")
-        {
-            TShock.Log.ConsoleDebug($"[{AssemblyName}] [DEBUG] [{callerName}] {message}");
-        }
+    public static void ConsoleError(string message, [CallerMemberName] string callerName = "")
+    {
+        TShock.Log.ConsoleError($"[{AssemblyName}] [ERROR] [{callerName}] {message}");
+    }
+
+    public static void ConsoleDebug(string message, [CallerMemberName] string callerName = "")
+    {
+        TShock.Log.ConsoleDebug($"[{AssemblyName}] [DEBUG] [{callerName}] {message}");
     }
 }

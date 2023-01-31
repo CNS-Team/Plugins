@@ -8,30 +8,29 @@ using System.Threading.Tasks;
 using Terraria;
 using TerrariaApi.Server;
 
-namespace PChrome.Shop
+namespace PChrome.Shop;
+
+[ApiVersion(2, 1)]
+public class Plugin : LazyPlugin
 {
-    [ApiVersion(2, 1)]
-    public class Plugin : LazyPlugin
+    private static readonly Dictionary<string, IStorageProvider> providers = new Dictionary<string, IStorageProvider>();
+    public static void RegisterProvider(IStorageProvider provider)
     {
-        private static readonly Dictionary<string, IStorageProvider> providers = new Dictionary<string, IStorageProvider>();
-        public static void RegisterProvider(IStorageProvider provider)
-        {
-            providers.Add(provider.Name, provider);
-        }
+        providers.Add(provider.Name, provider);
+    }
 
-        public static IStorageProvider GetProvider(string name)
-        {
-            return providers[name];
-        }
+    public static IStorageProvider GetProvider(string name)
+    {
+        return providers[name];
+    }
 
-        public Plugin(Main game) : base(game)
-        {
+    public Plugin(Main game) : base(game)
+    {
 
-        }
+    }
 
-        public override void Initialize()
-        {
-            RegisterProvider(new InventoryProvider());
-        }
+    public override void Initialize()
+    {
+        RegisterProvider(new InventoryProvider());
     }
 }

@@ -5,10 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PChrome.DeathTimes
+namespace PChrome.DeathTimes;
+
+public class DeathTimes : PlayerConfigBase<DeathTimes>
 {
-    public class DeathTimes : PlayerConfigBase<DeathTimes>
-    {
-        public int times = 0;
-    }
+    public int times = 0;
 }

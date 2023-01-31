@@ -4,46 +4,45 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StatusTxtMgr.Utils
+namespace StatusTxtMgr.Utils;
+
+
+// 从 System.Text.StringBuilderCache 抄的，不做解释
+internal static class StringBuilderCache
 {
+    internal const int MAX_BUILDER_SIZE = 360;
 
-    // 从 System.Text.StringBuilderCache 抄的，不做解释
-    internal static class StringBuilderCache
+    [ThreadStatic]
+    private static StringBuilder CachedInstance;
+
+    public static StringBuilder Acquire(int capacity = 16)
     {
-        internal const int MAX_BUILDER_SIZE = 360;
-
-        [ThreadStatic]
-        private static StringBuilder CachedInstance;
-
-        public static StringBuilder Acquire(int capacity = 16)
+        if (capacity <= 360)
         {
-            if (capacity <= 360)
+            StringBuilder cachedInstance = CachedInstance;
+            if (cachedInstance != null && capacity <= cachedInstance.Capacity)
             {
-                StringBuilder cachedInstance = CachedInstance;
-                if (cachedInstance != null && capacity <= cachedInstance.Capacity)
-                {
-                    CachedInstance = null;
-                    cachedInstance.Clear();
-                    return cachedInstance;
-                }
-            }
-
-            return new StringBuilder(capacity);
-        }
-
-        public static void Release(StringBuilder sb)
-        {
-            if (sb.Capacity <= 360)
-            {
-                CachedInstance = sb;
+                CachedInstance = null;
+                cachedInstance.Clear();
+                return cachedInstance;
             }
         }
 
-        public static string GetStringAndRelease(StringBuilder sb)
+        return new StringBuilder(capacity);
+    }
+
+    public static void Release(StringBuilder sb)
+    {
+        if (sb.Capacity <= 360)
         {
-            string result = sb.ToString();
-            Release(sb);
-            return result;
+            CachedInstance = sb;
         }
+    }
+
+    public static string GetStringAndRelease(StringBuilder sb)
+    {
+        string result = sb.ToString();
+        Release(sb);
+        return result;
     }
 }

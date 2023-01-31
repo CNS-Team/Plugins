@@ -1,0 +1,7 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="..\template.targets" />
+	<ItemGroup>
+		<ProjectReference Include="..\CustomPlayer\CustomPlayer.csproj" />
+		<ProjectReference Include="..\LazyUtils\LazyUtils.csproj" />
+	</ItemGroup>
+</Project>
