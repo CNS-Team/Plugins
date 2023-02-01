@@ -71,6 +71,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chrome.Shop", "Chrome.Shop\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chrome.Task", "Chrome.Task\Chrome.Task.csproj", "{E37B95FA-F3FD-4870-8FBA-4BA24B08D330}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicPlayer", "MusicPlayer\MusicPlayer.csproj", "{C1A2E3FE-4709-4A50-A4F3-5D275C010E3F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -351,6 +353,14 @@ Global
 		{E37B95FA-F3FD-4870-8FBA-4BA24B08D330}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E37B95FA-F3FD-4870-8FBA-4BA24B08D330}.Release|x64.ActiveCfg = Release|Any CPU
 		{E37B95FA-F3FD-4870-8FBA-4BA24B08D330}.Release|x64.Build.0 = Release|Any CPU
+		{C1A2E3FE-4709-4A50-A4F3-5D275C010E3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1A2E3FE-4709-4A50-A4F3-5D275C010E3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1A2E3FE-4709-4A50-A4F3-5D275C010E3F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C1A2E3FE-4709-4A50-A4F3-5D275C010E3F}.Debug|x64.Build.0 = Debug|Any CPU
+		{C1A2E3FE-4709-4A50-A4F3-5D275C010E3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1A2E3FE-4709-4A50-A4F3-5D275C010E3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1A2E3FE-4709-4A50-A4F3-5D275C010E3F}.Release|x64.ActiveCfg = Release|Any CPU
+		{C1A2E3FE-4709-4A50-A4F3-5D275C010E3F}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
