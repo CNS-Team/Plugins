@@ -44,79 +44,86 @@ public class AbandanTempleEnter : TerrariaPlugin
 
     public AbandanTempleEnter(Main game) : base(game)
     {
-        Utils.Config = Config.GetConfig();
+        this.Order = 5;
     }
 
     public override void Initialize()
     {
-        WorldGen.Hooks.OnWorldLoad += Worldload;
         GeneralHooks.ReloadEvent += OnReload;
+        ServerApi.Hooks.GameUpdate.Register(this, OnGameUpdate);
+        Utils.Config = Config.GetConfig();
+    }
+
+    public static int checkTimes = 0;
+
+    private void OnGameUpdate(EventArgs args)
+    {
+        //Console.WriteLine(checkTimes);
+        if (checkTimes == Utils.Config.checkTime)
+        {
+            checkTimes = 0;
+            CheckPos();
+        }
+        checkTimes++;
     }
 
     protected override void Dispose(bool disposing)
     {
         if (disposing)
         {
-            WorldGen.Hooks.OnWorldLoad -= Worldload;
             GeneralHooks.ReloadEvent -= OnReload;
+            ServerApi.Hooks.GameUpdate.Deregister(this, OnGameUpdate);
         }
         base.Dispose(disposing);
-    }
-    private void Worldload()
-    {
-        Thread thread = new Thread(CheckThread);
-        thread.IsBackground = true;
-        thread.Start();
     }
 
     private void OnReload(ReloadEventArgs args)
     {
         Utils.Config = Config.GetConfig();
-        args.Player.SendWarningMessage("[阻止进入神庙]: 配置文件已重载!");
+        args.Player.SendWarningMessage("[阻止进入神庙]配置文件已重载!");
     }
 
-    private static void CheckThread()
+    private static void CheckPos()
     {
-        while (true)
+        try
         {
-            try
+            foreach (var plr in TShock.Players)
             {
-                Thread.Sleep(Utils.Config.checkTime);
-                foreach (var plr in TShock.Players)
+                if (plr != null && plr.Active && !plr.HasPermission("AbandanTempleEnterCheck.ignore") && !plr.Dead)
                 {
-                    if (plr != null && plr.Active && !plr.HasPermission("AbandanTempleEnterCheck.ignore") && !plr.Dead)
+                    if (Utils.IsInZoneLihzhardTemple(plr) && !Utils.CheckProgress())
                     {
-                        if (Utils.IsInZoneLihzhardTemple(plr) && !Utils.CheckProgress())
+                        if (Utils.Config.kill)
                         {
-                            if (Utils.Config.kill)
+                            if (Utils.Config.Broadcast)
                             {
-                                if (Utils.Config.Broadcast)
-                                {
-                                    TSPlayer.All.SendErrorMessage(Utils.Config.killText, plr.Name);
-                                }
-                                else
-                                {
-                                    plr.SendErrorMessage(Utils.Config.killText, plr.Name);
-                                }
-                                plr.KillPlayer();
+                                TSPlayer.All.SendErrorMessage(Utils.Config.killText, plr.Name);
                             }
                             else
                             {
-                                if (Utils.Config.Broadcast)
-                                {
-                                    TSPlayer.All.SendErrorMessage(Utils.Config.spawnText, plr.Name);
-                                }
-                                else
-                                {
-                                    plr.SendErrorMessage(Utils.Config.spawnText, plr.Name);
-                                }
-                                plr.Teleport(Main.spawnTileX * 16, (Main.spawnTileY * 16) - 48);
+                                plr.SendErrorMessage(Utils.Config.killText, plr.Name);
                             }
+                            plr.KillPlayer();
+                        }
+                        else
+                        {
+                            if (Utils.Config.Broadcast)
+                            {
+                                TSPlayer.All.SendErrorMessage(Utils.Config.spawnText, plr.Name);
+                            }
+                            else
+                            {
+                                plr.SendErrorMessage(Utils.Config.spawnText, plr.Name);
+                            }
+                            plr.Teleport(Main.spawnTileX * 16, (Main.spawnTileY * 16) - 48);
                         }
                     }
                 }
             }
-            catch { }
+        }
+        catch (Exception ex)
+        {
+            TShock.Log.Error(ex.Message);
         }
     }
 }
