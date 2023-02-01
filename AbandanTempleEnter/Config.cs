@@ -4,8 +4,8 @@ namespace AbandanTempleEnter;
 
 internal class Config
 {
-    [JsonProperty("检测间隔(ms)")]
-    public int checkTime = 1000;
+    [JsonProperty("检测间隔(tick)")]
+    public int checkTime = 60;
 
     [JsonProperty("世纪之花前禁止进入")]
     public bool plantBoss = true;

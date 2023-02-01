@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PChrome.ProgressedShop", "P
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PChrome.PVP", "PChrome.PVP\PChrome.PVP.csproj", "{D73CB775-916E-4AAA-B42B-018A741F5105}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PrismaticChrome.Ranking", "PChrome.Ranking\PrismaticChrome.Ranking.csproj", "{A8FD80EC-3801-40B1-9A8B-C850449CF25B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PrismaticChrome.Ranking", "PChrome.Ranking\PChrome.Ranking.csproj", "{A8FD80EC-3801-40B1-9A8B-C850449CF25B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PChrome.RPG", "PChrome.RPG\PChrome.RPG.csproj", "{D9614C46-C1C0-4D00-AD59-53F6E3BDA341}"
 EndProject
