@@ -17,6 +17,7 @@ jobs:
         with:
           fetch-depth: 0
           submodules: 'recursive'
+          token: ${{ secrets.PAT_OF_PIGEONSRPG }}
 
       - name: Setup dotnet
         uses: actions/setup-dotnet@v3
