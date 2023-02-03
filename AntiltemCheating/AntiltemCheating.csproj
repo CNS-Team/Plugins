@@ -1,3 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\template.targets" />
+  <ItemGroup>
+    <ProjectReference Include="..\DataSync\DataSync.csproj" />
+    <ProjectReference Include="..\ProgressQuery\ProgressQuery.csproj" />
+  </ItemGroup>
 </Project>
