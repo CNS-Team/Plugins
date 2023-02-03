@@ -88,11 +88,6 @@ namespace AntiltemCheating
                                 e.Player.SetBuff(156, 60 * config.punishTime, false);
                             }
                             e.Player.SendErrorMessage($"检测到超进度物品{TShock.Utils.GetItemById(item.netID).Name}!");
-                            if (config.ClearItem)
-                            {
-                                item.stack = 0;
-                                TSPlayer.All.SendData(PacketTypes.PlayerSlot, "", e.Player.Index, i);
-                            }
                             if (config.Broadcast)
                             {
                                 TShock.Utils.Broadcast($"检测到{e.Player.Name}拥有超进度物品{TShock.Utils.GetItemById(item.netID).Name}!", Microsoft.Xna.Framework.Color.DarkRed);
@@ -101,6 +96,12 @@ namespace AntiltemCheating
                             {
                                 TShock.Log.Write($"[超进度物品限制] 玩家{e.Player.Name} 在背包第{i}格检测到超进度物品 {TShock.Utils.GetItemById(item.netID).Name} x{item.stack}", System.Diagnostics.TraceLevel.Info);
                             }
+                            if (config.ClearItem)
+                            {
+                                item.stack = 0;
+                                TSPlayer.All.SendData(PacketTypes.PlayerSlot, "", e.Player.Index, i);
+                            }
+                            
                             if (config.KickPlayer)
                             {
                                 e.Player.Kick("拥有超进度物品");
@@ -166,11 +167,6 @@ namespace AntiltemCheating
                             e.Player.SetBuff(156, 60 * config.punishTime, false);
                         }
                         e.Player.SendErrorMessage($"检测到超进度物品{TShock.Utils.GetItemById(e.Type).Name}!");
-                        if (config.ClearItem)
-                        {
-                            e.Stack = 0;
-                            TSPlayer.All.SendData(PacketTypes.PlayerSlot, "", e.Player.Index, e.Slot);
-                        }
                         if (config.Broadcast)
                         {
                             TShock.Utils.Broadcast($"检测到{e.Player.Name}拥有超进度物品{TShock.Utils.GetItemById(e.Type).Name}!", Microsoft.Xna.Framework.Color.DarkRed);
@@ -178,6 +174,11 @@ namespace AntiltemCheating
                         if (config.WriteLog)
                         {
                             TShock.Log.Write($"[超进度物品限制] 玩家{e.Player.Name} 在背包第{e.Slot}格检测到超进度物品 {TShock.Utils.GetItemById(e.Type).Name} x{e.Stack}", System.Diagnostics.TraceLevel.Info);
+                        }
+                        if (config.ClearItem)
+                        {
+                            e.Stack = 0;
+                            TSPlayer.All.SendData(PacketTypes.PlayerSlot, "", e.Player.Index, e.Slot);
                         }
                         if (config.KickPlayer)
                         {

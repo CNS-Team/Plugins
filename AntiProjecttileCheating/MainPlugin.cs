@@ -36,7 +36,7 @@ namespace AntiProjecttileCheating
                 }
                 catch (Exception e)
                 {
-                    TShock.Log.ConsoleError("超进度物品检测.json配置读取错误:{0}", e.ToString());
+                    TShock.Log.ConsoleError("超进度弹幕检测.json配置读取错误:{0}", e.ToString());
                 }
             }
             else
