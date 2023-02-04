@@ -1,8 +1,8 @@
 ﻿using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
-using NPCEventBan;
 using TShockAPI;
 using TShockAPI.DB;
+using static 任务系统.任务系统;
 
 namespace 任务系统
 {
@@ -33,7 +33,6 @@ namespace 任务系统
             sqlcreator2.EnsureTableStructure(new SqlTable(tableName2,
                 new SqlColumn("Key", MySqlDbType.VarChar, new int?(256)) { Primary = true },
                 new SqlColumn("Value", MySqlDbType.Text) { Length = 500 }));
-            ReadValue();
         }
         public static void ReadValue()
         {
@@ -52,76 +51,17 @@ namespace 任务系统
             任务系统.解锁 = JsonConvert.DeserializeObject<配置表.解锁数据库>(Value);
             foreach (var n in 任务系统.解锁.解锁NPC数据)
             {
-                NPCEventBan.NPCEventBan.Config.Settings.NPCWhiteList.Add(n);
-                NPCEventBan.NPCEventBan.Config.Settings.NPCBlackList.Remove(n);
+                任务系统.上锁NPC.Remove(n);
             }
             foreach (var n in 任务系统.解锁.解锁事件数据)
             {
-                if (n == "满月")
-                {
-                    NPCEventBan.NPCEventBan.Config.Settings.disableFullMoon = false;
-                }
-                if (n == "霜月")
-                {
-                    NPCEventBan.NPCEventBan.Config.Settings.disableFrostMoon = false;
-                }
-                if (n == "血月")
-                {
-                    NPCEventBan.NPCEventBan.Config.Settings.disableBloodMoon = false;
-                }
-                if (n == "南瓜月")
-                {
-                    NPCEventBan.NPCEventBan.Config.Settings.disablePumpkinMoon = false;
-                }
-                if (n == "日食")
-                {
-                    NPCEventBan.NPCEventBan.Config.Settings.disableSolarEclipse = false;
-                }
-                if (n == "下雨")
-                {
-                    NPCEventBan.NPCEventBan.Config.Settings.disableRain = false;
-                }
-                if (n == "史莱姆雨")
-                {
-                    NPCEventBan.NPCEventBan.Config.Settings.disableSlimeRain = false;
-                }
-                if (n == "哥布林入侵")
-                {
-                    NPCEventBan.NPCEventBan.Config.Settings.disableGoblinInvasion = false;
-                }
-                if (n == "海盗入侵")
-                {
-                    NPCEventBan.NPCEventBan.Config.Settings.disablePirateInvasion = false;
-                }
-                if (n == "雪人军团")
-                {
-                    NPCEventBan.NPCEventBan.Config.Settings.disableFrostLegion = false;
-                }
-                if (n == "下落陨铁")
-                {
-                    NPCEventBan.NPCEventBan.Config.Settings.disableMeteors = false;
-                }
-                if (n == "火星人入侵")
-                {
-                    NPCEventBan.NPCEventBan.Config.Settings.disableMartianInvasion = false;
-                }
-                if (n == "月球入侵")
-                {
-                    NPCEventBan.NPCEventBan.Config.Settings.disableLunarInvasion = false;
-                }
-                if (n == "拜月教邪教徒")
-                {
-                    NPCEventBan.NPCEventBan.Config.Settings.disableCultists = false;
-                }
-                if (n == "撒旦军团入侵")
-                {
-                    NPCEventBan.NPCEventBan.Config.Settings.DD2Event = false;
-                }
+                解锁事件(n, false);
             }
         }
         public static void WriteValue()
         {
-            TShock.DB.Query("UPDATE " + tableName2 + " SET `Value` = @0 WHERE `Key` = @1", JsonConvert.SerializeObject(任务系统.解锁, Formatting.Indented),"1");
+            TShock.DB.Query("UPDATE " + tableName2 + " SET `Value` = @0 WHERE `Key` = @1", JsonConvert.SerializeObject(任务系统.解锁, Formatting.Indented), "1");
+            //DB.ReadValue();
         }
         /// <summary>
         /// 查当前主线任务
@@ -330,6 +270,7 @@ namespace 任务系统
             {
                 if (!任务系统.解锁.解锁NPC数据.Contains(n))
                 {
+                    任务系统.上锁NPC.Remove(n);
                     任务系统.解锁.解锁NPC数据.Add(n);
                     WriteValue();
                 }
@@ -338,6 +279,7 @@ namespace 任务系统
             {
                 if (!任务系统.解锁.解锁事件数据.Contains(n))
                 {
+                    解锁事件(n, false);
                     任务系统.解锁.解锁事件数据.Add(n);
                     WriteValue();
                 }
@@ -392,6 +334,7 @@ namespace 任务系统
             {
                 if (!任务系统.解锁.解锁NPC数据.Contains(n))
                 {
+                    任务系统.上锁NPC.Remove(n);
                     任务系统.解锁.解锁NPC数据.Add(n);
                     WriteValue();
                 }
@@ -400,6 +343,7 @@ namespace 任务系统
             {
                 if (!任务系统.解锁.解锁事件数据.Contains(n))
                 {
+                    解锁事件(n, false);
                     任务系统.解锁.解锁事件数据.Add(n);
                     WriteValue();
                 }
