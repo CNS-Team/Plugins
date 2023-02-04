@@ -22,7 +22,7 @@ internal class Utils
             int count = socket.Receive(array);
             socket.Close();
             JObject jObject = (JObject)JsonConvert.DeserializeObject(Encoding.UTF8.GetString(array, 0, count))!;
-            return "当前全服在线:" + jObject["playercount"]?.ToString() + "/" + jObject["maxplayers"];
+            return $"[c/DAFF66:当][c/EDFF66:前][c/FFFE66:全][c/FFEC66:服][c/FFD966:在][c/FFC666:线:][c/C8FF66:{TShock.Players.ToList().FindAll((TSPlayer pl) => pl?.Active ?? false).Count}]/[c/FF7866:9999]";
         }
         catch
         {

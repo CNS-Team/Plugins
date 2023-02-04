@@ -54,5 +54,8 @@ public class PluginSettings
     public bool disableLunarInvasion = true;
 
     [JsonProperty("禁止拜月教邪教徒")]
-    public bool disableCultists = true;
+    public bool disableCultists = true;  
+    
+    [JsonProperty("禁止撒旦军团入侵")]
+    public bool DD2Event = true;
 }

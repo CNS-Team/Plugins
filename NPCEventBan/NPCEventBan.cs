@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Terraria;
+using Terraria.GameContent.Events;
 using TerrariaApi.Server;
 using TShockAPI;
 using TShockAPI.Configuration;
@@ -13,7 +14,7 @@ public class NPCEventBan : TerrariaPlugin
 {
     public static string ConfigFilePath = Path.Combine(TShock.SavePath, "NPCEventBan.json");
 
-    internal static ConfigFile<PluginSettings> Config = new ConfigFile<PluginSettings>();
+    public static ConfigFile<PluginSettings> Config = new ConfigFile<PluginSettings>();
 
     private ulong TickCount;
 
@@ -140,6 +141,10 @@ public class NPCEventBan : TerrariaPlugin
             if (Settings.disableCultists)
             {
                 WorldGen.GetRidOfCultists();
+            }
+            if (DD2Event.Ongoing && Settings.DD2Event)
+            {
+                DD2Event.Ongoing = false;
             }
             if (NPC.MoonLordCountdown > 0 && Settings.disableLunarInvasion)
             {
