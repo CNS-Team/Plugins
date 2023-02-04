@@ -1,5 +1,6 @@
 ﻿using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
+using NPCEventBan;
 using TShockAPI;
 using TShockAPI.DB;
 
