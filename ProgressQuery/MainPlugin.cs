@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Rests;
 using System.Linq;
+using System.Text;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Terraria;
@@ -39,18 +40,7 @@ namespace ProgressQuery
             }
             if (Utils.GetNPCFilelds().TryGetValue(args.Parameters[0], out FieldInfo? field) && field != null)
             {
-                //bool code;
-                //object type;
-                //if (args.Parameters[0] == "血肉墙")
-                //{
-                //    type = new Main();
-                //    code = !Convert.ToBoolean(field.GetValue(type));
-                //}
-                //else
-                //{
-                //    type = new NPC();
-                //    code = !Convert.ToBoolean(field.GetValue(new NPC()));
-                //}
+               
                 var code = !Convert.ToBoolean(field.GetValue(null));
                 field.SetValue(null, code);
                 args.Player.SendSuccessMessage("设置进度{0}为{1}", args.Parameters[0], code);
@@ -76,21 +66,12 @@ namespace ProgressQuery
         private void Query(CommandArgs args)
         {
             Dictionary<string, bool> Progress = Utils.GetGameProgress();
-            string Killed = "目前已击杀:";
-            string NotKilled = "目前未击杀:";
-            foreach (var Boss in Progress)
-            {
-                if (Boss.Value)
-                {
-                    Killed += Boss.Key + ", ";
-                }
-                else
-                {
-                    NotKilled += Boss.Key + ", ";
-                }
-            }
-            args.Player.SendInfoMessage(Killed.TrimEnd(',', ' ').Color(TShockAPI.Utils.GreenHighlight));
-            args.Player.SendInfoMessage(NotKilled.TrimEnd(',', ' ').Color(TShockAPI.Utils.PinkHighlight));
+            StringBuilder Killed = new StringBuilder("目前已击杀:");
+            StringBuilder NotKilled = new StringBuilder("目前未击杀:");
+            Killed.AppendJoin(",", Progress.Where(x => x.Value).Select(x=>x.Key));
+            NotKilled.AppendJoin(",", Progress.Where(x => !x.Value).Select(x => x.Key));
+            args.Player.SendInfoMessage(Killed.Color(TShockAPI.Utils.GreenHighlight));
+            args.Player.SendInfoMessage(NotKilled.Color(TShockAPI.Utils.PinkHighlight));
         }
 
         protected override void Dispose(bool disposing)// 插件关闭时
