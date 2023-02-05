@@ -39,6 +39,7 @@ namespace ProgressQuery
             string[] cmd = { "进度查询", "查询进度", "progress" };
             ServerApi.Hooks.NpcKilled.Register(this, OnkillNpc);
             ServerApi.Hooks.GamePostInitialize.Register(this, OnPost);
+            DataSync.Plugin.OnDataSyncEvent += OnPost;
             TShock.RestApi.Register(new SecureRestCommand("/Progress", ProgressAPI, "ProgressQuery.use"));
             Commands.ChatCommands.Add(new Command("ProgressQuery.use", Query, cmd));
             Commands.ChatCommands.Add(new Command("Progress.admin", Set, "进度设置"));
