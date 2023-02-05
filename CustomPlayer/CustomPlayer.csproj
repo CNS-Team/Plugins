@@ -1,12 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<ItemGroup>
 		<EmbeddedResource Include="CustomPlayer.json" />
-	</ItemGroup>
-	<ItemGroup>
-	  <Folder Include="Basic\" />
-	</ItemGroup>
-	<ItemGroup>
-	  <ProjectReference Include="..\Chrome.Title\Chrome.Title.csproj" />
+		<ProjectReference Include="..\Chrome\Chrome.Title\Chrome.Title.csproj" />
+		<Folder Include="Basic\" />
 	</ItemGroup>
 	<Import Project="..\template.targets" />
 </Project>

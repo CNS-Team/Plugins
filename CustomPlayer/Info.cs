@@ -12,7 +12,7 @@ public class CustomPlayer
 {
     public string Name;
     public TSPlayer Player;
-    public Group Group;
+    public Group? Group;
     public List<string> Permissions = new(), NegatedPermissions = new();
     public static bool 对接称号插件 { get; set; } = true;
     public string? Prefix
