@@ -1,6 +1,4 @@
 ﻿using MySql.Data.MySqlClient;
-using Newtonsoft.Json;
-using System.Data;
 using Terraria;
 using Terraria.ID;
 using TerrariaApi.Server;
@@ -18,7 +16,7 @@ public class Plugin : TerrariaPlugin
     public override string Name => "DataSync";
 
     // Token: 0x06000007 RID: 7 RVA: 0x00002095 File Offset: 0x00000295
-    private static Dictionary<string, bool> GameProgress = new Dictionary<string, bool>();
+    private static readonly Dictionary<string, bool> GameProgress = new Dictionary<string, bool>();
     public Plugin(Main game) : base(game)
     {
     }
@@ -92,7 +90,7 @@ public class Plugin : TerrariaPlugin
 
     public static bool GetJb(string key)
     {
-        if (GameProgress.TryGetValue(key, out bool cod))
+        if (GameProgress.TryGetValue(key, out var cod))
         {
             return cod;
         }
@@ -203,8 +201,8 @@ public class Plugin : TerrariaPlugin
             {
                 while (reader.Read())
                 {
-                    string key = reader.Get<string>("key");
-                    bool value = reader.Get<bool>("value");
+                    var key = reader.Get<string>("key");
+                    var value = reader.Get<bool>("value");
                     GameProgress[key] = value;
                 }
             }
