@@ -12,9 +12,9 @@ namespace ProgressBuff
     public class Scheme
     {
         public string SchemeName = "默认方案";
-        public List<string> SkipProgressDetection = new List<string>();
-        public List<string> SkipRemoteDetection = new List<string>();
-        public Dictionary<string, List<int>> ProgressBuff = new Dictionary<string, List<int>>();
+        public HashSet<string> SkipProgressDetection = new HashSet<string>();
+        public HashSet<string> SkipRemoteDetection = new HashSet<string>();
+        public Dictionary<string, HashSet<int>> ProgressBuff = new Dictionary<string, HashSet<int>>();
     }
     public class Config
     {

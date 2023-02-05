@@ -12,9 +12,9 @@ namespace AntiProjecttileCheating
     public class Scheme
     {
         public string SchemeName = "默认方案";
-        public List<string> SkipProgressDetection = new List<string>();
-        public List<string> SkipRemoteDetection = new List<string>();
-        public Dictionary<string, List<int>> AntiProjecttileCheating = new Dictionary<string, List<int>>();
+        public HashSet<string> SkipProgressDetection = new();
+        public HashSet<string> SkipRemoteDetection = new();
+        public Dictionary<string, HashSet<int>> AntiProjecttileCheating = new();
     }
     public class Config
     {

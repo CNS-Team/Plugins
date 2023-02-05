@@ -2,6 +2,7 @@
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI.Hooks;
+using ProgressQuery;
 
 namespace AntiltemCheating
 {
@@ -15,15 +16,35 @@ namespace AntiltemCheating
 
         private Scheme? scheme;
 
-        private Dictionary<string,string> ProgressNames = ProgressQuery.Utils.GetProgressNames();
+        private Dictionary<string, string> ProgressNames = ProgressQuery.Utils.GetProgressNames();
 
-        private Dictionary<string, List<int>> DetectionProgress = new Dictionary<string, List<int>>();
+        private Dictionary<string, HashSet<int>> DetectionProgress = new();
+
+        private Dictionary<string, bool> GameProgress = new();
 
         public Config config = new Config();
+
+        private HashSet<int> DetectionItem = new();
+
+        private int[] playerDet = new int[Main.maxPlayers];
 
         public string path = Path.Combine(new string[] { TShock.SavePath, "超进度物品检测.json" });
         public MainPlugin(Main game) : base(game)
         {
+        }
+
+        public void UpdateDetItems()
+        {
+            var Items = new List<int>();
+            foreach (var f in DetectionProgress)
+            {
+                if (!GameProgress[f.Key])
+                {
+                    if (!DataSync.Plugin.GetJb(ProgressNames[f.Key]))
+                        Items.AddRange(f.Value);
+                }
+            }
+            DetectionItem = Items.Distinct().ToHashSet();
         }
 
         public override void Initialize()
@@ -31,7 +52,26 @@ namespace AntiltemCheating
             LoadConfig();
             GetDataHandlers.PlayerSlot.Register(OnSlot);
             GetDataHandlers.PlayerUpdate.Register(OnUpdata);
-            GeneralHooks.ReloadEvent += (e) => LoadConfig();
+            GeneralHooks.ReloadEvent += (e) =>
+            {
+                LoadConfig();
+                UpdateDetItems();
+            };
+            ServerApi.Hooks.GamePostInitialize.Register(this, OnPost);
+            ProgressQuery.MainPlugin.OnGameProgressEvent += OnGameProgress;
+            DataSync.Plugin.OnDataSyncEvent += OnPost;
+        }
+
+        private void OnPost(EventArgs args)
+        {
+            GameProgress = ProgressQuery.Utils.GetGameProgress();
+            UpdateDetItems();
+        }
+
+        private void OnGameProgress(OnGameProgressEventArgs e)
+        {
+            GameProgress[e.Name] = e.code;
+            UpdateDetItems();
         }
 
         private void CacheData()
@@ -41,19 +81,17 @@ namespace AntiltemCheating
                 scheme.AntiltemCheating.ForEach(x =>
                 {
                     if (!scheme.SkipProgressDetection.Exists(f => f == x.Key))
-                        DetectionProgress[x.Key] =  x.Value;
+                        DetectionProgress[x.Key] =  x.Value.ToHashSet();
                 });
         }
 
         private void OnUpdata(object? sender, GetDataHandlers.PlayerUpdateEventArgs e)
         {
-            if (e.Player.HasPermission("progress.item.white") || e.Handled || !config.Enabled || !config.AccurateDetection || !e.Player.IsLoggedIn) return;
-            if (scheme == null) return;
-            var GameProcess = ProgressQuery.Utils.GetGameProgress();
-            var going = ProgressQuery.Utils.Ongoing();
-            var item = new Item();
+            if (e.Player.HasPermission("progress.item.white") || e.Handled || !config.Enabled || !config.AccurateDetection || !e.Player.IsLoggedIn || playerDet[e.Player.Index] == DateTime.Now.Second) return;
+            playerDet[e.Player.Index] = DateTime.Now.Second;
             for (int i = 0; i < NetItem.MaxInventory; i++)
             {
+                Item? item;
                 if (i < NetItem.InventoryIndex.Item2)
                 {
                     item = e.Player.TPlayer.inventory[i];
@@ -82,48 +120,32 @@ namespace AntiltemCheating
                 {
                     break;
                 }
-                foreach (var f in DetectionProgress)
-                {
-                    if (!GameProcess[f.Key])
-                    {
-                        if (!scheme.SkipRemoteDetection.Exists(x => x == f.Key))
-                        {
-                            if (DataSync.Plugin.GetJb(ProgressNames[f.Key]))
-                                return;
-                        }
-                        
-                        if (going.ContainsKey(f.Key))
-                        {
-                            if (going[f.Key]) return;
-                        }
-                        if (f.Value.FindAll(s => s == item.netID).Count > 0)
-                        {
-                            if (config.punishPlayer)
-                            {
-                                e.Player.SetBuff(156, 60 * config.punishTime, false);
-                            }
-                            e.Player.SendErrorMessage($"检测到超进度物品{TShock.Utils.GetItemById(item.netID).Name}!");
-                            if (config.Broadcast)
-                            {
-                                TShock.Utils.Broadcast($"检测到{e.Player.Name}拥有超进度物品{TShock.Utils.GetItemById(item.netID).Name}!", Microsoft.Xna.Framework.Color.DarkRed);
-                            }
-                            if (config.WriteLog)
-                            {
-                                TShock.Log.Write($"[超进度物品限制] 玩家{e.Player.Name} 在背包第{i}格检测到超进度物品 {TShock.Utils.GetItemById(item.netID).Name} x{item.stack}", System.Diagnostics.TraceLevel.Info);
-                            }
-                            if (config.ClearItem)
-                            {
-                                item.stack = 0;
-                                TSPlayer.All.SendData(PacketTypes.PlayerSlot, "", e.Player.Index, i);
-                            }
-                            
-                            if (config.KickPlayer)
-                            {
-                                e.Player.Kick("拥有超进度物品");
-                            }
-                        }
-                    }
 
+                if (DetectionItem.Contains(item.netID))
+                {
+                    if (config.punishPlayer)
+                    {
+                        e.Player.SetBuff(156, 60 * config.punishTime, false);
+                    }
+                    e.Player.SendErrorMessage($"检测到超进度物品{TShock.Utils.GetItemById(item.netID).Name}!");
+                    if (config.Broadcast)
+                    {
+                        TShock.Utils.Broadcast($"检测到{e.Player.Name}拥有超进度物品{TShock.Utils.GetItemById(item.netID).Name}!", Microsoft.Xna.Framework.Color.DarkRed);
+                    }
+                    if (config.WriteLog)
+                    {
+                        TShock.Log.Write($"[超进度物品限制] 玩家{e.Player.Name} 在背包第{i}格检测到超进度物品 {TShock.Utils.GetItemById(item.netID).Name} x{item.stack}", System.Diagnostics.TraceLevel.Info);
+                    }
+                    if (config.ClearItem)
+                    {
+                        item.stack = 0;
+                        TSPlayer.All.SendData(PacketTypes.PlayerSlot, "", e.Player.Index, i);
+                    }
+                            
+                    if (config.KickPlayer)
+                    {
+                        e.Player.Kick("拥有超进度物品");
+                    }
                 }
             }
         }
@@ -157,49 +179,31 @@ namespace AntiltemCheating
         private void OnSlot(object? sender, GetDataHandlers.PlayerSlotEventArgs e)
         {
             if (e.Player.HasPermission("progress.item.white") || e.Handled || !config.Enabled || !e.Player.IsLoggedIn) return;
-            var GameProgress = ProgressQuery.Utils.GetGameProgress();
-            if (scheme == null) return;
-            foreach (var f in DetectionProgress)
+
+            if (DetectionItem.Contains(e.Type))
             {
-                if (!GameProgress[f.Key])
+                if (config.punishPlayer)
                 {
-                    if (!scheme.SkipRemoteDetection.Exists(x => x == f.Key))
-                    {
-                        if (DataSync.Plugin.GetJb(ProgressNames[f.Key]))
-                            return;
-                    }
-                    var going = ProgressQuery.Utils.Ongoing();
-                    if (going.ContainsKey(f.Key))
-                    {
-                        if (going[f.Key]) return;
-                    }
-                    if (f.Value.FindAll(s => s == e.Slot).Count > 0)
-                    {
-                        if (config.punishPlayer)
-                        {
-                            e.Player.SetBuff(156, 60 * config.punishTime, false);
-                        }
-                        e.Player.SendErrorMessage($"检测到超进度物品{TShock.Utils.GetItemById(e.Type).Name}!");
-                        if (config.Broadcast)
-                        {
-                            TShock.Utils.Broadcast($"检测到{e.Player.Name}拥有超进度物品{TShock.Utils.GetItemById(e.Type).Name}!", Microsoft.Xna.Framework.Color.DarkRed);
-                        }
-                        if (config.WriteLog)
-                        {
-                            TShock.Log.Write($"[超进度物品限制] 玩家{e.Player.Name} 在背包第{e.Slot}格检测到超进度物品 {TShock.Utils.GetItemById(e.Type).Name} x{e.Stack}", System.Diagnostics.TraceLevel.Info);
-                        }
-                        if (config.ClearItem)
-                        {
-                            e.Stack = 0;
-                            TSPlayer.All.SendData(PacketTypes.PlayerSlot, "", e.Player.Index, e.Slot);
-                        }
-                        if (config.KickPlayer)
-                        {
-                            e.Player.Kick("拥有超进度物品");
-                        }
-                    }
+                    e.Player.SetBuff(156, 60 * config.punishTime, false);
                 }
-                
+                e.Player.SendErrorMessage($"检测到超进度物品{TShock.Utils.GetItemById(e.Type).Name}!");
+                if (config.Broadcast)
+                {
+                    TShock.Utils.Broadcast($"检测到{e.Player.Name}拥有超进度物品{TShock.Utils.GetItemById(e.Type).Name}!", Microsoft.Xna.Framework.Color.DarkRed);
+                }
+                if (config.WriteLog)
+                {
+                    TShock.Log.Write($"[超进度物品限制] 玩家{e.Player.Name} 在背包第{e.Slot}格检测到超进度物品 {TShock.Utils.GetItemById(e.Type).Name} x{e.Stack}", System.Diagnostics.TraceLevel.Info);
+                }
+                if (config.ClearItem)
+                {
+                    e.Stack = 0;
+                    TSPlayer.All.SendData(PacketTypes.PlayerSlot, "", e.Player.Index, e.Slot);
+                }
+                if (config.KickPlayer)
+                {
+                    e.Player.Kick("拥有超进度物品");
+                }
             }
         }
     }

@@ -23,6 +23,8 @@ public class Plugin : TerrariaPlugin
     {
     }
     public static Config 配置 = new();
+
+    public static event OnDataSyncHanlder? OnDataSyncEvent;
     private void Remove(CommandArgs args)
     {
         using (var 表 = TShock.DB.QueryReader("SELECT * FROM synctable WHERE `key`=@0", nameof(Main.hardMode)))
@@ -189,9 +191,10 @@ public class Plugin : TerrariaPlugin
         ServerApi.Hooks.GameUpdate.Register(this, new HookHandler<EventArgs>((args) =>
         {
             this._frameCount++;
-            if (this._frameCount % 300 == 0)
+            if (this._frameCount % 3000 == 0)
             {
                 LoadProgress();
+                OnDataSyncEvent?.Invoke(new EventArgs());
             }
         }));
         ServerApi.Hooks.GamePostInitialize.Register(this, new HookHandler<EventArgs>((args) =>

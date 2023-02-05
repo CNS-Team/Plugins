@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
+using Terraria.ID;
 
 namespace ProgressQuery
 {
@@ -18,17 +19,71 @@ namespace ProgressQuery
         public override string Name => "进度查询";// 插件名字
         public override Version Version => new Version(1, 0, 0, 5);// 插件版本
 
+        public static event OnGameProgressHandler? OnGameProgressEvent;
+
+        public static HashSet<int> DetectNPCs = Utils.GetDetectNPCs();
+
+        private Dictionary<string, bool> GameProgress;
+
+        private Dictionary<string, HashSet<int>> ProgressNpcIds = Utils.GetProgressNpcIds();
+
+        private Dictionary<string, string> ProgressFields = Utils.GetProgressNames();
+
         public MainPlugin(Main game) : base(game)// 插件处理
         {
-            Order = 3;
+            Order = 5;
         }
 
         public override void Initialize()
         {
             string[] cmd = { "进度查询", "查询进度", "progress" };
+            ServerApi.Hooks.NpcKilled.Register(this, OnkillNpc);
+            ServerApi.Hooks.GamePostInitialize.Register(this, OnPost);
             TShock.RestApi.Register(new SecureRestCommand("/Progress", ProgressAPI, "ProgressQuery.use"));
             Commands.ChatCommands.Add(new Command("ProgressQuery.use", Query, cmd));
             Commands.ChatCommands.Add(new Command("Progress.admin", Set, "进度设置"));
+        }
+
+        private void OnPost(EventArgs args)
+        {
+            GameProgress = Utils.GetGameProgress();
+        }
+
+        private void OnkillNpc(NpcKilledEventArgs args)
+        {
+            if (DetectNPCs.Contains(args.npc.type))
+            {
+                var going = Utils.Ongoing();
+                ProgressNpcIds.ForEach(x =>
+                {
+                    if (x.Value.Contains(args.npc.type))
+                    {
+                        if (GameProgress.TryGetValue(x.Key, out bool cod))
+                        {
+                            //如果进度false
+                            if (!cod)
+                            {
+                                //更新缓存
+                                GameProgress[x.Key] = true;
+                                //如果事件
+                                if (going.ContainsKey(x.Key))
+                                { 
+                                    //更新同步进度数据库
+                                    DataSync.Plugin.UploadProgress(ProgressFields[x.Key], true);
+                                    //设置进度true
+                                    Utils.SetGameProgress(x.Key, true);
+                                }
+
+                                OnGameProgressEvent?.Invoke(new OnGameProgressEventArgs
+                                {
+                                    Name = x.Key,
+                                    code = true
+                                });
+                            }
+                        }
+                    }
+                });
+            }
         }
 
         private void Set(CommandArgs args)
@@ -38,11 +93,17 @@ namespace ProgressQuery
                 args.Player.SendInfoMessage("输入/进度设置 <名称>");
                 return;
             }
-            if (Utils.GetNPCFilelds().TryGetValue(args.Parameters[0], out FieldInfo? field) && field != null)
+            if (Utils.GetProgressFilelds().TryGetValue(args.Parameters[0], out FieldInfo? field) && field != null)
             {
-               
                 var code = !Convert.ToBoolean(field.GetValue(null));
                 field.SetValue(null, code);
+                OnGameProgressEvent?.Invoke(new OnGameProgressEventArgs()
+                {
+                    Name = args.Parameters[0],
+                    code = code
+                });
+                DataSync.Plugin.UploadProgress(ProgressFields[args.Parameters[0]], code);
+                GameProgress[args.Parameters[0]] = code;
                 args.Player.SendSuccessMessage("设置进度{0}为{1}", args.Parameters[0], code);
             }
             else

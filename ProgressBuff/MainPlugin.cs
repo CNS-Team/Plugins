@@ -2,6 +2,7 @@
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI.Hooks;
+using ProgressQuery;
 
 namespace ProgressBuff
 {
@@ -19,76 +20,92 @@ namespace ProgressBuff
 
         private Scheme? scheme;
 
-        private Dictionary<string, List<int>> DetectionProgress = new Dictionary<string, List<int>>();
+        private Dictionary<string, bool> GameProgress;
+
+        private Dictionary<string, HashSet<int>> DetectionProgress = new Dictionary<string, HashSet<int>>();
 
         private Dictionary<string,string> ProgressNames = ProgressQuery.Utils.GetProgressNames();
+
+        private HashSet<int> NotHaBuffs;
+
+        private HashSet<int> HaBuffs;
 
         public string path = Path.Combine(new string[] { TShock.SavePath, "ProgressBuff.json" });
         public MainPlugin(Main game) : base(game)
         {
+            Order = 6;
         }
 
         public override void Initialize()
         {
             LoadConfig();
             GetDataHandlers.PlayerUpdate.Register(OnUpdata);
+            ServerApi.Hooks.GamePostInitialize.Register(this, OnPost);
             Commands.ChatCommands.Add(new Command("progress.buff.use", AddBuff, "增益", "zy"));
-            GeneralHooks.ReloadEvent += (e) => LoadConfig();
+            GeneralHooks.ReloadEvent += (e) =>
+            {
+                LoadConfig();
+                NotHaBuffs = GetNotHaBuffs();
+                HaBuffs = GetHaBuffs();
+            };
+            ProgressQuery.MainPlugin.OnGameProgressEvent += OnProgress;
+            DataSync.Plugin.OnDataSyncEvent += OnPost;
+        }
+
+        private void OnPost(EventArgs args)
+        {
+            GameProgress = ProgressQuery.Utils.GetGameProgress();
+            NotHaBuffs = GetNotHaBuffs();
+            HaBuffs = GetHaBuffs();
+        }
+
+        private void OnProgress(OnGameProgressEventArgs e)
+        {
+            GameProgress[e.Name] = e.code;
+            NotHaBuffs = GetNotHaBuffs();
+            HaBuffs = GetHaBuffs();
         }
 
         private void CacheData()
         {
             scheme = config.Schemes.Find(f => f.SchemeName == config.UseScheme);
             if (scheme != null)
-                scheme.ProgressBuff.ForEach(x =>
+            { 
+                 scheme.ProgressBuff.ForEach(x =>
                 {
-                    if (!scheme.SkipProgressDetection.Exists(f => f == x.Key))
+                    if (!scheme.SkipProgressDetection.Contains(x.Key))
                         DetectionProgress[x.Key] = x.Value;
                 });
+
+               
+            }
+               
         }
 
-        private List<int> GetNotHaBuffs()
+        private HashSet<int> GetNotHaBuffs()
         {
             List<int> buffs = new();
-            if (scheme == null) return buffs;
-            var GameProcess = ProgressQuery.Utils.GetGameProgress();
-            var going = ProgressQuery.Utils.Ongoing();
             foreach (var f in DetectionProgress)
             {
-                if (going.ContainsKey(f.Key))
-                    if (!going[f.Key])
-                        buffs.AddRange(f.Value);
-
-                if (!GameProcess[f.Key])
+                if (!GameProgress[f.Key])
                     buffs.AddRange(f.Value);
             }
-            return buffs.Distinct().ToList();
+            return buffs.Distinct().ToHashSet<int>();
         }
 
 
-        private List<int> GetHaBuffs()
+        private HashSet<int> GetHaBuffs()
         {
             List<int> buffs = new();
-            if (scheme == null) return buffs;
-            var GameProcess = ProgressQuery.Utils.GetGameProgress();
-            var going = ProgressQuery.Utils.Ongoing();
             foreach (var f in DetectionProgress)
             {
-                if (!scheme.SkipRemoteDetection.Exists(x => x == f.Key))
-                {
-                    if (DataSync.Plugin.GetJb(ProgressNames[f.Key]))
-                        buffs.AddRange(f.Value);
-                }
+                if (DataSync.Plugin.GetJb(ProgressNames[f.Key]))
+                    buffs.AddRange(f.Value);
 
-                if (going.ContainsKey(f.Key))
-                    if (going[f.Key])
-                        buffs.AddRange(f.Value);
-
-                if (GameProcess[f.Key])
+                if (GameProgress[f.Key])
                     buffs.AddRange(f.Value);
             }
-
-            return buffs.Distinct().ToList();
+            return buffs.Distinct().ToHashSet<int>();
         }
 
         private void AddBuff(CommandArgs args)
@@ -107,7 +124,7 @@ namespace ProgressBuff
                     FooterFormat = "输入 {0}增益 list {{0}} 查看更多".SFormat(Commands.Specifier)
                 });
             }
-            var buffs = GetHaBuffs();
+            var buffs = HaBuffs.ToList() ;
             if (args.Parameters.Count() == 2 && int.TryParse(args.Parameters[1], out int s) && int.TryParse(args.Parameters[0], out int index))
             {
 
@@ -148,11 +165,9 @@ namespace ProgressBuff
         {
             if (e.Player.HasPermission("progress.buff.white") || e.Handled || !config.Enabled || !e.Player.IsLoggedIn || playerDet[e.Player.Index] == DateTime.Now.Second) return;       
             playerDet[e.Player.Index] = DateTime.Now.Second;
-            if (scheme == null) return;
-            var buffs = GetNotHaBuffs();
             for (int i = 0; i < e.Player.TPlayer.buffType.Length; i++)
             {
-                if (buffs.Exists(f => f == e.Player.TPlayer.buffType[i]))
+                if (NotHaBuffs.Contains(e.Player.TPlayer.buffType[i]))
                 {
                     if (config.Broadcast)
                     {
@@ -166,9 +181,10 @@ namespace ProgressBuff
 
                     if (config.ClearBuff)
                     {
+
                         e.Player.TPlayer.buffType[i] = 0;
                         e.Player.TPlayer.buffTime[i] = 0;
-                        e.Player.SendData(PacketTypes.PlayerBuff, "", e.Player.Index, i, 0, 0);
+                        e.Player.SendData(PacketTypes.PlayerBuff, "", i);
                     }
                 }
             }
@@ -192,7 +208,7 @@ namespace ProgressBuff
                 Scheme scheme = new Scheme();
                 foreach (var pr in ProgressQuery.Utils.GetGameProgress())
                 {
-                    scheme.ProgressBuff.Add(pr.Key, new List<int>());
+                    scheme.ProgressBuff.Add(pr.Key, new HashSet<int>());
                 }
                 config.Schemes.Add(scheme);
             }
