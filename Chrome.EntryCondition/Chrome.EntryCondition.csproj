@@ -1,14 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<Import Project="..\template.targets" />
 	<ItemGroup>
+	  <ProjectReference Include="..\Chrome.RPG\Chrome.RPG.csproj" />
 	  <ProjectReference Include="..\Chrome.Task\Chrome.Task.csproj" />
-	</ItemGroup>
-	<ItemGroup>
-	  <Reference Include="Chrome.RPG">
-	    <HintPath>D:\Desktop\Chrome.RPG 相关源码\Chrome.RPG\Chrome.RPG\bin\Debug\net6.0\Chrome.RPG.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Chrome.Task">
-	    <HintPath>D:\Desktop\Chrome.RPG 相关源码\Chrome.Task\Chrome.Task\bin\Debug\net6.0\Chrome.Task.dll</HintPath>
-	  </Reference>
 	</ItemGroup>
 </Project>
