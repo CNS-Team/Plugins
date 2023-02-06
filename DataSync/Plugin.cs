@@ -1,6 +1,4 @@
 ﻿using MySql.Data.MySqlClient;
-using Newtonsoft.Json;
-using System.Data;
 using Terraria;
 using Terraria.ID;
 using TerrariaApi.Server;
@@ -18,10 +16,13 @@ public class Plugin : TerrariaPlugin
     public override string Name => "DataSync";
 
     // Token: 0x06000007 RID: 7 RVA: 0x00002095 File Offset: 0x00000295
+    private static readonly Dictionary<string, bool> GameProgress = new Dictionary<string, bool>();
     public Plugin(Main game) : base(game)
     {
     }
     public static Config 配置 = new();
+
+    public static event OnDataSyncHanlder? OnDataSyncEvent;
     private void Remove(CommandArgs args)
     {
         using (var 表 = TShock.DB.QueryReader("SELECT * FROM synctable WHERE `key`=@0", nameof(Main.hardMode)))
@@ -85,6 +86,15 @@ public class Plugin : TerrariaPlugin
                 TShock.DB.Query("INSERT INTO synctable (`key`, `value`) VALUES (@0, @1);", "火星进行", false);
             }
         }
+    }
+
+    public static bool GetJb(string key)
+    {
+        if (GameProgress.TryGetValue(key, out var cod))
+        {
+            return cod;
+        }
+        return false;
     }
 
     private static void EnsureTable()
@@ -179,9 +189,22 @@ public class Plugin : TerrariaPlugin
         ServerApi.Hooks.GameUpdate.Register(this, new HookHandler<EventArgs>((args) =>
         {
             this._frameCount++;
-            if (this._frameCount % 300 == 0)
+            if (this._frameCount % 3000 == 0)
             {
                 LoadProgress();
+                OnDataSyncEvent?.Invoke(new EventArgs());
+            }
+        }));
+        ServerApi.Hooks.GamePostInitialize.Register(this, new HookHandler<EventArgs>((args) =>
+        {
+            using (var reader = TShock.DB.QueryReader("SELECT * FROM synctable"))
+            {
+                while (reader.Read())
+                {
+                    var key = reader.Get<string>("key");
+                    var value = reader.Get<bool>("value");
+                    GameProgress[key] = value;
+                }
             }
         }));
         Commands.ChatCommands.Add(new Command("DataSync", this.Re, "reload"));
@@ -199,6 +222,7 @@ public class Plugin : TerrariaPlugin
     public static void UploadProgress(string key, object value)
     {
         TSPlayer.Server.SendInfoMessage($"[DataSync]上传进度 {key} {value}");
+        GameProgress.TryAdd(key, Convert.ToBoolean(value));
         TShock.DB.Query("UPDATE synctable SET value = @1 WHERE `key` = @0", key, value);
     }
 

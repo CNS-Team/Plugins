@@ -66,7 +66,7 @@ public class Config
 
     public static void GetConfig()
     {
-        string PATH = Path.Combine(TShock.SavePath, "DataSync.json");
+        var PATH = Path.Combine(TShock.SavePath, "DataSync.json");
         try
         {
             if (!File.Exists(PATH))

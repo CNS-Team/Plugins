@@ -1,6 +1,5 @@
-﻿using Microsoft.Xna.Framework;
-using Rests;
-using System.Linq;
+﻿using Rests;
+using System.Text;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
@@ -15,202 +14,121 @@ public class MainPlugin : TerrariaPlugin
     public override string Name => "进度查询";// 插件名字
     public override Version Version => new Version(1, 0, 0, 5);// 插件版本
 
+    public static event OnGameProgressHandler? OnGameProgressEvent;
+
+    public static HashSet<int> DetectNPCs = Utils.GetDetectNPCs();
+
+    private Dictionary<string, bool> GameProgress;
+
+    private readonly Dictionary<string, HashSet<int>> ProgressNpcIds = Utils.GetProgressNpcIds();
+
+    private readonly Dictionary<string, string> ProgressFields = Utils.GetProgressNames();
+
     public MainPlugin(Main game) : base(game)// 插件处理
     {
-        Order = 3;
+        this.Order = 5;
     }
 
     public override void Initialize()
     {
         string[] cmd = { "进度查询", "查询进度", "progress" };
-        TShock.RestApi.Register(new SecureRestCommand("/Progress", progress, "ProgressQuery.use"));
-        Commands.ChatCommands.Add(new Command("ProgressQuery.use", Query, cmd));
-        Commands.ChatCommands.Add(new Command("Progress.admin", Set, "进度设置"));
+        ServerApi.Hooks.NpcKilled.Register(this, this.OnkillNpc);
+        ServerApi.Hooks.GamePostInitialize.Register(this, this.OnPost);
+        DataSync.Plugin.OnDataSyncEvent += this.OnPost;
+        TShock.RestApi.Register(new SecureRestCommand("/Progress", this.ProgressAPI, "ProgressQuery.use"));
+        Commands.ChatCommands.Add(new Command("ProgressQuery.use", this.Query, cmd));
+        Commands.ChatCommands.Add(new Command("Progress.admin", this.Set, "进度设置"));
+    }
+
+    private void OnPost(EventArgs args)
+    {
+        this.GameProgress = Utils.GetGameProgress();
+    }
+
+    private void OnkillNpc(NpcKilledEventArgs args)
+    {
+        if (DetectNPCs.Contains(args.npc.type))
+        {
+            var going = Utils.Ongoing();
+            this.ProgressNpcIds.ForEach(x =>
+            {
+                if (x.Value.Contains(args.npc.type))
+                {
+                    if (this.GameProgress.TryGetValue(x.Key, out var cod))
+                    {
+                        //如果进度false
+                        if (!cod)
+                        {
+                            //更新缓存
+                            this.GameProgress[x.Key] = true;
+                            //如果事件
+                            if (going.ContainsKey(x.Key))
+                            {
+                                //更新同步进度数据库
+                                DataSync.Plugin.UploadProgress(this.ProgressFields[x.Key], true);
+                                //设置进度true
+                                Utils.SetGameProgress(x.Key, true);
+                            }
+
+                            OnGameProgressEvent?.Invoke(new OnGameProgressEventArgs
+                            {
+                                Name = x.Key,
+                                code = true
+                            });
+                        }
+                    }
+                }
+            });
+        }
     }
 
     private void Set(CommandArgs args)
     {
-        var exec = true;
         if (args.Parameters.Count == 0)
         {
-            args.Player.SendInfoMessage("输入/进度设置 <名称> <true|false>");
+            args.Player.SendInfoMessage("输入/进度设置 <名称>");
             return;
         }
-        bool code;
-        if (args.Parameters.Count == 2 && args.Parameters[1].ToLower() == "true")
+        if (Utils.GetProgressFilelds().TryGetValue(args.Parameters[0], out var field) && field != null)
         {
-            code = true;
-        }
-        else if (args.Parameters.Count == 2 && args.Parameters[1].ToLower() == "false")
-        {
-            code = false;
+            var code = !Convert.ToBoolean(field.GetValue(null));
+            field.SetValue(null, code);
+            OnGameProgressEvent?.Invoke(new OnGameProgressEventArgs()
+            {
+                Name = args.Parameters[0],
+                code = code
+            });
+            DataSync.Plugin.UploadProgress(this.ProgressFields[args.Parameters[0]], code);
+            this.GameProgress[args.Parameters[0]] = code;
+            args.Player.SendSuccessMessage("设置进度{0}为{1}", args.Parameters[0], code);
         }
         else
         {
-            args.Player.SendInfoMessage("输入/进度设置 <名称> <true|false>");
-            return;
+            args.Player.SendErrorMessage("不包含此进度!");
         }
-       
-        switch (args.Parameters[0])
-        {
-            case "史莱姆王":
-                NPC.downedSlimeKing = code;
-                break;
-            case "克苏鲁之眼":
-                NPC.downedBoss1 = code;
-                break;
-            case "世界吞噬怪":
-                NPC.downedBoss2 = code;
-                break;
-            case "克苏鲁之脑":
-                goto case "世界吞噬怪";
-            case "骷髅王":
-                NPC.downedBoss3 = code;
-                break;
-            case "独眼巨鹿":
-                NPC.downedDeerclops = code;
-                break;
-            case "蜂王":
-                NPC.downedQueenBee = code;
-                break;
-            case "血肉墙":
-                Main.hardMode = code;
-                break;
-            case "史莱姆皇后":
-                NPC.downedQueenSlime = code;
-                break;
-            case "双子魔眼":
-                NPC.downedMechBoss2 = code;
-                break;
-            case "毁灭者":
-                NPC.downedMechBoss1 = code;
-                break;
-            case "机械骷髅王":
-                NPC.downedMechBoss3 = code;
-                break;
-            case "世纪之花":
-                NPC.downedPlantBoss = code;
-                break;
-            case "石巨人":
-                NPC.downedGolemBoss = code;
-                break;
-            case "猪鲨":
-                NPC.downedFishron = code;
-                break;
-            case "光之女皇":
-                NPC.downedEmpressOfLight = code;
-                break;
-            case "拜月邪教徒":
-                NPC.downedAncientCultist = code;
-                break;
-            case "日耀柱":
-                NPC.downedTowerSolar = code;
-                break;
-            case "星云柱":
-                NPC.downedTowerNebula = code;
-                break;
-            case "星旋柱":
-                NPC.downedTowerVortex = code;
-                break;
-            case "星尘柱":
-                NPC.downedTowerStardust = code;
-                break;
-            case "月球领主":
-                NPC.downedMoonlord = code;
-                break;
-            case "雪人军团":
-                NPC.downedFrost = code;
-                break;
-            case "哥布林军队":
-                NPC.downedGoblins = code;
-                break;
-            case "海盗入侵":
-                NPC.downedPirates = code;
-                break;
-            case "南瓜月":
-                NPC.downedHalloweenKing = code;
-                break;
-            case "火星暴乱":
-                NPC.downedMartians = code;
-                break;
-            case "霜月":
-                NPC.downedChristmasIceQueen = code;
-                break;
-            default:
-                exec = true;
-                args.Player.SendErrorMessage("不包含此进度，无法设置!");
-                break;
-        }
-        if (!exec)
-        {
-            args.Player.SendSuccessMessage("进度设置成功!");
-        }
+
     }
 
-    private object progress(RestRequestArgs args)
+    private object ProgressAPI(RestRequestArgs args)
     {
-        Dictionary<string, bool> Bosst = BossData();
-        RestObject obj = new RestObject
+        RestObject obj = new()
         {
             Status = "200",
             Response = "查询成功"
         };
-        obj["data"] = Bosst;
+        obj["data"] = Utils.GetGameProgress();
         return obj;
     }
 
-    private Dictionary<string, Boolean> BossData()
-    {
-        Dictionary<string, bool> Progress = new Dictionary<string, bool>();
-        Progress.Add("史莱姆王", NPC.downedSlimeKing);
-        Progress.Add("克苏鲁之眼", NPC.downedBoss1);
-        Progress.Add("世界吞噬怪", NPC.downedBoss2);
-        Progress.Add("克苏鲁之脑", NPC.downedBoss2);
-        Progress.Add("骷髅王", NPC.downedBoss3);
-        Progress.Add("独眼巨鹿", NPC.downedDeerclops);
-        Progress.Add("蜂王", NPC.downedQueenBee);
-        Progress.Add("血肉墙", Main.hardMode);
-        Progress.Add("史莱姆皇后", NPC.downedQueenSlime);
-        Progress.Add("双子魔眼", NPC.downedMechBoss2);
-        Progress.Add("毁灭者", NPC.downedMechBoss1);
-        Progress.Add("机械骷髅王", NPC.downedMechBoss3);
-        Progress.Add("世纪之花", NPC.downedPlantBoss);
-        Progress.Add("石巨人", NPC.downedGolemBoss);
-        Progress.Add("猪鲨", NPC.downedFishron);
-        Progress.Add("光之女皇", NPC.downedEmpressOfLight);
-        Progress.Add("拜月教邪教徒", NPC.downedAncientCultist);
-        Progress.Add("日耀柱", NPC.downedTowerSolar);
-        Progress.Add("星云柱", NPC.downedTowerNebula);
-        Progress.Add("星旋柱", NPC.downedTowerVortex);
-        Progress.Add("星尘柱", NPC.downedTowerStardust);
-        Progress.Add("月球领主", NPC.downedMoonlord);
-        Progress.Add("雪人军团", NPC.downedFrost);
-        Progress.Add("哥布林军队", NPC.downedGoblins);
-        Progress.Add("海盗入侵", NPC.downedPirates);
-        Progress.Add("南瓜月", NPC.downedHalloweenKing);
-        Progress.Add("火星暴乱", NPC.downedMartians);
-        Progress.Add("霜月", NPC.downedChristmasIceQueen);
-        return Progress;
-
-    }
     private void Query(CommandArgs args)
     {
-        Dictionary<string, bool> Progress = BossData();
-        string Killed = "目前已击杀:";
-        string NotKilled = "目前未击杀:";
-        foreach (var Boss in Progress)
-        {
-            if (Boss.Value)
-            {
-                Killed += Boss.Key + ", ";
-            }
-            else
-            {
-                NotKilled += Boss.Key + ", ";
-            }
-        }
-        args.Player.SendInfoMessage(Killed.TrimEnd(',', ' ').Color(TShockAPI.Utils.GreenHighlight));
-        args.Player.SendInfoMessage(NotKilled.TrimEnd(',', ' ').Color(TShockAPI.Utils.PinkHighlight));
+        var Progress = Utils.GetGameProgress();
+        var Killed = new StringBuilder("目前已击杀:");
+        var NotKilled = new StringBuilder("目前未击杀:");
+        Killed.AppendJoin(",", Progress.Where(x => x.Value).Select(x => x.Key));
+        NotKilled.AppendJoin(",", Progress.Where(x => !x.Value).Select(x => x.Key));
+        args.Player.SendInfoMessage(Killed.Color(TShockAPI.Utils.GreenHighlight));
+        args.Player.SendInfoMessage(NotKilled.Color(TShockAPI.Utils.PinkHighlight));
     }
 
     protected override void Dispose(bool disposing)// 插件关闭时
