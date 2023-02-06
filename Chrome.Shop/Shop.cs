@@ -1,4 +1,5 @@
-﻿using Terraria;
+﻿using Chrome.RPG;
+using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
 using TShockAPI.Hooks;
