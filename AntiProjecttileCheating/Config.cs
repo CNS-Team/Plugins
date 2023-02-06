@@ -24,32 +24,37 @@ public class Config
 
 
 
-    public static Config Read(string Path)//给定文件进行读
+    public static Config Read(string Path)
     {
         if (!File.Exists(Path)) return new Config();
-        using (var fs = new FileStream(Path, FileMode.Open, FileAccess.Read, FileShare.Read))
-        { return Read(fs); }
+        using var fs = new FileStream(Path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        return Read(fs);
     }
-    public static Config Read(Stream stream)//给定流文件进行读取
+
+    public static Config Read(Stream stream)
     {
-        using (var sr = new StreamReader(stream))
+        using var sr = new StreamReader(stream);
+        var cf = JsonConvert.DeserializeObject<Config>(sr.ReadToEnd());
+        if (cf == null)
         {
-            var cf = JsonConvert.DeserializeObject<Config>(sr.ReadToEnd());
-            if (ConfigR != null)
-                ConfigR(cf);
+            return new Config();
+        }
+        else
+        {
             return cf;
         }
     }
-    public void Write(string Path)//给定路径进行写
+
+    public void Write(string Path)
     {
-        using (var fs = new FileStream(Path, FileMode.Create, FileAccess.Write, FileShare.Write))
-        { this.Write(fs); }
+        using var fs = new FileStream(Path, FileMode.Create, FileAccess.Write, FileShare.Write);
+        Write(fs);
     }
-    public void Write(Stream stream)//给定流文件写
+
+    public void Write(Stream stream)
     {
         var str = JsonConvert.SerializeObject(this, Formatting.Indented);
-        using (var sw = new StreamWriter(stream))
-        { sw.Write(str); }
+        using var sw = new StreamWriter(stream);
+        sw.Write(str);
     }
-    public static Action<Config> ConfigR;//定义为常量
 }
