@@ -26,7 +26,7 @@ namespace 任务系统
             Order = 2;
         }
         public static string path = "tshock/Chrome.Task.json";
-        //插件启动时，用于初始化各种狗子
+        //插件启动时，用于初始化各种狗子 
         public static 配置表 配置 = new();
         public static 配置表.解锁数据库 解锁 = new();
         public static List<int> 上锁NPC = new();
