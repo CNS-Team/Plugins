@@ -21,8 +21,8 @@ public static class Utils
         var idx = expression.LastIndexOf('.');
         var @class = expression[..idx];
         var name = expression[(idx + 1)..];
-        var field = typeof(Main).Assembly.GetType(@class).GetField(name, BindingFlags.Static | BindingFlags.Public);
-        return () => (T) field.GetValue(null);
+        var field = typeof(Main).Assembly.GetType(@class)!.GetField(name, BindingFlags.Static | BindingFlags.Public)!;
+        return () => (T) field.GetValue(null)!;
     }
 
     public static Func<bool> Eval(IEnumerable<string> include, IEnumerable<string> exclude)

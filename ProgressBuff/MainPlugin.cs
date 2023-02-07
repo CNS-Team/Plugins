@@ -61,7 +61,7 @@ public class MainPlugin : TerrariaPlugin
 
     private void OnProgress(OnGameProgressEventArgs e)
     {
-        this.GameProgress[e.Name] = e.code;
+        this.GameProgress[e!.Name] = e.code;
         this.NotHaBuffs = this.GetNotHaBuffs();
         this.HaBuffs = this.GetHaBuffs();
     }
@@ -69,16 +69,13 @@ public class MainPlugin : TerrariaPlugin
     private void CacheData()
     {
         this.scheme = this.config.Schemes.Find(f => f.SchemeName == this.config.UseScheme);
-        if (this.scheme != null)
-        {
-            this.scheme.ProgressBuff.ForEach(x =>
+        this.scheme?.ProgressBuff.ForEach(x =>
             {
                 if (!this.scheme.SkipProgressDetection.Contains(x.Key))
+                {
                     this.DetectionProgress[x.Key] = x.Value;
+                }
             });
-
-
-        }
 
     }
 
@@ -88,7 +85,9 @@ public class MainPlugin : TerrariaPlugin
         foreach (var f in this.DetectionProgress)
         {
             if (!this.GameProgress[f.Key])
+            {
                 buffs.AddRange(f.Value);
+            }
         }
         return buffs.Distinct().ToHashSet<int>();
     }
@@ -100,10 +99,14 @@ public class MainPlugin : TerrariaPlugin
         foreach (var f in this.DetectionProgress)
         {
             if (DataSync.Plugin.GetJb(this.ProgressNames[f.Key]))
+            {
                 buffs.AddRange(f.Value);
+            }
 
             if (this.GameProgress[f.Key])
+            {
                 buffs.AddRange(f.Value);
+            }
         }
         return buffs.Distinct().ToHashSet<int>();
     }
@@ -113,7 +116,9 @@ public class MainPlugin : TerrariaPlugin
         void ShowList(List<string> line)
         {
             if (!PaginationTools.TryParsePageNumber(args.Parameters, 1, args.Player, out var pageNumber))
+            {
                 return;
+            }
 
             PaginationTools.SendPage(args.Player, pageNumber, line,
             new PaginationTools.Settings
@@ -143,7 +148,7 @@ public class MainPlugin : TerrariaPlugin
                 args.Player.SendErrorMessage("你输入的参数有误!");
             }
         }
-        else if (args.Parameters.Count() >= 1 && args.Parameters[0].ToLower() == "list")
+        else if (args.Parameters.Count() >= 1 && string.Equals(args.Parameters[0], "list", StringComparison.OrdinalIgnoreCase))
         {
             List<string> lines = new();
             for (var i = 0; i < buffs.Count; i++)
@@ -163,7 +168,11 @@ public class MainPlugin : TerrariaPlugin
 
     private void OnUpdata(object? sender, GetDataHandlers.PlayerUpdateEventArgs e)
     {
-        if (e.Player.HasPermission("progress.buff.white") || e.Handled || !this.config.Enabled || !e.Player.IsLoggedIn || this.playerDet[e.Player.Index] == DateTime.Now.Second) return;
+        if (e.Player.HasPermission("progress.buff.white") || e.Handled || !this.config.Enabled || !e.Player.IsLoggedIn || this.playerDet[e.Player.Index] == DateTime.Now.Second)
+        {
+            return;
+        }
+
         this.playerDet[e.Player.Index] = DateTime.Now.Second;
         for (var i = 0; i < e.Player.TPlayer.buffType.Length; i++)
         {

@@ -53,7 +53,9 @@ public class MainPlugin : TerrariaPlugin
             if (!this.GameProgress[f.Key])
             {
                 if (!DataSync.Plugin.GetJb(this.ProgressNames[f.Key]))
+                {
                     projs.AddRange(f.Value);
+                }
             }
         }
         this.DetectionProj = projs.Distinct().ToHashSet();
@@ -74,11 +76,12 @@ public class MainPlugin : TerrariaPlugin
     private void CacheData()
     {
         this.scheme = this.config.Schemes.Find(f => f.SchemeName == this.config.UseScheme);
-        if (this.scheme != null)
-            this.scheme.AntiProjecttileCheating.ForEach(x =>
+        this.scheme?.AntiProjecttileCheating.ForEach(x =>
             {
                 if (!this.scheme.SkipProgressDetection.Contains(x.Key))
+                {
                     this.DetectionProgress[x.Key] = x.Value;
+                }
             });
     }
 
@@ -111,7 +114,11 @@ public class MainPlugin : TerrariaPlugin
 
     private void OnProj(object? sender, GetDataHandlers.NewProjectileEventArgs e)
     {
-        if (e.Player.HasPermission("progress.projecttile.white") || e.Handled || !this.config.Enabled || !e.Player.IsLoggedIn) return;
+        if (e.Player.HasPermission("progress.projecttile.white") || e.Handled || !this.config.Enabled || !e.Player.IsLoggedIn)
+        {
+            return;
+        }
+
         if (this.DetectionProj.Contains(e.Type))
         {
             if (this.config.punishPlayer)

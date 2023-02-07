@@ -25,7 +25,7 @@ public class Plugin : LazyPlugin
         GetDataHandlers.PlayerSpawn.Register(this.OnPlayerSpawn, HandlerPriority.Highest);
     }
 
-    private void OnPlayerSpawn(object _, GetDataHandlers.SpawnEventArgs args)
+    private void OnPlayerSpawn(object? _, GetDataHandlers.SpawnEventArgs args)
     {
         if (args.Player.ContainsData("handle_one_spawn"))
         {
@@ -36,7 +36,7 @@ public class Plugin : LazyPlugin
 
     private const string TIMER_KEY = "AutoRevive.Timer";
 
-    private static void OnKillMe(object _, GetDataHandlers.KillMeEventArgs args)
+    private static void OnKillMe(object? _, GetDataHandlers.KillMeEventArgs args)
     {
         if (args.Player.ContainsData(TIMER_KEY) &&
             args.Player.GetData<long>(TIMER_KEY) + Config.Instance.cooldown > TimingUtils.Timer)

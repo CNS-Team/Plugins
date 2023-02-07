@@ -36,15 +36,15 @@ public class 称号插件 : TerrariaPlugin
     public static Config 配置 = new();//配置表信息，包含玩家称号信息
     public static Dictionary<string, Config.聊天信息> 称号信息 = new();//玩家空白称号信息，用于其他插件给玩家设置前缀、后缀、等等
     /*
-     * 
+     *
      *    其他插件修改称号示例。
      *    *
      *          称号插件.称号插件.称号信息[plr.Name].前前缀 = z.前缀;
      *          称号插件.称号插件.称号信息[plr.Name].后后缀 = z.后缀;
      *    *
      *    修改“称号信息”中的称号，不影响配置表
-     * 
-     * 
+     *
+     *
      */
     public static bool 启用远程配置 = false;
     public static string path = "tshock/Chrome.Title.json";//路径
@@ -327,12 +327,12 @@ public class 称号插件 : TerrariaPlugin
     {
         try
         {
-            配置 = JsonConvert.DeserializeObject<Config>(File.ReadAllText(Path.Combine(path)));//正常读一遍配置文件
+            配置 = JsonConvert.DeserializeObject<Config>(File.ReadAllText(Path.Combine(path)))!;//正常读一遍配置文件
             File.WriteAllText(path, JsonConvert.SerializeObject(配置, Formatting.Indented));
             if (配置.启用远程配置)
             {
                 var responseBody = await client.GetStringAsync(配置.远程配置接口);
-                配置 = JsonConvert.DeserializeObject<Config>(responseBody);
+                配置 = JsonConvert.DeserializeObject<Config>(responseBody)!;
                 启用远程配置 = true;
             }
             else

@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.IO;
+﻿using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 using Terraria;
 using Terraria.Localization;
 using Terraria.Net;
@@ -112,11 +109,11 @@ public class AsyncSocket : ISocket
         throw new NotImplementedException();
     }
 
-    public void AsyncSend(byte[] data, int offset, int size, SocketSendCallback callback, object state = null)
+    public void AsyncSend(byte[] data, int offset, int size, SocketSendCallback callback, object? state = null)
     {
-        byte[] array = LegacyNetBufferPool.RequestBuffer(data, offset, size);
+        var array = LegacyNetBufferPool.RequestBuffer(data, offset, size);
 
-        sendQueue.Add(new SendData
+        this.sendQueue.Add(new SendData
         {
             callback = callback,
             data = array,
@@ -126,7 +123,7 @@ public class AsyncSocket : ISocket
         });
     }
 
-    public void AsyncReceive(byte[] data, int offset, int size, SocketReceiveCallback callback, object state = null)
+    public void AsyncReceive(byte[] data, int offset, int size, SocketReceiveCallback callback, object? state = null)
     {
         this.recvQueue.Add(new RecvData
         {
@@ -177,7 +174,7 @@ public class AsyncSocket : ISocket
         var flag2 = this._listener == null;
         if (flag2)
         {
-            this._listener = new TcpListener(any, Netplay.ListenPort);
+            this._listener = new TcpListener(any!, Netplay.ListenPort);
         }
         try
         {
