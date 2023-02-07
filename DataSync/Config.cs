@@ -1,84 +1,216 @@
 ﻿using Newtonsoft.Json;
+using System.Reflection;
 using TShockAPI;
 
 namespace DataSync;
-public class Config
+
+public enum ProgressType
 {
-    public bool 是否同步 = true;
+    [Match(nameof(Terraria.NPC.downedSlimeKing), true)]
+    [Alias("史莱姆王")]
+    KingSlime,
 
-    public bool 进度同步哥布林 = true;
+    [Match(nameof(Terraria.NPC.downedBoss1), true)]
+    [Alias("克苏鲁之眼")]
+    EyeOfCthulhu,
 
-    public bool 进度同步萌王 = true;
+    [Match(nameof(Terraria.NPC.downedBoss2), true)]
+    [Alias("世界吞噬者", "克苏鲁之脑")]
+    EaterOfWorlds,
 
-    public bool 进度同步鹿角怪 = true;
+    [Match(nameof(Terraria.NPC.downedQueenBee), true)]
+    [Alias("蜂后")]
+    QueenBee,
 
-    public bool 进度同步克眼 = true;
+    [Match(nameof(Terraria.NPC.downedBoss3), true)]
+    [Alias("骷髅王")]
+    Skeletron,
 
-    public bool 进度同步虫脑 = true;
+    [Match(nameof(Terraria.Main.hardMode), true)]
+    [Alias("肉山", "血肉之墙")]
+    WallOfFlesh,
 
-    public bool 进度同步蜂后 = true;
+    [Match(nameof(Terraria.NPC.downedMechBoss1), true)]
+    [Alias("机械眼", "双子魔眼")]
+    TheTwins,
 
-    public bool 进度同步骷髅 = true;
+    [Match(nameof(Terraria.NPC.downedMechBoss2), true)]
+    [Alias("机械毁灭者")]
+    TheDestroyer,
 
-    public bool 进度同步肉墙 = true;
+    [Match(nameof(Terraria.NPC.downedMechBoss3), true)]
+    [Alias("机械骷髅", "机械骷髅王")]
+    SkeletronPrime,
 
-    public bool 进度同步海盗 = true;
+    [Match(nameof(Terraria.NPC.downedPlantBoss), true)]
+    [Alias("世纪之花")]
+    Plantera,
 
-    public bool 进度同步萌后 = true;
+    [Match(nameof(Terraria.NPC.downedGolemBoss), true)]
+    [Alias("石巨人")]
+    Golem,
 
-    public bool 进度同步任一三王 = true;
+    [Match(nameof(Terraria.NPC.downedFishron), true)]
+    [Alias("猪鲨公爵")]
+    DukeFishron,
 
-    public bool 进度同步机械眼 = true;
+    [Match(nameof(Terraria.NPC.downedAncientCultist), true)]
+    [Alias("拜月教徒")]
+    LunaticCultist,
 
-    public bool 进度同步机械虫 = true;
+    [Match(nameof(Terraria.NPC.downedMoonlord), true)]
+    [Alias("月球领主")]
+    MoonLord,
 
-    public bool 进度同步机械骷髅 = true;
+    [Match(nameof(Terraria.NPC.downedTowerSolar), true)]
+    [Alias("日耀塔")]
+    SolarPillar,
 
-    public bool 进度同步猪鲨前 = true;
+    [Match(nameof(Terraria.NPC.downedTowerVortex), true)]
+    [Alias("星旋塔")]
+    VortexPillar,
 
-    public bool 进度同步妖花前 = true;
+    [Match(nameof(Terraria.NPC.downedTowerNebula), true)]
+    [Alias("星云塔")]
+    NebulaPillar,
 
-    public bool 进度同步霜月树 = true;
+    [Match(nameof(Terraria.NPC.downedTowerStardust), true)]
+    [Alias("星尘塔")]
+    StardustPillar,
 
-    public bool 进度同步霜月坦 = true;
+    [Match(nameof(Terraria.NPC.downedChristmasIceQueen), true)]
+    [Alias("冰雪女王")]
+    ChristmasIceQueen,
 
-    public bool 进度同步霜月后 = true;
+    [Match(nameof(Terraria.NPC.downedChristmasSantank), true)]
+    [Alias("圣诞坦克")]
+    ChristmasSantank,
 
-    public bool 进度同步南瓜树 = true;
+    [Match(nameof(Terraria.NPC.downedChristmasTree), true)]
+    [Alias("圣诞树")]
+    ChristmasTree,
 
-    public bool 进度同步南瓜王 = true;
+    [Match(nameof(Terraria.NPC.downedHalloweenTree), true)]
+    [Alias("万圣树")]
+    HalloweenTree,
 
-    public bool 进度同步光女前 = true;
+    [Match(nameof(Terraria.NPC.downedQueenSlime), true)]
+    [Alias("史莱姆女王")]
+    QueenSlime,
 
-    public bool 进度同步石巨人 = true;
+    [Match(nameof(Terraria.NPC.downedDeerclops), true)]
+    [Alias("鹿角怪")]
+    Deerclops,
 
-    public bool 进度同步教徒前 = true;
+    [Match(nameof(Terraria.NPC.downedEmpressOfLight), true)]
+    [Alias("光之女皇")]
+    EmpressOfLight,
 
-    public bool 进度同步日耀前 = true;
+    #region Invasion
+    [Match(nameof(Terraria.Main.bloodMoon), true)]
+    [Alias("血月")]
+    BloodMoon,
 
-    public bool 进度同步星旋前 = true;
+    [Match(nameof(Terraria.Main.eclipse), true)]
+    [Alias("日蚀")]
+    SolarEclipse,
 
-    public bool 进度同步星尘前 = true;
+    [Match(nameof(Terraria.Main.pumpkinMoon), true)]
+    [Alias("南瓜月")]
+    PumpkinMoon,
 
-    public bool 进度同步星云前 = true;
+    [Match(nameof(Terraria.Main.snowMoon), true)]
+    [Alias("霜月", "雪月")]
+    FrostMoon,
 
-    public bool 进度同步月总 = true;
+    [Match(nameof(Terraria.Main.invasionType), 4)]
+    [Alias("火星暴乱")]
+    MartianMadness,
 
-    public static void GetConfig()
+    [Match(nameof(Terraria.GameContent.Events.DD2Event.Ongoing), true)]
+    [Alias("旧日军团")]
+    OldOnesArmy,
+
+    [Match(nameof(Terraria.Main.invasionType), 1)]
+    [Alias("哥布林军团")]
+    GoblinsArmy,
+
+    [Match(nameof(Terraria.Main.invasionType), 3)]
+    [Alias("海盗军团")]
+    PiratesArmy,
+
+    [Match(nameof(Terraria.Main.invasionType), 2)]
+    [Alias("雪人军团")]
+    FrostLegion,
+
+    [Match(nameof(Terraria.GameContent.Events.DD2Event._downedDarkMageT1), true)]
+    [Alias("暗黑法师")]
+    DD2Mage,
+
+    [Match(nameof(Terraria.GameContent.Events.DD2Event._downedOgreT2), true)]
+    [Alias("巨魔")]
+    DD2Orge,
+
+    [Match(nameof(Terraria.GameContent.Events.DD2Event._spawnedBetsyT3), true)]
+    [Alias("贝蒂斯")]
+    DD2Betsy,
+    #endregion
+}
+
+public static class Config
+{
+    internal static readonly Dictionary<ProgressType, string> _default = typeof(ProgressType)
+        .GetFields()
+        .ToDictionary(f => (ProgressType) f.GetValue(null)!, f => f.GetCustomAttribute<AliasAttribute>()!.Alias[0]);
+    internal static readonly Dictionary<string, ProgressType> _names = typeof(ProgressType)
+        .GetFields()
+        .SelectMany(field => field.GetCustomAttribute<AliasAttribute>()!.Alias.Select(a => (field, a)))
+        .ToDictionary(t => t.a, t => (ProgressType) t.field.GetValue(null)!);
+
+    public static string GetProgressName(ProgressType type)
+    {
+        return _default[type];
+    }
+
+    public static ProgressType? GetProgressType(string? name)
+    {
+        if (name is null) return null;
+        return _names.TryGetValue(name, out var type) ? type : null;
+    }
+
+    public static Dictionary<ProgressType, bool> ShouldSyncProgress { get; set; } = new Dictionary<ProgressType, bool>();
+    public static void LoadConfig()
     {
         var PATH = Path.Combine(TShock.SavePath, "DataSync.json");
         try
         {
             if (!File.Exists(PATH))
             {
-                FileTools.CreateIfNot(PATH, JsonConvert.SerializeObject(Plugin.配置, Formatting.Indented));
+                FileTools.CreateIfNot(PATH, JsonConvert.SerializeObject(ShouldSyncProgress, Formatting.Indented, new ProgressConverter()));
             }
-            Plugin.配置 = JsonConvert.DeserializeObject<Config>(File.ReadAllText(PATH))!;
-            File.WriteAllText(PATH, JsonConvert.SerializeObject(Plugin.配置, Formatting.Indented));
+            ShouldSyncProgress = JsonConvert.DeserializeObject<Dictionary<ProgressType, bool>>(File.ReadAllText(PATH), new ProgressConverter())!;
+            File.WriteAllText(PATH, JsonConvert.SerializeObject(ShouldSyncProgress, Formatting.Indented, new ProgressConverter()));
         }
-        catch
+        catch (Exception ex)
         {
+            TShock.Log.Error(ex.ToString());
             TSPlayer.Server.SendErrorMessage("[DataSync]配置文件读取错误！！！");
+        }
+    }
+
+    public class ProgressConverter : JsonConverter<ProgressType>
+    {
+        public override ProgressType ReadJson(JsonReader reader, Type objectType, ProgressType existingValue, bool hasExistingValue, JsonSerializer serializer)
+        {
+            var value = $"{reader.Value}";
+            if (GetProgressType(value) is ProgressType type)
+                return type;
+            throw new JsonSerializationException($"无法识别的进度类型：{value}");
+        }
+
+        public override void WriteJson(JsonWriter writer, ProgressType value, JsonSerializer serializer)
+        {
+            writer.WriteValue(GetProgressName(value));
         }
     }
 }
