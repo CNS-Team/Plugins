@@ -26,7 +26,11 @@ public class Config
 
     public static Config Read(string Path)
     {
-        if (!File.Exists(Path)) return new Config();
+        if (!File.Exists(Path))
+        {
+            return new Config();
+        }
+
         using var fs = new FileStream(Path, FileMode.Open, FileAccess.Read, FileShare.Read);
         return Read(fs);
     }
@@ -35,20 +39,13 @@ public class Config
     {
         using var sr = new StreamReader(stream);
         var cf = JsonConvert.DeserializeObject<Config>(sr.ReadToEnd());
-        if (cf == null)
-        {
-            return new Config();
-        }
-        else
-        { 
-            return cf;
-        }  
+        return cf ?? new Config();
     }
 
     public void Write(string Path)
     {
         using var fs = new FileStream(Path, FileMode.Create, FileAccess.Write, FileShare.Write);
-        Write(fs);
+        this.Write(fs);
     }
 
     public void Write(Stream stream)

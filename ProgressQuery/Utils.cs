@@ -5,7 +5,7 @@ using TShockAPI;
 
 namespace ProgressQuery;
 
-public class Utils
+public static class Utils
 {
     public static Dictionary<string, FieldInfo> ProgressFields = GetProgressFilelds();
 
@@ -14,13 +14,7 @@ public class Utils
     public static HashSet<int> GetDetectNPCs()
     {
         var result = new HashSet<int>();
-        GetProgressNpcIds().ForEach(x =>
-        {
-            x.Value.ForEach(f =>
-            {
-                result.Add(f);
-            });
-        });
+        GetProgressNpcIds().ForEach(x => x.Value.ForEach(f => result.Add(f)));
         return result;
     }
 
@@ -124,21 +118,14 @@ public class Utils
     public static Dictionary<string, bool> GetGameProgress()
     {
         Dictionary<string, bool> Progress = new();
-        ProgressFields.ForEach(f =>
-        {
-            Progress.Add(f.Key, Convert.ToBoolean(f.Value.GetValue(null)));
-        });
+        ProgressFields.ForEach(f => Progress.Add(f.Key, Convert.ToBoolean(f.Value.GetValue(null))));
         return Progress;
     }
 
 
     public static bool GetGameProgress(string name)
     {
-        if (ProgressFields.TryGetValue(name, out var field) && field != null)
-        {
-            return Convert.ToBoolean(field.GetValue(null));
-        }
-        return false;
+        return ProgressFields.TryGetValue(name, out var field) && field != null && Convert.ToBoolean(field.GetValue(null));
     }
 
     public static Dictionary<string, bool> Ongoing()

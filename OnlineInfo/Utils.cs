@@ -57,7 +57,7 @@ internal static class Utils
 
 internal static class Logger
 {
-    private static readonly string AssemblyName = Assembly.GetExecutingAssembly().GetName().Name;
+    private static readonly string AssemblyName = Assembly.GetExecutingAssembly().GetName().Name!;
 
     public static void ConsoleInfo(string message)
     {

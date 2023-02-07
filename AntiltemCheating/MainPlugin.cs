@@ -41,7 +41,9 @@ public class MainPlugin : TerrariaPlugin
             if (!this.GameProgress[f.Key])
             {
                 if (!DataSync.Plugin.GetJb(this.ProgressNames[f.Key]))
+                {
                     Items.AddRange(f.Value);
+                }
             }
         }
         this.DetectionItem = Items.Distinct().ToHashSet();
@@ -77,17 +79,22 @@ public class MainPlugin : TerrariaPlugin
     private void CacheData()
     {
         this.scheme = this.config.Schemes.Find(f => f.SchemeName == this.config.UseScheme);
-        if (this.scheme != null)
-            this.scheme.AntiltemCheating.ForEach(x =>
+        this.scheme?.AntiltemCheating.ForEach(x =>
             {
                 if (!this.scheme.SkipProgressDetection.Exists(f => f == x.Key))
+                {
                     this.DetectionProgress[x.Key] = x.Value.ToHashSet();
+                }
             });
     }
 
     private void OnUpdata(object? sender, GetDataHandlers.PlayerUpdateEventArgs e)
     {
-        if (e.Player.HasPermission("progress.item.white") || e.Handled || !this.config.Enabled || !this.config.AccurateDetection || !e.Player.IsLoggedIn || this.playerDet[e.Player.Index] == DateTime.Now.Second) return;
+        if (e.Player.HasPermission("progress.item.white") || e.Handled || !this.config.Enabled || !this.config.AccurateDetection || !e.Player.IsLoggedIn || this.playerDet[e.Player.Index] == DateTime.Now.Second)
+        {
+            return;
+        }
+
         this.playerDet[e.Player.Index] = DateTime.Now.Second;
         for (var i = 0; i < NetItem.MaxInventory; i++)
         {
@@ -178,7 +185,10 @@ public class MainPlugin : TerrariaPlugin
 
     private void OnSlot(object? sender, GetDataHandlers.PlayerSlotEventArgs e)
     {
-        if (e.Player.HasPermission("progress.item.white") || e.Handled || !this.config.Enabled || !e.Player.IsLoggedIn) return;
+        if (e.Player.HasPermission("progress.item.white") || e.Handled || !this.config.Enabled || !e.Player.IsLoggedIn)
+        {
+            return;
+        }
 
         if (this.DetectionItem.Contains(e.Type))
         {
