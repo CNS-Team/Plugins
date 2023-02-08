@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using TShockAPI;
 
-namespace AntiProjecttileCheating;
+namespace ProgressRestrict;
 
 public class ProgressAllowed
 {

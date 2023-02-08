@@ -1,8 +1,6 @@
 ﻿using MySql.Data.MySqlClient;
-using System.Linq.Expressions;
 using System.Reflection;
 using Terraria;
-using Terraria.ID;
 using TerrariaApi.Server;
 using TShockAPI;
 using TShockAPI.DB;
@@ -78,14 +76,12 @@ public class Plugin : TerrariaPlugin
             : new MysqlQueryCreator());
         sqlTableCreator.EnsureTableStructure(sqlTable);
 
-        using (var result = TShock.DB.QueryReader("SELECT * FROM synctable WHERE `key`=@0", nameof(ProgressType.KingSlime)))
+        using var result = TShock.DB.QueryReader("SELECT * FROM synctable WHERE `key`=@0", nameof(ProgressType.KingSlime));
+        if (!result.Read())
         {
-            if (!result.Read())
+            foreach (var t in Config._default)
             {
-                foreach (var t in Config._default)
-                {
-                    TShock.DB.Query("INSERT INTO synctable (`key`, `value`) VALUES (@0, @1)", t.Key, false);
-                }
+                TShock.DB.Query("INSERT INTO synctable (`key`, `value`) VALUES (@0, @1)", t.Key, false);
             }
         }
     }

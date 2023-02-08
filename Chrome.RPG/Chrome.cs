@@ -818,8 +818,7 @@ public class Chrome : TerrariaPlugin
         }
     }
 
-
-
+    [Obsolete("使用DataSync所提供的进度")]
     public static List<string> 进度详情()//获取进度详情
     {
         var list = new List<string>();

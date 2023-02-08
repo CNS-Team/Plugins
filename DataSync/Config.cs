@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System.Reflection;
 using TShockAPI;
 
@@ -20,7 +20,7 @@ public enum ProgressType
     EaterOfWorlds,
 
     [Match(nameof(Terraria.NPC.downedQueenBee), true)]
-    [Alias("蜂后")]
+    [Alias("蜂后", "蜂王")]
     QueenBee,
 
     [Match(nameof(Terraria.NPC.downedBoss3), true)]
@@ -28,15 +28,15 @@ public enum ProgressType
     Skeletron,
 
     [Match(nameof(Terraria.Main.hardMode), true)]
-    [Alias("肉山", "血肉之墙")]
+    [Alias("肉山", "血肉之墙", "血肉墙")]
     WallOfFlesh,
 
     [Match(nameof(Terraria.NPC.downedMechBoss1), true)]
-    [Alias("机械眼", "双子魔眼")]
+    [Alias("双子魔眼", "机械眼")]
     TheTwins,
 
     [Match(nameof(Terraria.NPC.downedMechBoss2), true)]
-    [Alias("机械毁灭者")]
+    [Alias("机械毁灭者", "毁灭者")]
     TheDestroyer,
 
     [Match(nameof(Terraria.NPC.downedMechBoss3), true)]
@@ -52,11 +52,11 @@ public enum ProgressType
     Golem,
 
     [Match(nameof(Terraria.NPC.downedFishron), true)]
-    [Alias("猪鲨公爵")]
+    [Alias("猪鲨公爵", "猪龙鱼公爵")]
     DukeFishron,
 
     [Match(nameof(Terraria.NPC.downedAncientCultist), true)]
-    [Alias("拜月教徒")]
+    [Alias("拜月教徒", "拜月教邪教徒")]
     LunaticCultist,
 
     [Match(nameof(Terraria.NPC.downedMoonlord), true)]
@@ -96,15 +96,15 @@ public enum ProgressType
     HalloweenTree,
 
     [Match(nameof(Terraria.NPC.downedQueenSlime), true)]
-    [Alias("史莱姆女王")]
+    [Alias("史莱姆皇后", "史莱姆女王")]
     QueenSlime,
 
     [Match(nameof(Terraria.NPC.downedDeerclops), true)]
-    [Alias("鹿角怪")]
+    [Alias("独眼巨鹿", "鹿角怪")]
     Deerclops,
 
     [Match(nameof(Terraria.NPC.downedEmpressOfLight), true)]
-    [Alias("光之女皇")]
+    [Alias("光之女皇", "光女")]
     EmpressOfLight,
 
     #region Invasion
@@ -133,11 +133,11 @@ public enum ProgressType
     OldOnesArmy,
 
     [Match(nameof(Terraria.Main.invasionType), 1)]
-    [Alias("哥布林军团")]
+    [Alias("哥布林军团", "哥布林入侵", "哥布林军队")]
     GoblinsArmy,
 
     [Match(nameof(Terraria.Main.invasionType), 3)]
-    [Alias("海盗军团")]
+    [Alias("海盗军团", "海盗入侵")]
     PiratesArmy,
 
     [Match(nameof(Terraria.Main.invasionType), 2)]
@@ -156,6 +156,10 @@ public enum ProgressType
     [Alias("贝蒂斯")]
     DD2Betsy,
     #endregion
+
+    [Alias("不存在的进度")]
+    [Match(nameof(Terraria.Main.renderCount), -1)]
+    Unreachable,
 }
 
 public static class Config
@@ -177,8 +181,7 @@ public static class Config
 
     public static ProgressType? GetProgressType(string? name)
     {
-        if (name is null) return null;
-        return _names.TryGetValue(name, out var type) ? type : null;
+        return name is not null && _names.TryGetValue(name, out var type) ? type : null;
     }
 
     public static Dictionary<ProgressType, bool> ShouldSyncProgress { get; set; } = new Dictionary<ProgressType, bool>();
@@ -207,9 +210,7 @@ public static class Config
         public override ProgressType ReadJson(JsonReader reader, Type objectType, ProgressType existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
             var value = $"{reader.Value}";
-            if (GetProgressType(value) is ProgressType type)
-                return type;
-            throw new JsonSerializationException($"无法识别的进度类型：{value}");
+            return GetProgressType(value) is ProgressType type ? type : throw new JsonSerializationException($"无法识别的进度类型：{value}");
         }
 
         public override void WriteJson(JsonWriter writer, ProgressType value, JsonSerializer serializer)

@@ -1,7 +1,4 @@
-﻿using Newtonsoft.Json;
-using TShockAPI;
-
-namespace DataSync;
+﻿namespace DataSync;
 
 [AttributeUsage(AttributeTargets.Field)]
 public class AliasAttribute : Attribute
@@ -10,7 +7,7 @@ public class AliasAttribute : Attribute
 
     public AliasAttribute(params string[] alias)
     {
-        Alias = alias;
+        this.Alias = alias;
     }
 }
 
@@ -24,13 +21,13 @@ public class MatchAttribute : Attribute
 
     public MatchAttribute(params int[] match)
     {
-        NPCID = match;
+        this.NPCID = match;
     }
 
     public MatchAttribute(string key, object value)
     {
-        NPCID = Array.Empty<int>();
-        Key = key;
-        Value = value;
+        this.NPCID = Array.Empty<int>();
+        this.Key = key;
+        this.Value = value;
     }
 }

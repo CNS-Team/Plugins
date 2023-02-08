@@ -1,10 +1,10 @@
-﻿using Terraria;
+using Terraria;
 using Terraria.ID;
 using TerrariaApi.Server;
 using TShockAPI;
 using TShockAPI.Hooks;
 
-namespace AntiProjecttileCheating;
+namespace ProgressRestrict;
 
 [ApiVersion(2, 1)]
 public class MainPlugin : TerrariaPlugin
@@ -66,6 +66,10 @@ public class MainPlugin : TerrariaPlugin
 
     private void UpdateRestricted()
     {
+        Array.Fill(this.RestrictedItems, false);
+        Array.Fill(this.RestrictedProjectiles, false);
+        Array.Fill(this.RestrictedBuffs, false);
+
         foreach (var f in this.config.Restrictions)
         {
             if (f.AllowRemoteUnlocked && DataSync.Plugin.SyncedProgress.TryGetValue(f.Progress, out var value) && value)
