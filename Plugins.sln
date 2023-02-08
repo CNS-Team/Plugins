@@ -47,8 +47,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PacketMonitor", "PacketMoni
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AbandanTempleEnter", "AbandanTempleEnter\AbandanTempleEnter.csproj", "{31C51D98-AF4A-4CB5-A6A2-7D1FBC8C8124}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProgressQuery", "ProgressQuery\ProgressQuery.csproj", "{823509AA-BB27-403F-BDFE-DA7E8712280B}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Permabuff_V2", "Permabuff_V2\Permabuff_V2.csproj", "{9089D7C4-2F83-4C0A-B7A6-619E4A7D8B03}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dimensions", "Dimensions\Dimensions.csproj", "{128F94DF-1927-446B-9240-028F241DC1C3}"
@@ -73,9 +71,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chrome.Task", "Chrome.Task\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicPlayer", "MusicPlayer\MusicPlayer.csproj", "{C1A2E3FE-4709-4A50-A4F3-5D275C010E3F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AntiProjecttileCheating", "AntiProjecttileCheating\AntiProjecttileCheating.csproj", "{291379D0-7665-4463-AC81-117399DA884E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AntiProjectileCheating", "AntiProjectileCheating\AntiProjectileCheating.csproj", "{291379D0-7665-4463-AC81-117399DA884E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProgressBuff", "ProgressBuff\ProgressBuff.csproj", "{4276B845-31CE-4B49-B849-1FF73EC10D16}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProgressBuff", "ProgressBuff\ProgressBuff.csproj", "{4276B845-31CE-4B49-B849-1FF73EC10D16}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -261,14 +259,6 @@ Global
 		{31C51D98-AF4A-4CB5-A6A2-7D1FBC8C8124}.Release|Any CPU.Build.0 = Release|Any CPU
 		{31C51D98-AF4A-4CB5-A6A2-7D1FBC8C8124}.Release|x64.ActiveCfg = Release|Any CPU
 		{31C51D98-AF4A-4CB5-A6A2-7D1FBC8C8124}.Release|x64.Build.0 = Release|Any CPU
-		{823509AA-BB27-403F-BDFE-DA7E8712280B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{823509AA-BB27-403F-BDFE-DA7E8712280B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{823509AA-BB27-403F-BDFE-DA7E8712280B}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{823509AA-BB27-403F-BDFE-DA7E8712280B}.Debug|x64.Build.0 = Debug|Any CPU
-		{823509AA-BB27-403F-BDFE-DA7E8712280B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{823509AA-BB27-403F-BDFE-DA7E8712280B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{823509AA-BB27-403F-BDFE-DA7E8712280B}.Release|x64.ActiveCfg = Release|Any CPU
-		{823509AA-BB27-403F-BDFE-DA7E8712280B}.Release|x64.Build.0 = Release|Any CPU
 		{9089D7C4-2F83-4C0A-B7A6-619E4A7D8B03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9089D7C4-2F83-4C0A-B7A6-619E4A7D8B03}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9089D7C4-2F83-4C0A-B7A6-619E4A7D8B03}.Debug|x64.ActiveCfg = Debug|Any CPU

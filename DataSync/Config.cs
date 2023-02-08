@@ -4,6 +4,7 @@ using TShockAPI;
 
 namespace DataSync;
 
+[JsonConverter(typeof(Config.ProgressConverter))]
 public enum ProgressType
 {
     [Match(nameof(Terraria.NPC.downedSlimeKing), true)]
@@ -179,6 +180,7 @@ public static class Config
     }
 
     public static Dictionary<ProgressType, bool> ShouldSyncProgress { get; set; } = new Dictionary<ProgressType, bool>();
+
     public static void LoadConfig()
     {
         var PATH = Path.Combine(TShock.SavePath, "DataSync.json");
@@ -186,10 +188,10 @@ public static class Config
         {
             if (!File.Exists(PATH))
             {
-                FileTools.CreateIfNot(PATH, JsonConvert.SerializeObject(ShouldSyncProgress, Formatting.Indented, new ProgressConverter()));
+                FileTools.CreateIfNot(PATH, JsonConvert.SerializeObject(ShouldSyncProgress, Formatting.Indented));
             }
-            ShouldSyncProgress = JsonConvert.DeserializeObject<Dictionary<ProgressType, bool>>(File.ReadAllText(PATH), new ProgressConverter())!;
-            File.WriteAllText(PATH, JsonConvert.SerializeObject(ShouldSyncProgress, Formatting.Indented, new ProgressConverter()));
+            ShouldSyncProgress = JsonConvert.DeserializeObject<Dictionary<ProgressType, bool>>(File.ReadAllText(PATH))!;
+            File.WriteAllText(PATH, JsonConvert.SerializeObject(ShouldSyncProgress, Formatting.Indented));
         }
         catch (Exception ex)
         {
