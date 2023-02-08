@@ -119,9 +119,9 @@ public class Plugin : TerrariaPlugin
 
         LocalProgress[type] = value;
 
-        if (SyncedProgress.TryGetValue(type, out var syncedValue) && syncedValue != value)
+        if (Config.ShouldSyncProgress.TryGetValue(type, out var progress) && progress)
         {
-            if (Config.ShouldSyncProgress.TryGetValue(type, out var progress) && progress)
+            if (!SyncedProgress.TryGetValue(type, out var syncedValue) || syncedValue != value)
             {
                 TSPlayer.Server.SendInfoMessage($"[DataSync]上传进度 {Config.GetProgressName(type)} {value}");
                 TShock.DB.Query("UPDATE synctable SET value = @1 WHERE `key` = @0", type, value);
@@ -153,11 +153,20 @@ public class Plugin : TerrariaPlugin
             TSPlayer.Server.SendErrorMessage($"[DataSync]配置文件读取错误");
         }
     }
+
     public static void LoadProgress()
     {
         if (!Monitor.TryEnter(kg))
         {
             return;
+        }
+
+        foreach (var (pg, ac) in _flagaccessors)
+        {
+            if (ac(null) && (!LocalProgress.TryGetValue(pg, out var value) || !value))
+            {
+                UpdateProgress(pg, true);
+            }
         }
 
         using (var reader = TShock.DB.QueryReader("SELECT * FROM synctable"))
