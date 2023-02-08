@@ -35,8 +35,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "History", "History\History.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnlineInfo", "OnlineInfo\OnlineInfo.csproj", "{5A2D6C4A-42D1-47BD-88A3-533CDC5FC815}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AntiltemCheating", "AntiltemCheating\AntiltemCheating.csproj", "{6A74D60F-A927-491E-924C-CC95D7448221}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CNSUniCore", "CNSUniCore\CNSUniCore.csproj", "{479A4838-749F-4514-BC4B-61CD2073ADC1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataSync", "DataSync\DataSync.csproj", "{4E58DBF4-BBF2-4C72-A09C-2D0D59FB86E4}"
@@ -71,9 +69,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chrome.Task", "Chrome.Task\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicPlayer", "MusicPlayer\MusicPlayer.csproj", "{C1A2E3FE-4709-4A50-A4F3-5D275C010E3F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AntiProjectileCheating", "AntiProjectileCheating\AntiProjectileCheating.csproj", "{291379D0-7665-4463-AC81-117399DA884E}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProgressBuff", "ProgressBuff\ProgressBuff.csproj", "{4276B845-31CE-4B49-B849-1FF73EC10D16}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProgressRestrict", "ProgressRestrict\ProgressRestrict.csproj", "{291379D0-7665-4463-AC81-117399DA884E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -211,14 +207,6 @@ Global
 		{5A2D6C4A-42D1-47BD-88A3-533CDC5FC815}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5A2D6C4A-42D1-47BD-88A3-533CDC5FC815}.Release|x64.ActiveCfg = Release|Any CPU
 		{5A2D6C4A-42D1-47BD-88A3-533CDC5FC815}.Release|x64.Build.0 = Release|Any CPU
-		{6A74D60F-A927-491E-924C-CC95D7448221}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6A74D60F-A927-491E-924C-CC95D7448221}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6A74D60F-A927-491E-924C-CC95D7448221}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{6A74D60F-A927-491E-924C-CC95D7448221}.Debug|x64.Build.0 = Debug|Any CPU
-		{6A74D60F-A927-491E-924C-CC95D7448221}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6A74D60F-A927-491E-924C-CC95D7448221}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6A74D60F-A927-491E-924C-CC95D7448221}.Release|x64.ActiveCfg = Release|Any CPU
-		{6A74D60F-A927-491E-924C-CC95D7448221}.Release|x64.Build.0 = Release|Any CPU
 		{479A4838-749F-4514-BC4B-61CD2073ADC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{479A4838-749F-4514-BC4B-61CD2073ADC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{479A4838-749F-4514-BC4B-61CD2073ADC1}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -363,14 +351,6 @@ Global
 		{291379D0-7665-4463-AC81-117399DA884E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{291379D0-7665-4463-AC81-117399DA884E}.Release|x64.ActiveCfg = Release|Any CPU
 		{291379D0-7665-4463-AC81-117399DA884E}.Release|x64.Build.0 = Release|Any CPU
-		{4276B845-31CE-4B49-B849-1FF73EC10D16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4276B845-31CE-4B49-B849-1FF73EC10D16}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4276B845-31CE-4B49-B849-1FF73EC10D16}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{4276B845-31CE-4B49-B849-1FF73EC10D16}.Debug|x64.Build.0 = Debug|Any CPU
-		{4276B845-31CE-4B49-B849-1FF73EC10D16}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4276B845-31CE-4B49-B849-1FF73EC10D16}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4276B845-31CE-4B49-B849-1FF73EC10D16}.Release|x64.ActiveCfg = Release|Any CPU
-		{4276B845-31CE-4B49-B849-1FF73EC10D16}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

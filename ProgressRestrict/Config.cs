@@ -1,7 +1,5 @@
 ﻿using DataSync;
-using MonoMod;
 using Newtonsoft.Json;
-using System.Xml.XPath;
 using TShockAPI;
 
 namespace AntiProjecttileCheating;
@@ -20,8 +18,11 @@ public class Config
     public bool Broadcast = true;
     public bool WriteLog = true;
     public bool ClearItem = true;
+    public bool ClearBuff = true;
     public bool KickPlayer = false;
-    public List<Scheme> Schemes = new List<Scheme>();
+    public List<Scheme> Projectiles = new List<Scheme>();
+    public List<Scheme> Items = new List<Scheme>();
+    public List<Scheme> Buffs = new List<Scheme>();
 
     public static Config LoadConfig(string path)
     {
