@@ -66,42 +66,24 @@ public class MainPlugin : TerrariaPlugin
 
     private void UpdateRestricted()
     {
-        foreach (var f in this.config.Projectiles)
+        foreach (var f in this.config.Restrictions)
         {
             if (f.AllowRemoteUnlocked && DataSync.Plugin.SyncedProgress.TryGetValue(f.Progress, out var value) && value)
             {
                 continue;
             }
 
-            foreach (var proj in f.Restricted)
+            foreach (var i in f.RestrictedItems)
             {
-                this.RestrictedProjectiles[proj] = true;
+                this.RestrictedItems[i] = true;
             }
-        }
-
-        foreach (var f in this.config.Buffs)
-        {
-            if (f.AllowRemoteUnlocked && DataSync.Plugin.SyncedProgress.TryGetValue(f.Progress, out var value) && value)
+            foreach (var i in f.RestrictedProjectiles)
             {
-                continue;
+                this.RestrictedProjectiles[i] = true;
             }
-
-            foreach (var proj in f.Restricted)
+            foreach (var i in f.RestrictedBuffs)
             {
-                this.RestrictedBuffs[proj] = true;
-            }
-        }
-
-        foreach (var f in this.config.Items)
-        {
-            if (f.AllowRemoteUnlocked && DataSync.Plugin.SyncedProgress.TryGetValue(f.Progress, out var value) && value)
-            {
-                continue;
-            }
-
-            foreach (var proj in f.Restricted)
-            {
-                this.RestrictedItems[proj] = true;
+                this.RestrictedBuffs[i] = true;
             }
         }
     }
