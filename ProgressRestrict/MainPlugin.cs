@@ -9,7 +9,7 @@ namespace ProgressRestrict;
 [ApiVersion(2, 1)]
 public class MainPlugin : TerrariaPlugin
 {
-    public override string Author => "少司命";
+    public override string Author => "少司命 & 恋恋魔改三合一";
     public override string Description => "根据进度限制";
     public override string Name => "超进度限制";
     public override Version Version => new(1, 0, 0, 0);
@@ -72,7 +72,12 @@ public class MainPlugin : TerrariaPlugin
 
         foreach (var f in this.config.Restrictions)
         {
-            if (f.AllowRemoteUnlocked && DataSync.Plugin.SyncedProgress.TryGetValue(f.Progress, out var value) && value)
+            if (f.AllowRemoteUnlocked && DataSync.Plugin.SyncedProgress.TryGetValue(f.Progress, out var rv) && rv)
+            {
+                continue;
+            }
+
+            if (DataSync.Plugin.LocalProgress.TryGetValue(f.Progress, out var lv) && lv)
             {
                 continue;
             }

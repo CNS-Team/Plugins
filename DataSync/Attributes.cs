@@ -1,7 +1,7 @@
 ﻿namespace DataSync;
 
 [AttributeUsage(AttributeTargets.Field)]
-public class AliasAttribute : Attribute
+internal class AliasAttribute : Attribute
 {
     public string[] Alias { get; }
 
@@ -11,23 +11,25 @@ public class AliasAttribute : Attribute
     }
 }
 
-[AttributeUsage(AttributeTargets.Field)]
-public class MatchAttribute : Attribute
+[AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
+internal class MappingAttribute : Attribute
 {
-    public int[] NPCID { get; }
-
     public string? Key { get; }
     public object? Value { get; }
+    public MappingAttribute(string key, object value)
+    {
+        this.Key = key;
+        this.Value = value;
+    }
+}
+
+[AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
+internal class MatchAttribute : Attribute
+{
+    public int[] NPCID { get; }
 
     public MatchAttribute(params int[] match)
     {
         this.NPCID = match;
-    }
-
-    public MatchAttribute(string key, object value)
-    {
-        this.NPCID = Array.Empty<int>();
-        this.Key = key;
-        this.Value = value;
     }
 }

@@ -27,11 +27,15 @@ public class Plugin : TerrariaPlugin
                         _related.Add(id, (ProgressType) variant.GetValue(null)!);
                     }
                 }
-                if (match.Key is not null)
+            }
+            var mappings = variant.GetCustomAttributes<MappingAttribute>()!;
+            foreach (var mapping in mappings)
+            {
+                if (mapping.Key is not null)
                 {
-                    var targetField = typeof(NPC).GetField(match.Key!, BindingFlags.Public | BindingFlags.Static)
-                        ?? typeof(Main).GetField(match.Key!, BindingFlags.Public | BindingFlags.Static)
-                        ?? typeof(Terraria.GameContent.Events.DD2Event).GetField(match.Key!, BindingFlags.Public | BindingFlags.Static)!;
+                    var targetField = typeof(NPC).GetField(mapping.Key!, BindingFlags.Public | BindingFlags.Static)
+                        ?? typeof(Main).GetField(mapping.Key!, BindingFlags.Public | BindingFlags.Static)
+                        ?? typeof(Terraria.GameContent.Events.DD2Event).GetField(mapping.Key!, BindingFlags.Public | BindingFlags.Static)!;
 
                     _flagaccessors.Add((ProgressType) variant.GetValue(null)!, (newvalue) =>
                     {
@@ -39,7 +43,7 @@ public class Plugin : TerrariaPlugin
                         {
                             targetField.SetValue(null, newvalue);
                         }
-                        return targetField.GetValue(null) == match.Value;
+                        return targetField.GetValue(null) == mapping.Value;
                     });
                 }
             }
@@ -131,7 +135,10 @@ public class Plugin : TerrariaPlugin
     {
         if (_related.TryGetValue(args.npc.netID, out var type))
         {
-            UpdateProgress(type, true);
+            if (!_flagaccessors.TryGetValue(type, out var accessor) || accessor(null))
+            {
+                UpdateProgress(type, true);
+            }
         }
     }
 
