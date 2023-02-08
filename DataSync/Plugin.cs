@@ -11,7 +11,7 @@ namespace DataSync;
 public class Plugin : TerrariaPlugin
 {
     public override string Name => "DataSync";
-    internal static Dictionary<int, ProgressType> _related = new Dictionary<int, ProgressType>();
+    internal static Dictionary<int, List<ProgressType>> _related = new Dictionary<int, List<ProgressType>>();
     internal static Dictionary<ProgressType, Func<bool?, bool>> _flagaccessors = new Dictionary<ProgressType, Func<bool?, bool>>();
     public Plugin(Main game) : base(game)
     {
@@ -24,7 +24,11 @@ public class Plugin : TerrariaPlugin
                 {
                     foreach (var id in match.NPCID)
                     {
-                        _related.Add(id, (ProgressType) variant.GetValue(null)!);
+                        if (!_related.ContainsKey(id))
+                        {
+                            _related[id] = new List<ProgressType>();
+                        }
+                        _related[id].Add((ProgressType) variant.GetValue(null)!);
                     }
                 }
             }
@@ -133,11 +137,14 @@ public class Plugin : TerrariaPlugin
 
     private void NpcKilled(NpcKilledEventArgs args)
     {
-        if (_related.TryGetValue(args.npc.netID, out var type))
+        if (_related.TryGetValue(args.npc.netID, out var types))
         {
-            if (!_flagaccessors.TryGetValue(type, out var accessor) || accessor(null))
+            foreach (var type in types)
             {
-                UpdateProgress(type, true);
+                if (!_flagaccessors.TryGetValue(type, out var accessor) || accessor(null))
+                {
+                    UpdateProgress(type, true);
+                }
             }
         }
     }
