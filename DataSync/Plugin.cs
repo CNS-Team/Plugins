@@ -1,4 +1,6 @@
 ﻿using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
+using Rests;
 using System.Reflection;
 using Terraria;
 using TerrariaApi.Server;
@@ -112,6 +114,112 @@ public class Plugin : TerrariaPlugin
         ServerApi.Hooks.GamePostInitialize.Register(this, args => LoadProgress());
         Commands.ChatCommands.Add(new Command("DataSync", this.Re, "reload"));
         Commands.ChatCommands.Add(new Command("DataSync", this.Remove, "重置进度同步"));
+        TShock.RestApi.Register(new SecureRestCommand("/DataSync", ProgressRest, "DataSync"));
+        Commands.ChatCommands.Add(new Command("DataSync", ProgressCommand, "进度", "progress"));
+    }
+
+    private static object ProgressRest(RestRequestArgs args)
+    {
+        return new RestObject {
+            { "local", JsonConvert.DeserializeObject<Dictionary<string, bool>>(JsonConvert.SerializeObject(LocalProgress)) },
+            { "remote", JsonConvert.DeserializeObject<Dictionary<string, bool>>(JsonConvert.SerializeObject(SyncedProgress)) }
+        };
+    }
+
+    private static void ProgressCommand(CommandArgs args)
+    {
+        switch (args.Parameters.Count)
+        {
+            case 2:
+            {
+                if (!args.Player.HasPermission("DataSync.set"))
+                {
+                    args.Player.SendErrorMessage("你没有权限设置进度");
+                    return;
+                }
+                var type = Config.GetProgressType(args.Parameters[0]);
+                if (type == null)
+                {
+                    args.Player.SendErrorMessage($"进度 '{args.Parameters[0]}' 不存在");
+                    return;
+                }
+                if (!bool.TryParse(args.Parameters[1], out var result))
+                {
+                    args.Player.SendErrorMessage($"值 '{args.Parameters[1]}' 应为 true 或 false");
+                    return;
+                }
+                if (result == LocalProgress[type.Value])
+                {
+                    args.Player.SendErrorMessage($"进度 '{args.Parameters[0]}' 已经是 '{args.Parameters[1]}'");
+                    return;
+                }
+                if (_flagaccessors.TryGetValue(type.Value, out var accessor))
+                {
+                    accessor(result);
+                }
+                UpdateProgress(type.Value, result, true);
+                return;
+            }
+            case 1 when !string.Equals(args.Parameters[0], "local", StringComparison.OrdinalIgnoreCase):
+            {
+                if (string.Equals(args.Parameters[0], "remote", StringComparison.OrdinalIgnoreCase))
+                {
+                    args.Player.SendInfoMessage("远程进度:");
+                    var readable = GetReadableProgress(SyncedProgress);
+                    if (readable.ContainsKey(true))
+                    {
+                        args.Player.SendInfoMessage("已完成:");
+                        args.Player.SendSuccessMessage(string.Join(", ", readable[true]));
+                    }
+                    if (readable.ContainsKey(false))
+                    {
+                        args.Player.SendInfoMessage("未完成:");
+                        args.Player.SendErrorMessage(string.Join(", ", readable[false]));
+                    }
+                    return;
+                }
+                var type = Config.GetProgressType(args.Parameters[0]);
+                if (type == null)
+                {
+                    args.Player.SendErrorMessage($"进度 '{args.Parameters[0]}' 不存在");
+                    return;
+                }
+                args.Player.SendInfoMessage($"进度 '{args.Parameters[0]}' 的值为 '{LocalProgress[type.Value]}'");
+                return;
+            }
+
+            default:
+            {
+                args.Player.SendInfoMessage("本地进度:");
+                var readable = GetReadableProgress(LocalProgress);
+                if (readable.ContainsKey(true))
+                {
+                    args.Player.SendInfoMessage("已完成:");
+                    args.Player.SendSuccessMessage(string.Join(", ", readable[true]));
+                }
+                if (readable.ContainsKey(false))
+                {
+                    args.Player.SendInfoMessage("未完成:");
+                    args.Player.SendErrorMessage(string.Join(", ", readable[false]));
+                }
+                return;
+            }
+        }
+    }
+
+    private static Dictionary<bool, List<string>> GetReadableProgress(Dictionary<ProgressType, bool> progress)
+    {
+        var result = new Dictionary<bool, List<string>>();
+        foreach (var (key, value) in progress)
+        {
+            if (!result.TryGetValue(value, out var list))
+            {
+                list = new List<string>();
+                result[value] = list;
+            }
+            list.Add(Config.GetProgressName(key));
+        }
+        return result;
     }
 
     public static void UpdateProgress(ProgressType type, bool value, bool force = false)
