@@ -45,7 +45,9 @@ internal static class Utils
 
     public static DataConnection GetDBConnection()
     {
-        return new DataConnection(DBProvider, DBConnectionString);
+        var dc = new DataConnection(DBProvider, DBConnectionString);
+        dc.MappingSchema.AddScalarType(typeof(string), new LinqToDB.SqlQuery.SqlDataType(DataType.NVarChar, 255));
+        return dc;
     }
 
     public static DisposableQuery<T> GetDBQuery<T>() where T : class
