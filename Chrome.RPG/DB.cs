@@ -172,5 +172,4 @@ public static class DB
         using var 表 = TShock.DB.QueryReader("SELECT * FROM Chrome_RPG WHERE `玩家名` = @0", 玩家名);
         return 表.Read() ? 表.Get<string>("是否显示") == "false" ? "false" : "true" : "true";
     }
-
 }

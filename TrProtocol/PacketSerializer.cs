@@ -172,5 +172,4 @@ public partial class PacketSerializer
         ErrorLogger.WriteLine($"[Warning] packet {p} not defined, ignoring");
         return Array.Empty<byte>();
     }
-
 }

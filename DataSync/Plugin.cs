@@ -13,29 +13,25 @@ namespace DataSync;
 public class Plugin : TerrariaPlugin
 {
     public override string Name => "DataSync";
-    internal static Dictionary<int, List<ProgressType>> _related = new Dictionary<int, List<ProgressType>>();
+    internal static Dictionary<int, List<ProgressType>> _idmatch = new Dictionary<int, List<ProgressType>>();
     internal static Dictionary<ProgressType, Func<bool?, bool>> _flagaccessors = new Dictionary<ProgressType, Func<bool?, bool>>();
     public Plugin(Main game) : base(game)
     {
-        foreach (var variant in typeof(ProgressType).GetFields())
+        foreach (var variant in typeof(ProgressType).GetFields().Where(f => f.FieldType == typeof(ProgressType)))
         {
-            var matches = variant.GetCustomAttributes<MatchAttribute>()!;
-            foreach (var match in matches)
+            var value = (ProgressType) variant.GetValue(null)!;
+            foreach (var match in variant.GetCustomAttributes<MatchAttribute>()!)
             {
-                if (match.NPCID.Length > 0)
+                foreach (var id in match.NPCID)
                 {
-                    foreach (var id in match.NPCID)
+                    if (!_idmatch.ContainsKey(id))
                     {
-                        if (!_related.ContainsKey(id))
-                        {
-                            _related[id] = new List<ProgressType>();
-                        }
-                        _related[id].Add((ProgressType) variant.GetValue(null)!);
+                        _idmatch[id] = new List<ProgressType>();
                     }
+                    _idmatch[id].Add(value);
                 }
             }
-            var mappings = variant.GetCustomAttributes<MappingAttribute>()!;
-            foreach (var mapping in mappings)
+            foreach (var mapping in variant.GetCustomAttributes<MappingAttribute>()!)
             {
                 if (mapping.Key is not null)
                 {
@@ -43,13 +39,13 @@ public class Plugin : TerrariaPlugin
                         ?? typeof(Main).GetField(mapping.Key!, BindingFlags.Public | BindingFlags.Static)
                         ?? typeof(Terraria.GameContent.Events.DD2Event).GetField(mapping.Key!, BindingFlags.Public | BindingFlags.Static)!;
 
-                    _flagaccessors.Add((ProgressType) variant.GetValue(null)!, (newvalue) =>
+                    _flagaccessors.Add(value, (newvalue) =>
                     {
                         if (newvalue is not null && targetField.FieldType == typeof(bool))
                         {
                             targetField.SetValue(null, newvalue);
                         }
-                        return targetField.GetValue(null) == mapping.Value;
+                        return mapping.Value.Equals(targetField.GetValue(null));
                     });
                 }
             }
@@ -57,12 +53,12 @@ public class Plugin : TerrariaPlugin
     }
 
     public static event Action? OnProgressChanged;
-    private void Remove(CommandArgs args)
+    private void ClearProgress(CommandArgs args)
     {
         TShock.DB.Query("TRUNCATE TABLE synctable;");
     }
 
-    public static Dictionary<ProgressType, bool> LocalProgress { get; set; } = new Dictionary<ProgressType, bool>();
+    public static Dictionary<ProgressType, bool> LocalProgress { get; set; } = Config.DefaultDict;
     public static Dictionary<ProgressType, bool> SyncedProgress { get; set; } = new Dictionary<ProgressType, bool>();
 
     private static void EnsureTable()
@@ -112,8 +108,8 @@ public class Plugin : TerrariaPlugin
             }
         });
         ServerApi.Hooks.GamePostInitialize.Register(this, args => LoadProgress());
-        Commands.ChatCommands.Add(new Command("DataSync", this.Re, "reload"));
-        Commands.ChatCommands.Add(new Command("DataSync", this.Remove, "重置进度同步"));
+        Commands.ChatCommands.Add(new Command("DataSync", this.Reload, "reload"));
+        Commands.ChatCommands.Add(new Command("DataSync", this.ClearProgress, "重置进度同步"));
         TShock.RestApi.Register(new SecureRestCommand("/DataSync", ProgressRest, "DataSync"));
         Commands.ChatCommands.Add(new Command("DataSync", ProgressCommand, "进度", "progress"));
     }
@@ -146,11 +142,6 @@ public class Plugin : TerrariaPlugin
                 if (!bool.TryParse(args.Parameters[1], out var result))
                 {
                     args.Player.SendErrorMessage($"值 '{args.Parameters[1]}' 应为 true 或 false");
-                    return;
-                }
-                if (result == LocalProgress[type.Value])
-                {
-                    args.Player.SendErrorMessage($"进度 '{args.Parameters[0]}' 已经是 '{args.Parameters[1]}'");
                     return;
                 }
                 if (_flagaccessors.TryGetValue(type.Value, out var accessor))
@@ -224,6 +215,7 @@ public class Plugin : TerrariaPlugin
 
     public static void UpdateProgress(ProgressType type, bool value, bool force = false)
     {
+        TSPlayer.Server.SendInfoMessage($"[DataSync]更新进度 {Config.GetProgressName(type)} {value}");
         if (!force && LocalProgress.TryGetValue(type, out var oldValue) && oldValue == value)
         {
             return;
@@ -245,7 +237,7 @@ public class Plugin : TerrariaPlugin
 
     private void NpcKilled(NpcKilledEventArgs args)
     {
-        if (_related.TryGetValue(args.npc.netID, out var types))
+        if (_idmatch.TryGetValue(args.npc.netID, out var types))
         {
             foreach (var type in types)
             {
@@ -257,7 +249,7 @@ public class Plugin : TerrariaPlugin
         }
     }
 
-    private void Re(CommandArgs args)
+    private void Reload(CommandArgs args)
     {
         try
         {

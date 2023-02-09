@@ -44,6 +44,7 @@ public class Config
         {
             if (!File.Exists(path))
             {
+                result.Restrictions.AddRange(Enum.GetValues(typeof(ProgressType)).Cast<ProgressType>().Select(t => new ProgressAllowed { Progress = t }));
                 FileTools.CreateIfNot(path, JsonConvert.SerializeObject(result, Formatting.Indented));
             }
             result = JsonConvert.DeserializeObject<Config>(File.ReadAllText(path))!;

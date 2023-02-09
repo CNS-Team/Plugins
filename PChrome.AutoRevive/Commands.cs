@@ -34,5 +34,4 @@ public static class Commands
         args.Player.SendInfoMessage("/arc give <玩家> <数量>\n" +
                                     "/arc check <玩家>");
     }
-
 }

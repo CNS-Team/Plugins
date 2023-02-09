@@ -178,5 +178,4 @@ public class Shop : TerrariaPlugin
             args.Player.SendErrorMessage($"[Chrome.Shop]发生错误！");
         }
     }
-
 }

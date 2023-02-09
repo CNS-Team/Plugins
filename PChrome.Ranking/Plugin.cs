@@ -20,5 +20,4 @@ public class Plugin : LazyPlugin
         TShock.RestApi.RegisterRedirect("/v1/itemrank/rankboard", "/ranking/item");
         TShock.RestApi.RegisterRedirect("/v1/character/query", "/ranking/query");
     }
-
 }

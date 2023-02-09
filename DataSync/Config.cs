@@ -20,8 +20,8 @@ public enum ProgressType
 
     [Mapping(nameof(Terraria.NPC.downedBoss2), true)]
     [Match(NPCID.EaterofWorldsHead, NPCID.EaterofWorldsBody, NPCID.EaterofWorldsTail, NPCID.BrainofCthulhu)]
-    [Alias("世界吞噬者", "克苏鲁之脑")]
-    EaterOfWorlds,
+    [Alias("邪恶Boss", "世界吞噬者", "克苏鲁之脑")]
+    PrehardmodeBoss2,
 
     [Mapping(nameof(Terraria.NPC.downedQueenBee), true)]
     [Match(NPCID.QueenBee)]
@@ -150,15 +150,15 @@ public enum ProgressType
 
     [Mapping(nameof(Terraria.Main.eclipse), true)]
     [Match(NPCID.Vampire, NPCID.VampireBat, NPCID.Frankenstein, NPCID.CreatureFromTheDeep, NPCID.Eyezor, NPCID.ThePossessed, NPCID.Fritz, NPCID.SwampThing)]
-    [Alias("日蚀")]
+    [Alias("日食", "日蚀")]
     SolarEclipse,
 
     [Match(NPCID.Reaper)]
-    [Alias("三王后日蚀")]
+    [Alias("三王后日食", "三王后日蚀")]
     SolarEclipseMech,
 
     [Match(NPCID.Mothron, NPCID.MothronSpawn, NPCID.Butcher, NPCID.DeadlySphere, NPCID.DrManFly, NPCID.Nailhead, NPCID.Psycho)]
-    [Alias("花后日蚀")]
+    [Alias("花后日食", "花后日蚀")]
     SolarEclipsePlantera,
 
     [Mapping(nameof(Terraria.Main.pumpkinMoon), true)]
@@ -243,6 +243,7 @@ public static class Config
     }
 
     public static Dictionary<ProgressType, bool> ShouldSyncProgress { get; set; } = new Dictionary<ProgressType, bool>();
+    internal static Dictionary<ProgressType, bool> DefaultDict => Enum.GetValues(typeof(ProgressType)).Cast<ProgressType>().ToDictionary(t => t, _ => false);
 
     public static void LoadConfig()
     {
@@ -251,7 +252,7 @@ public static class Config
         {
             if (!File.Exists(PATH))
             {
-                FileTools.CreateIfNot(PATH, JsonConvert.SerializeObject(ShouldSyncProgress, Formatting.Indented));
+                FileTools.CreateIfNot(PATH, JsonConvert.SerializeObject(DefaultDict, Formatting.Indented));
             }
             ShouldSyncProgress = JsonConvert.DeserializeObject<Dictionary<ProgressType, bool>>(File.ReadAllText(PATH))!;
             File.WriteAllText(PATH, JsonConvert.SerializeObject(ShouldSyncProgress, Formatting.Indented));

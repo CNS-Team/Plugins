@@ -24,5 +24,4 @@ public class SyncProjectile : Packet, IProjSlot, IPlayerSlot
     public ushort OriginalDamage { get; set; }
     [Condition(nameof(Bit1), 7)]
     public short UUID { get; set; }
-
 }

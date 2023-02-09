@@ -14,8 +14,8 @@ internal class AliasAttribute : Attribute
 [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
 internal class MappingAttribute : Attribute
 {
-    public string? Key { get; }
-    public object? Value { get; }
+    public string Key { get; }
+    public object Value { get; }
     public MappingAttribute(string key, object value)
     {
         this.Key = key;

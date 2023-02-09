@@ -260,7 +260,6 @@ public class 任务系统 : TerrariaPlugin
                 args.Handled = true;
                 nPC.active = false;
             }
-
         }
         catch (Exception ex)
         {
@@ -818,7 +817,6 @@ public class 任务系统 : TerrariaPlugin
                                 item_bool = true;
                                 break;
                             }
-
                         }
                         for (var k = 0; k < NetItem.DyeSlots; k++)
                         {

@@ -56,5 +56,4 @@ internal partial class SingleCommand : CommandBase
 
         return this.GetResult(0);
     }
-
 }

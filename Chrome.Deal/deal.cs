@@ -282,5 +282,4 @@ public class deal : TerrariaPlugin
     {
         return Stack > 1 ? $"[i/s{Stack}:{NetId}]" : PrefixId == 0 ? $"[i:{NetId}]" : $"[i/p{PrefixId}:{NetId}]";
     }
-
 }
