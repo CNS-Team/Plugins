@@ -86,12 +86,12 @@ public class Plugin : TerrariaPlugin
             : new MysqlQueryCreator());
         sqlTableCreator.EnsureTableStructure(sqlTable);
 
-        using var result = TShock.DB.QueryReader("SELECT * FROM synctable WHERE `key`=@0", nameof(ProgressType.KingSlime));
+        using var result = TShock.DB.QueryReader("SELECT * FROM synctable WHERE `key`=@0", Config.GetProgressName(ProgressType.Unreachable));
         if (!result.Read())
         {
             foreach (var t in Config._default)
             {
-                TShock.DB.Query("INSERT INTO synctable (`key`, `value`) VALUES (@0, @1)", t.Key, false);
+                TShock.DB.Query("INSERT INTO synctable (`key`, `value`) VALUES (@0, @1)", Config.GetProgressName(t.Key), false);
             }
         }
     }
@@ -236,7 +236,7 @@ public class Plugin : TerrariaPlugin
             if (!SyncedProgress.TryGetValue(type, out var syncedValue) || syncedValue != value)
             {
                 TSPlayer.Server.SendInfoMessage($"[DataSync]上传进度 {Config.GetProgressName(type)} {value}");
-                TShock.DB.Query("UPDATE synctable SET value = @1 WHERE `key` = @0", type, value);
+                TShock.DB.Query("UPDATE synctable SET value = @1 WHERE `key` = @0", Config.GetProgressName(type), value);
             }
         }
 
