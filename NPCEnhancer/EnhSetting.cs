@@ -52,7 +52,15 @@ namespace NPCEnhancer
 		public void AddBannerNPC(int npcID)
 		{
 			LoadNpcIDsOfBanner();
-			Add(npcIDsofBanner![Item.NPCtoBanner(npcID)]);
+            var bannerID = Item.NPCtoBanner(npcID);
+            if (bannerID != 0)
+            {
+                Add(npcIDsofBanner![bannerID]);
+            }
+            else
+            {
+                Add(new[] { npcID });
+            }
 		}
 		public bool IsValid(NPC npc)
 		{
@@ -89,6 +97,10 @@ namespace NPCEnhancer
 			for (int i = 1; i < NPCID.Count; i++)
 			{
 				var bannerID = Item.NPCtoBanner(i);
+                if (bannerID == 0)
+                {
+                    continue;
+                }
 				npcIDsofBanner[bannerID] ??= new List<int>();
 				npcIDsofBanner[bannerID].Add(i);
 			}
