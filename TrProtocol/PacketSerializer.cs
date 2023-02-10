@@ -77,13 +77,7 @@ public partial class PacketSerializer
                     condition = o => ((BitsByte)get2(o))[cond.BitIndex] == cond.Prediction;
             }
 
-            IFieldSerializer ser;
-
-            ser = RequestFieldSerializer(t, Version);
-        serFound:
-
-            if (ser is IConfigurable conf) 
-                ser = (IFieldSerializer)conf.Configure(prop, Version);
+            IFieldSerializer ser = RequestFieldSerializer(t, Version);
 
             if (shouldSerialize)
                 serializer += (o, bw) => { if (condition(o)) ser.Write(bw, getter(o)); };
@@ -178,5 +172,4 @@ public partial class PacketSerializer
         ErrorLogger.WriteLine($"[Warning] packet {p} not defined, ignoring");
         return Array.Empty<byte>();
     }
-
 }

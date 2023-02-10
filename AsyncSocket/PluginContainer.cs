@@ -23,5 +23,4 @@ public class PluginContainer : LazyPlugin
     {
         e.Result = new AsyncSocket();
     }
-
 }

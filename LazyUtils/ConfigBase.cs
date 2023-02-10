@@ -23,6 +23,7 @@ public abstract class ConfigBase<T> where T : ConfigBase<T>
         }
         public Context(string tableName) : base(GetProvider(), ConfigBase<T>.ConnectionString)
         {
+            this.MappingSchema.AddScalarType(typeof(string), new LinqToDB.SqlQuery.SqlDataType(DataType.NVarChar, 255));
             this.CreateTable<T>(tableName, tableOptions: TableOptions.CreateIfNotExists);
         }
     }

@@ -54,7 +54,6 @@ public class PluginContainer : LazyPlugin
                     $"{string.Join(' ', Enumerable.Range(args.Offset, args.Count).Select(i => $"{args.Buffer[i]:x2}"))}");
             }
         }
-
     }
 
     private void NetGetData(GetDataEventArgs args)

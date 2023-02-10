@@ -75,5 +75,4 @@ public static class Commands
                                     "/custom list <玩家>\n" +
                                     ">");
     }
-
 }
