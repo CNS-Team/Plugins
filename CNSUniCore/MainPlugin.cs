@@ -151,7 +151,7 @@ public class MainPlugin : TerrariaPlugin
         {
             return;
         }
-        var pl = this.dbManager.GetPlayers().Find((PlayerInfo s) => s.Name == tsplayer.Name);
+        var pl = this.dbManager.GetPlayers().Find((PlayerInfo s) => s.Name == tsplayer.Name)!;
         var players = this.dbManager.GetPlayers();
         var list = players.Select((PlayerInfo p) => p.Name).ToList();
         var list2 = players.Select((PlayerInfo p) => p.UUID).ToList();

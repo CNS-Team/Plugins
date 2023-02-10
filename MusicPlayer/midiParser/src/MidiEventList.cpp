@@ -617,8 +617,6 @@ int eventcompare(const void* a, const void* b) {
 		return 0;
 	}
 }
-
-
 } // end namespace smf
 
 

@@ -46,8 +46,6 @@ public static class CmdOnlineInfo
             "  /oi cn\n" +
             "    获取全服在线人数及玩家");
     }
-
-
 }
 
 [Command("oic")]

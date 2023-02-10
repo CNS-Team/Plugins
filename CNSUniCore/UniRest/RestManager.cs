@@ -65,7 +65,7 @@ public class RestManager
         return null;
     }
 
-    private object UniVipDel(RestRequestArgs args)
+    private object? UniVipDel(RestRequestArgs args)
     {
         if (!ConfigUtils.config.EnableSponsor)
         {
@@ -73,7 +73,7 @@ public class RestManager
         }
         var text = args.Parameters["name"];
         var list = TSPlayer.FindByNameOrID(text);
-        TSPlayer tsplayer = null;
+        TSPlayer? tsplayer = null;
         var sponsor = MainPlugin.Instance.dbManager.GetSponsor(text);
         if (sponsor != null)
         {

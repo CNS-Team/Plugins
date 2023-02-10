@@ -60,5 +60,4 @@ public static class Commands
         using var query = args.Player.Get<Money>();
         args.Player.SendInfoMessage($"当前货币总额:{query.Single().money}$");
     }
-
 }

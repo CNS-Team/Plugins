@@ -62,7 +62,7 @@ public class Plugin : LazyPlugin
 
     private static readonly MoneyAllocator allocator = new MoneyAllocator();
 
-    private static void OnNPCStrike(object _, GetDataHandlers.NPCStrikeEventArgs args)
+    private static void OnNPCStrike(object? _, GetDataHandlers.NPCStrikeEventArgs args)
     {
         var npc = Main.npc[args.ID];
         var val = CalcRealDmg(npc, args.Damage, args.Critical > 0);
@@ -74,7 +74,7 @@ public class Plugin : LazyPlugin
         allocator.AddDamage(Main.npc[args.ID], args.Player?.Account?.Name, val);
     }
 
-    private static void OnKillMe(object _, GetDataHandlers.KillMeEventArgs args)
+    private static void OnKillMe(object? _, GetDataHandlers.KillMeEventArgs args)
     {
         using var query = args.Player.Get<Money>();
         var money = query.Single().money;
