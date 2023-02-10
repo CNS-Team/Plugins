@@ -23,7 +23,7 @@ namespace NPCEnhancer
 
         public static MainPlugin? Instance { get; private set; }
         public List<EnhSetting>[]? Enhancements { get; private set; }
-        public List<EnhSettingByBanner>[]? EnhancementsByBanner { get; private set; }
+        // public List<EnhSettingByBanner>[]? EnhancementsByBanner { get; private set; }
 
 
 
@@ -38,7 +38,7 @@ namespace NPCEnhancer
 		{
 			Instance = this;
             Enhancements = new List<EnhSetting>[NPCID.Count];
-            EnhancementsByBanner = new List<EnhSettingByBanner>[Main.MaxBannerTypes];
+            // EnhancementsByBanner = new List<EnhSettingByBanner>[Main.MaxBannerTypes];
 
             Commands.ChatCommands.Add(new Command("npcenhance.hreload", HotReloadCmd, "nenhreload"));
 
@@ -60,20 +60,20 @@ namespace NPCEnhancer
         {
             // var zombies = new int[]{ NPCID.Zombie, NPCID.ZombieDoctor, NPCID.ZombieElf, NPCID.ZombieElfBeard, NPCID.ZombieMushroom };
 
-            var zombies = new EnhSettingByBanner
+            var zombies = new EnhSetting
             {
                 LifeAdd = 100,
                 DefAdd = 20
             };
-            zombies.AddByNPCID(NPCID.Zombie);
+            zombies.AddBannerNPC(NPCID.Zombie);
 
 
-            var zombiesHard = new EnhSettingByBanner
+            var zombiesHard = new EnhSetting
             {
                 LifeMult = 1,
                 Condition = _ => Main.hardMode
             };
-			zombiesHard.AddByNPCID(NPCID.Zombie);
+			zombiesHard.AddBannerNPC(NPCID.Zombie);
 
 
 			var demonEyes = new EnhSetting(lifeAdd: 100);
@@ -83,22 +83,20 @@ namespace NPCEnhancer
 
 			var enhancements = new List<EnhSetting>()
             {
-                demonEyes
-            };
-			var enhancementsByBanner = new List<EnhSettingByBanner>()
-			{
+                demonEyes,
 				zombies,
 				zombiesHard,
 			};
+
 
             foreach(var enhancement in enhancements)
             {
                 enhancement.Attach();
 			}
-			foreach (var enhancement in enhancementsByBanner)
-			{
-				enhancement.Attach();
-			}
+			//foreach (var enhancement in enhancementsByBanner)
+			//{
+			//	enhancement.Attach();
+			//}
 		}
 
 		private void OnNpcSpawn(NpcSpawnEventArgs args)
@@ -114,18 +112,18 @@ namespace NPCEnhancer
                     }
                 }
             }
-            var bannerID = Item.NPCtoBanner(npc.type);
+            //var bannerID = Item.NPCtoBanner(npc.type);
 
-			if (EnhancementsByBanner![bannerID] != null)
-			{
-				foreach (var enhancement in EnhancementsByBanner![bannerID])
-				{
-					if (enhancement.IsValid(npc))
-					{
-						enhancement.Apply(npc);
-					}
-				}
-			}
+			//if (EnhancementsByBanner![bannerID] != null)
+			//{
+			//	foreach (var enhancement in EnhancementsByBanner![bannerID])
+			//	{
+			//		if (enhancement.IsValid(npc))
+			//		{
+			//			enhancement.Apply(npc);
+			//		}
+			//	}
+			//}
 
 		}
 

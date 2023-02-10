@@ -4,12 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Terraria;
+using Terraria.ID;
 
 namespace NPCEnhancer
 {
 	public class EnhSetting
 	{
-		public Func<NPC, bool>? Condition { get; }
+		private static List<int>[]? npcIDsofBanner;
+
+		public Func<NPC, bool>? Condition { get; set; }
 		public List<int> TargetIDs { get; }
 		/// <summary>
 		/// 防御增加值
@@ -40,7 +43,16 @@ namespace NPCEnhancer
 		}
 		public void Add(params int[] ids)
 		{
+			Add((IEnumerable<int>)ids);
+		}
+		public void Add(IEnumerable<int> ids)
+		{
 			TargetIDs.AddRange(ids);
+		}
+		public void AddBannerNPC(int npcID)
+		{
+			LoadNpcIDsOfBanner();
+			Add(npcIDsofBanner![Item.NPCtoBanner(npcID)]);
 		}
 		public bool IsValid(NPC npc)
 		{
@@ -64,6 +76,21 @@ namespace NPCEnhancer
 			{
 				MainPlugin.Instance!.Enhancements![npcID] ??= new();
 				MainPlugin.Instance!.Enhancements![npcID].Add(this);
+			}
+		}
+
+		private static void LoadNpcIDsOfBanner()
+		{
+			if (npcIDsofBanner != null)
+			{
+				return;
+			}
+			npcIDsofBanner = new List<int>[Main.MaxBannerTypes];
+			for (int i = 1; i < NPCID.Count; i++)
+			{
+				var bannerID = Item.NPCtoBanner(i);
+				npcIDsofBanner[bannerID] ??= new List<int>();
+				npcIDsofBanner[bannerID].Add(i);
 			}
 		}
 	}
