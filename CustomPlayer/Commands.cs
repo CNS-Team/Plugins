@@ -6,26 +6,25 @@ using TShockAPI.Hooks;
 using VBY.Basic.Command;
 using VBY.Basic.Extension;
 
+using static CustomPlayer.Utils;
 using CustomPlayer.ModfiyGroup;
 
 namespace CustomPlayer;
 public partial class CustomPlayerPlugin
 {
-    private void Cmd(CommandArgs args)
-    {
-        if (ReadConfig.Normal)
-            MainCommand.Run(args);
-        else
-            args.Player.SendErrorMessage("配置读取有误,请配置正确再使用此命令");
-    }
     private void CmdPermissionList(SubCmdArgs args)
     {
         var player = args.commandArgs.Player;
         var permissions = CustomPlayerPluginHelpers.TimeOutList.Where(x => x.Type == nameof(Permission) && x.Name == player.Name);
         if (!permissions.Any())
+        {
             player.SendInfoMessage("你当前没有权限");
-        foreach (TimeOutObject permisssionInfo in permissions)
+        }
+
+        foreach (var permisssionInfo in permissions)
+        {
             player.SendInfoMessage($"权限:{permisssionInfo.Value} 剩余时间:{permisssionInfo.RemainTime}");
+        }
     }
     private void CmdReload(SubCmdArgs args)
     {
@@ -33,13 +32,9 @@ public partial class CustomPlayerPlugin
         OnPlayerPostLogin(new PlayerPostLoginEventArgs(args.commandArgs.Player));
         args.commandArgs.Player.SendSuccessMessage("重载成功");
     }
-    private void CmdCtl(CommandArgs args)
-    {
-        MainCtlCommand.Run(args);
-    }
     private static void Group(CommandArgs args)
     {
-        string subCmd = args.Parameters.Count == 0 ? "help" : args.Parameters[0].ToLower();
+        var subCmd = args.Parameters.Count == 0 ? "help" : args.Parameters[0].ToLower();
 
         switch (subCmd)
         {
@@ -52,9 +47,9 @@ public partial class CustomPlayerPlugin
                         return;
                     }
 
-                    string groupName = args.Parameters[1];
+                    var groupName = args.Parameters[1];
                     args.Parameters.RemoveRange(0, 2);
-                    string permissions = string.Join(",", args.Parameters);
+                    var permissions = string.Join(",", args.Parameters);
 
                     try
                     {
@@ -81,11 +76,11 @@ public partial class CustomPlayerPlugin
                         return;
                     }
 
-                    string groupName = args.Parameters[1];
+                    var groupName = args.Parameters[1];
                     args.Parameters.RemoveRange(0, 2);
                     if (groupName == "*")
                     {
-                        foreach (Group g in CustomPlayerPluginHelpers.Groups)
+                        foreach (var g in CustomPlayerPluginHelpers.Groups)
                         {
                             CustomPlayerPluginHelpers.Groups.AddPermissions(g.Name, args.Parameters);
                         }
@@ -94,7 +89,7 @@ public partial class CustomPlayerPlugin
                     }
                     try
                     {
-                        string response = CustomPlayerPluginHelpers.Groups.AddPermissions(groupName, args.Parameters);
+                        var response = CustomPlayerPluginHelpers.Groups.AddPermissions(groupName, args.Parameters);
                         if (response.Length > 0)
                         {
                             args.Player.SendSuccessMessage(response);
@@ -111,11 +106,12 @@ public partial class CustomPlayerPlugin
             case "help":
                 #region Help
                 {
-                    int pageNumber;
-                    if (!PaginationTools.TryParsePageNumber(args.Parameters, 1, args.Player, out pageNumber))
-                        return;
+                if (!PaginationTools.TryParsePageNumber(args.Parameters, 1, args.Player, out var pageNumber))
+                {
+                    return;
+                }
 
-                    var lines = new List<string>
+                var lines = new List<string>
                         {
                             GetString("add <name> <permissions...> - Adds a new group."),
                             GetString("addperm <group> <permissions...> - Adds permissions to a group."),
@@ -149,8 +145,8 @@ public partial class CustomPlayerPlugin
                         return;
                     }
 
-                    string groupName = args.Parameters[1];
-                    Group group = CustomPlayerPluginHelpers.Groups.GetGroupByName(groupName);
+                    var groupName = args.Parameters[1];
+                    var group = CustomPlayerPluginHelpers.Groups.GetGroupByName(groupName);
                     if (group == null)
                     {
                         args.Player.SendErrorMessage(GetString("No such group \"{0}\".", groupName));
@@ -159,7 +155,7 @@ public partial class CustomPlayerPlugin
 
                     if (args.Parameters.Count > 2)
                     {
-                        string newParentGroupName = string.Join(" ", args.Parameters.Skip(2));
+                        var newParentGroupName = string.Join(" ", args.Parameters.Skip(2));
                         if (!string.IsNullOrWhiteSpace(newParentGroupName) && !CustomPlayerPluginHelpers.Groups.GroupExists(newParentGroupName))
                         {
                             args.Player.SendErrorMessage(GetString("No such group \"{0}\".", newParentGroupName));
@@ -171,10 +167,14 @@ public partial class CustomPlayerPlugin
                             CustomPlayerPluginHelpers.Groups.UpdateGroup(groupName, newParentGroupName, group.Permissions, group.ChatColor, group.Suffix, group.Prefix);
 
                             if (!string.IsNullOrWhiteSpace(newParentGroupName))
-                                args.Player.SendSuccessMessage(GetString("Parent of group \"{0}\" set to \"{1}\".", groupName, newParentGroupName));
-                            else
-                                args.Player.SendSuccessMessage(GetString("Removed parent of group \"{0}\".", groupName));
+                        {
+                            args.Player.SendSuccessMessage(GetString("Parent of group \"{0}\" set to \"{1}\".", groupName, newParentGroupName));
                         }
+                        else
+                        {
+                            args.Player.SendSuccessMessage(GetString("Removed parent of group \"{0}\".", groupName));
+                        }
+                    }
                         catch (GroupManagerException ex)
                         {
                             args.Player.SendErrorMessage(ex.Message);
@@ -183,10 +183,14 @@ public partial class CustomPlayerPlugin
                     else
                     {
                         if (group.Parent != null)
-                            args.Player.SendSuccessMessage(GetString("Parent of \"{0}\" is \"{1}\".", group.Name, group.Parent.Name));
-                        else
-                            args.Player.SendSuccessMessage(GetString("Group \"{0}\" has no parent.", group.Name));
+                    {
+                        args.Player.SendSuccessMessage(GetString("Parent of \"{0}\" is \"{1}\".", group.Name, group.Parent.Name));
                     }
+                    else
+                    {
+                        args.Player.SendSuccessMessage(GetString("Group \"{0}\" has no parent.", group.Name));
+                    }
+                }
                 }
                 #endregion
                 return;
@@ -199,8 +203,8 @@ public partial class CustomPlayerPlugin
                         return;
                     }
 
-                    string groupName = args.Parameters[1];
-                    Group group = CustomPlayerPluginHelpers.Groups.GetGroupByName(groupName);
+                    var groupName = args.Parameters[1];
+                    var group = CustomPlayerPluginHelpers.Groups.GetGroupByName(groupName);
                     if (group == null)
                     {
                         args.Player.SendErrorMessage(GetString("No such group \"{0}\".", groupName));
@@ -209,17 +213,21 @@ public partial class CustomPlayerPlugin
 
                     if (args.Parameters.Count > 2)
                     {
-                        string newSuffix = string.Join(" ", args.Parameters.Skip(2));
+                        var newSuffix = string.Join(" ", args.Parameters.Skip(2));
 
                         try
                         {
                             CustomPlayerPluginHelpers.Groups.UpdateGroup(groupName, group.ParentName, group.Permissions, group.ChatColor, newSuffix, group.Prefix);
 
                             if (!string.IsNullOrWhiteSpace(newSuffix))
-                                args.Player.SendSuccessMessage(GetString("Suffix of group \"{0}\" set to \"{1}\".", groupName, newSuffix));
-                            else
-                                args.Player.SendSuccessMessage(GetString("Removed suffix of group \"{0}\".", groupName));
+                        {
+                            args.Player.SendSuccessMessage(GetString("Suffix of group \"{0}\" set to \"{1}\".", groupName, newSuffix));
                         }
+                        else
+                        {
+                            args.Player.SendSuccessMessage(GetString("Removed suffix of group \"{0}\".", groupName));
+                        }
+                    }
                         catch (GroupManagerException ex)
                         {
                             args.Player.SendErrorMessage(ex.Message);
@@ -228,10 +236,14 @@ public partial class CustomPlayerPlugin
                     else
                     {
                         if (!string.IsNullOrWhiteSpace(group.Suffix))
-                            args.Player.SendSuccessMessage(GetString("Suffix of \"{0}\" is \"{1}\".", group.Name, group.Suffix));
-                        else
-                            args.Player.SendSuccessMessage(GetString("Group \"{0}\" has no suffix.", group.Name));
+                    {
+                        args.Player.SendSuccessMessage(GetString("Suffix of \"{0}\" is \"{1}\".", group.Name, group.Suffix));
                     }
+                    else
+                    {
+                        args.Player.SendSuccessMessage(GetString("Group \"{0}\" has no suffix.", group.Name));
+                    }
+                }
                 }
                 #endregion
                 return;
@@ -244,8 +256,8 @@ public partial class CustomPlayerPlugin
                         return;
                     }
 
-                    string groupName = args.Parameters[1];
-                    Group group = CustomPlayerPluginHelpers.Groups.GetGroupByName(groupName);
+                    var groupName = args.Parameters[1];
+                    var group = CustomPlayerPluginHelpers.Groups.GetGroupByName(groupName);
                     if (group == null)
                     {
                         args.Player.SendErrorMessage(GetString("No such group \"{0}\".", groupName));
@@ -254,17 +266,21 @@ public partial class CustomPlayerPlugin
 
                     if (args.Parameters.Count > 2)
                     {
-                        string newPrefix = string.Join(" ", args.Parameters.Skip(2));
+                        var newPrefix = string.Join(" ", args.Parameters.Skip(2));
 
                         try
                         {
                             CustomPlayerPluginHelpers.Groups.UpdateGroup(groupName, group.ParentName, group.Permissions, group.ChatColor, group.Suffix, newPrefix);
 
                             if (!string.IsNullOrWhiteSpace(newPrefix))
-                                args.Player.SendSuccessMessage(GetString("Prefix of group \"{0}\" set to \"{1}\".", groupName, newPrefix));
-                            else
-                                args.Player.SendSuccessMessage(GetString("Removed prefix of group \"{0}\".", groupName));
+                        {
+                            args.Player.SendSuccessMessage(GetString("Prefix of group \"{0}\" set to \"{1}\".", groupName, newPrefix));
                         }
+                        else
+                        {
+                            args.Player.SendSuccessMessage(GetString("Removed prefix of group \"{0}\".", groupName));
+                        }
+                    }
                         catch (GroupManagerException ex)
                         {
                             args.Player.SendErrorMessage(ex.Message);
@@ -273,10 +289,14 @@ public partial class CustomPlayerPlugin
                     else
                     {
                         if (!string.IsNullOrWhiteSpace(group.Prefix))
-                            args.Player.SendSuccessMessage(GetString("Prefix of \"{0}\" is \"{1}\".", group.Name, group.Prefix));
-                        else
-                            args.Player.SendSuccessMessage(GetString("Group \"{0}\" has no prefix.", group.Name));
+                    {
+                        args.Player.SendSuccessMessage(GetString("Prefix of \"{0}\" is \"{1}\".", group.Name, group.Prefix));
                     }
+                    else
+                    {
+                        args.Player.SendSuccessMessage(GetString("Group \"{0}\" has no prefix.", group.Name));
+                    }
+                }
                 }
                 #endregion
                 return;
@@ -289,8 +309,8 @@ public partial class CustomPlayerPlugin
                         return;
                     }
 
-                    string groupName = args.Parameters[1];
-                    Group group = CustomPlayerPluginHelpers.Groups.GetGroupByName(groupName);
+                    var groupName = args.Parameters[1];
+                    var group = CustomPlayerPluginHelpers.Groups.GetGroupByName(groupName);
                     if (group == null)
                     {
                         args.Player.SendErrorMessage(GetString("No such group \"{0}\".", groupName));
@@ -299,30 +319,27 @@ public partial class CustomPlayerPlugin
 
                     if (args.Parameters.Count == 3)
                     {
-                        string newColor = args.Parameters[2];
+                        var newColor = args.Parameters[2];
 
-                        String[] parts = newColor.Split(',');
-                        byte r;
-                        byte g;
-                        byte b;
-                        if (parts.Length == 3 && byte.TryParse(parts[0], out r) && byte.TryParse(parts[1], out g) && byte.TryParse(parts[2], out b))
+                        var parts = newColor.Split(',');
+                    if (parts.Length == 3 && byte.TryParse(parts[0], out var r) && byte.TryParse(parts[1], out var g) && byte.TryParse(parts[2], out var b))
+                    {
+                        try
                         {
-                            try
-                            {
-                                CustomPlayerPluginHelpers.Groups.UpdateGroup(groupName, group.ParentName, group.Permissions, newColor, group.Suffix, group.Prefix);
+                            CustomPlayerPluginHelpers.Groups.UpdateGroup(groupName, group.ParentName, group.Permissions, newColor, group.Suffix, group.Prefix);
 
-                                args.Player.SendSuccessMessage(GetString("Chat color for group \"{0}\" set to \"{1}\".", groupName, newColor));
-                            }
-                            catch (GroupManagerException ex)
-                            {
-                                args.Player.SendErrorMessage(ex.Message);
-                            }
+                            args.Player.SendSuccessMessage(GetString("Chat color for group \"{0}\" set to \"{1}\".", groupName, newColor));
                         }
-                        else
+                        catch (GroupManagerException ex)
                         {
-                            args.Player.SendErrorMessage(GetString("Invalid syntax for color, expected \"rrr,ggg,bbb\"."));
+                            args.Player.SendErrorMessage(ex.Message);
                         }
                     }
+                    else
+                    {
+                        args.Player.SendErrorMessage(GetString("Invalid syntax for color, expected \"rrr,ggg,bbb\"."));
+                    }
+                }
                     else
                     {
                         args.Player.SendSuccessMessage(GetString("Chat color for \"{0}\" is \"{1}\".", group.Name, group.ChatColor));
@@ -339,11 +356,11 @@ public partial class CustomPlayerPlugin
                         return;
                     }
 
-                    string group = args.Parameters[1];
-                    string newName = args.Parameters[2];
+                    var group = args.Parameters[1];
+                    var newName = args.Parameters[2];
                     try
                     {
-                        string response = CustomPlayerPluginHelpers.Groups.RenameGroup(group, newName);
+                        var response = CustomPlayerPluginHelpers.Groups.RenameGroup(group, newName);
                         args.Player.SendSuccessMessage(response);
                     }
                     catch (GroupManagerException ex)
@@ -364,7 +381,7 @@ public partial class CustomPlayerPlugin
 
                     try
                     {
-                        string response = CustomPlayerPluginHelpers.Groups.DeleteGroup(args.Parameters[1], true);
+                        var response = CustomPlayerPluginHelpers.Groups.DeleteGroup(args.Parameters[1], true);
                         if (response.Length > 0)
                         {
                             args.Player.SendSuccessMessage(response);
@@ -386,11 +403,11 @@ public partial class CustomPlayerPlugin
                         return;
                     }
 
-                    string groupName = args.Parameters[1];
+                    var groupName = args.Parameters[1];
                     args.Parameters.RemoveRange(0, 2);
                     if (groupName == "*")
                     {
-                        foreach (Group g in CustomPlayerPluginHelpers.Groups)
+                        foreach (var g in CustomPlayerPluginHelpers.Groups)
                         {
                             CustomPlayerPluginHelpers.Groups.DeletePermissions(g.Name, args.Parameters);
                         }
@@ -399,7 +416,7 @@ public partial class CustomPlayerPlugin
                     }
                     try
                     {
-                        string response = CustomPlayerPluginHelpers.Groups.DeletePermissions(groupName, args.Parameters);
+                        var response = CustomPlayerPluginHelpers.Groups.DeletePermissions(groupName, args.Parameters);
                         if (response.Length > 0)
                         {
                             args.Player.SendSuccessMessage(response);
@@ -416,10 +433,12 @@ public partial class CustomPlayerPlugin
             case "list":
                 #region List groups
                 {
-                    int pageNumber;
-                    if (!PaginationTools.TryParsePageNumber(args.Parameters, 1, args.Player, out pageNumber))
-                        return;
-                    var groupNames = from grp in CustomPlayerPluginHelpers.Groups.groups
+                if (!PaginationTools.TryParsePageNumber(args.Parameters, 1, args.Player, out var pageNumber))
+                {
+                    return;
+                }
+
+                var groupNames = from grp in CustomPlayerPluginHelpers.Groups.groups
                                      select grp.Name;
                     PaginationTools.SendPage(args.Player, pageNumber, PaginationTools.BuildLinesFromTerms(groupNames),
                         new PaginationTools.Settings
@@ -438,17 +457,18 @@ public partial class CustomPlayerPlugin
                         args.Player.SendErrorMessage(GetString("Invalid syntax. Proper syntax: {0}group listperm <group name> [page].", Commands.Specifier));
                         return;
                     }
-                    int pageNumber;
-                    if (!PaginationTools.TryParsePageNumber(args.Parameters, 2, args.Player, out pageNumber))
-                        return;
+                if (!PaginationTools.TryParsePageNumber(args.Parameters, 2, args.Player, out var pageNumber))
+                {
+                    return;
+                }
 
-                    if (!CustomPlayerPluginHelpers.Groups.GroupExists(args.Parameters[1]))
+                if (!CustomPlayerPluginHelpers.Groups.GroupExists(args.Parameters[1]))
                     {
                         args.Player.SendErrorMessage(GetString("Invalid group."));
                         return;
                     }
-                    Group grp = CustomPlayerPluginHelpers.Groups.GetGroupByName(args.Parameters[1]);
-                    List<string> permissions = grp.TotalPermissions;
+                    var grp = CustomPlayerPluginHelpers.Groups.GetGroupByName(args.Parameters[1]);
+                    var permissions = grp.TotalPermissions;
 
                     PaginationTools.SendPage(args.Player, pageNumber, PaginationTools.BuildLinesFromTerms(permissions),
                         new PaginationTools.Settings
@@ -465,7 +485,7 @@ public partial class CustomPlayerPlugin
                 return;
         }
     }
-    private void CmdCtlGroupCtlAdd(SubCmdArgs args)
+    private void CtlGroupCtlAdd(SubCmdArgs args)
     {
         var name = args.Parameters[0];
         var groupName = args.Parameters[1];
@@ -477,7 +497,9 @@ public partial class CustomPlayerPlugin
         var forever = time == "-1";
 
         if (TimeParse(forever, time, ref startTime, ref endTime, ref addTime, player))
+        {
             return;
+        }
 
         var haveGroups = new List<string>();
         using var groupReader = QueryReader("select Value,Type,StartTime,EndTime,DurationText from ExpirationInfo where Type = 'Group' AND Name = @0", name);
@@ -487,7 +509,9 @@ public partial class CustomPlayerPlugin
                 var withBlock = x;
                 var tobj = new TimeOutObject(name, withBlock.GetString(nameof(TableInfo.ExpirationInfo.Value)), withBlock.GetString(nameof(TableInfo.ExpirationInfo.Type)), withBlock.GetDateTime(nameof(TableInfo.ExpirationInfo.StartTime)), withBlock.GetDateTime(nameof(TableInfo.ExpirationInfo.EndTime)), withBlock.GetString(nameof(TableInfo.ExpirationInfo.DurationText)));
                 if (tobj.NoExpired)
+                {
                     haveGroups.Add(tobj.Value);
+                }
                 else
                 {
                     player.SendInfoMessage($"组:{tobj.Value} 已过期");
@@ -502,24 +526,28 @@ public partial class CustomPlayerPlugin
         }
         if (!CustomPlayerPluginHelpers.Groups.GroupExists(groupName))
         {
-            player.SendInfoMessage("组:{0} 不存在,如果确定存在,请执行:{1}{2} {3}", groupName, Commands.Specifier, AddCommands[1].Name, MainCtlCommand["Reload"]!.Names[0]);
+            player.SendInfoMessage("组:{0} 不存在,如果确定存在,请执行:{1}{2} {3}", groupName, Commands.Specifier, this.AddCommands[1].Name, this.CtlCommand["Reload"]!.Names[0]);
             return;
         }
-        int oldGroupGrade = haveGroups.Any() ? haveGroups.Select(x => CustomPlayerPluginHelpers.GroupGrade[x]).Max() : -1;
-        int newGroupGrade = CustomPlayerPluginHelpers.GroupGrade[groupName];
-        if(oldGroupGrade < newGroupGrade) 
+        var oldGroupGrade = haveGroups.Any() ? haveGroups.Select(x => CustomPlayerPluginHelpers.GroupGrade[x]).Max() : -1;
+        var newGroupGrade = CustomPlayerPluginHelpers.GroupGrade[groupName];
+        if (oldGroupGrade < newGroupGrade)
         {
             player.SendInfoMessage("玩家:{0} 组升级为 {1}", name, groupName);
         }
         Query("insert into ExpirationInfo(Name,Value,Type,StartTime,EndTime,DurationText) values(@0,@1,@2,@3,@4,@5)", name, groupName, nameof(Group), startTime, endTime, time);
         if (forever)
+        {
             player.SendInfoMessage($"添加成功 玩家:{name} 组:{groupName} 持续时间:永久");
+        }
         else
+        {
             player.SendInfoMessage($"添加成功 玩家:{name} 组:{groupName} 起始时间:{startTime} 结束时间:{endTime} 持续时间:{addTime}");
+        }
 
         FindPlayer(name)?.Reload();
     }
-    private void CmdCtlGroupCtlDel(SubCmdArgs args)
+    private void CtlGroupCtlDel(SubCmdArgs args)
     {
         var name = args.Parameters[0];
         var groupName = args.Parameters[1];
@@ -534,13 +562,18 @@ public partial class CustomPlayerPlugin
                 var withBlock = x;
                 var tobj = new TimeOutObject(name, withBlock.GetString(nameof(TableInfo.ExpirationInfo.Value)), withBlock.GetString(nameof(TableInfo.ExpirationInfo.Type)), withBlock.GetDateTime(nameof(TableInfo.ExpirationInfo.StartTime)), withBlock.GetDateTime(nameof(TableInfo.ExpirationInfo.EndTime)), withBlock.GetString(nameof(TableInfo.ExpirationInfo.DurationText)));
                 if (tobj.NoExpired)
+                {
                     haveGroups.Add(tobj.Value);
+                }
                 else
                 {
                     player.SendInfoMessage($"组:{tobj.Value} 已过期");
                     tobj.Delete();
                 }
-                if (tobj.Value == groupName) curObj = tobj;
+                if (tobj.Value == groupName)
+                {
+                    curObj = tobj;
+                }
             }
         });
         if (curObj is null)
@@ -559,7 +592,7 @@ public partial class CustomPlayerPlugin
 
         player.SendInfoMessage($"删除成功 玩家:{name} 组:{groupName}");
     }
-    private void CmdCtlGroupCtlList(SubCmdArgs args)
+    private void CtlGroupCtlList(SubCmdArgs args)
     {
         var name = args.Parameters[0];
         var player = args.commandArgs.Player;
@@ -572,7 +605,9 @@ public partial class CustomPlayerPlugin
                 var withBlock = x;
                 var tobj = new TimeOutObject(name, withBlock.GetString(nameof(TableInfo.ExpirationInfo.Value)), withBlock.GetString(nameof(TableInfo.ExpirationInfo.Type)), withBlock.GetDateTime(nameof(TableInfo.ExpirationInfo.StartTime)), withBlock.GetDateTime(nameof(TableInfo.ExpirationInfo.EndTime)), withBlock.GetString(nameof(TableInfo.ExpirationInfo.DurationText)));
                 if (tobj.NoExpired)
+                {
                     objs.Add(tobj);
+                }
                 else
                 {
                     player.SendInfoMessage($"组:{tobj.Value} 已过期");
@@ -580,19 +615,19 @@ public partial class CustomPlayerPlugin
                 }
             }
         });
-        if(!objs.Any())
+        if (!objs.Any())
         {
             player.SendInfoMessage("此玩家没有组");
             return;
         }
         var orderObjs = objs.OrderByDescending(x => CustomPlayerPluginHelpers.GroupGrade[x.Value]).ToArray();
         player.SendSuccessMessage("组:{0} 剩余时间:{1}", orderObjs[0].Value, orderObjs[0].RemainTime);
-        for(int i =1;i< orderObjs.Length; i++)
+        for (var i = 1; i < orderObjs.Length; i++)
         {
             player.SendInfoMessage("组:{0} 剩余时间:{1}", orderObjs[i].Value, orderObjs[i].RemainTime);
         }
     }
-    private void CmdCtlPermissionAdd(SubCmdArgs args)
+    private void CtlPermissionAdd(SubCmdArgs args)
     {
         var name = args.Parameters[0];
         var addPermission = args.Parameters[1];
@@ -603,28 +638,27 @@ public partial class CustomPlayerPlugin
         TimeSpan addTime = new();
         var forever = time == "-1";
 
-        if (TimeParse(forever, time,ref startTime,ref endTime,ref addTime, player))
-            return;
-
-        var cply = FindPlayer(name);
-        if (cply != null)
+        if (TimeParse(forever, time, ref startTime, ref endTime, ref addTime, player))
         {
-            if (forever)
-                cply.Player.SendInfoMessage($"你已获得永久权限:{addPermission}");
-            else
-                cply.Player.SendInfoMessage("你获得权限:" + addPermission);
+            return;
+        }
 
-            CustomPlayerPluginHelpers.TimeOutList.Add(new TimeOutObject(name, addPermission, nameof(Permission), startTime, endTime, time));
+        if (Utils.NotifyPlayer("权限", forever, new TimeOutObject(name, addPermission, nameof(Permission), startTime, endTime, time), out var cply))
+        {
             cply.AddPermission(addPermission);
         }
 
         Query("insert into ExpirationInfo(Name,Value,Type,StartTime,EndTime,DurationText) values(@0,@1,@2,@3,@4,@5)", name, addPermission, nameof(Permission), startTime, endTime, time);
         if (forever)
+        {
             player.SendInfoMessage($"添加成功 玩家:{name} 权限:{addPermission} 持续时间:永久");
+        }
         else
+        {
             player.SendInfoMessage($"添加成功 玩家:{name} 权限:{addPermission} 起始时间:{startTime} 结束时间:{endTime} 持续时间:{addTime}");
+        }
     }
-    private void CmdCtlPermissionDel(SubCmdArgs args)
+    private void CtlPermissionDel(SubCmdArgs args)
     {
         var player = args.commandArgs.Player;
         var name = args.Parameters[0];
@@ -632,7 +666,9 @@ public partial class CustomPlayerPlugin
 
         var delCount = Query("delete from ExpirationInfo where Name = @0 AND Value = @1", name, delPermission);
         if (delCount == 0)
+        {
             player.SendInfoMessage($"未在数据库找到 玩家:{name} 的权限:{delPermission}");
+        }
         else
         {
             player.SendSuccessMessage($"删除成功");
@@ -645,7 +681,7 @@ public partial class CustomPlayerPlugin
             }
         }
     }
-    private void CmdCtlPermissionList(SubCmdArgs args)
+    private void CtlPermissionList(SubCmdArgs args)
     {
         var player = args.commandArgs.Player;
         var name = args.Parameters[0];
@@ -654,13 +690,12 @@ public partial class CustomPlayerPlugin
             if (reader.Read())
             {
                 player.SendInfoMessage($"玩家:{name} 的权限");
-                reader.Reader.DoForEach(x =>
-                {
-                    player.SendInfoMessage($"权限:{x.GetString("Value")} 剩余时间:{(x.GetString("DurationText") == "-1" ? "永久" : (x.GetDateTime("EndTime") - DateTime.Now).ToString(@"d\.hh\:mm\:ss"))}");
-                });
+                reader.Reader.DoForEach(x => player.SendInfoMessage($"权限:{x.GetString("Value")} 剩余时间:{(x.GetString("DurationText") == "-1" ? "永久" : (x.GetDateTime("EndTime") - DateTime.Now).ToString(@"d\.hh\:mm\:ss"))}"));
             }
             else
+            {
                 player.SendInfoMessage("没有找到此玩家的权限");
+            }
         }
         using (var reader = QueryReader("select Commands from PlayerList where name = @0", name))
         {
@@ -668,11 +703,13 @@ public partial class CustomPlayerPlugin
             {
                 player.SendInfoMessage("永久权限");
                 foreach (var perm in reader.Reader.GetString(0).Split(",", StringSplitOptions.RemoveEmptyEntries))
+                {
                     player.SendInfoMessage($"权限:{perm} 剩余时间:永久");
+                }
             }
         }
     }
-    private void CmdCtlReload(SubCmdArgs args)
+    private void CtlReload(SubCmdArgs args)
     {
         if (ReadConfig.Read(args.commandArgs.Player, false, true, ReadConfig.Root))
         {
@@ -683,10 +720,15 @@ public partial class CustomPlayerPlugin
             for (var i = 0; i <= CustomPlayerPluginHelpers.Players.Length - 1; i++)
             {
                 if (CustomPlayerPluginHelpers.Players[i] != null)
+                {
                     OnPlayerLogout(new PlayerLogoutEventArgs(CustomPlayerPluginHelpers.Players[i].Player));
+                }
             }
             foreach (var player in TShock.Players.Where(x => x != null && x.IsLoggedIn))
+            {
                 OnPlayerLogout(new PlayerLogoutEventArgs(player));
+            }
+
             args.commandArgs.Player.SendSuccessMessage("重载成功");
         }
         else
@@ -694,5 +736,54 @@ public partial class CustomPlayerPlugin
             args.commandArgs.Player.SendSuccessMessage("重载错误");
             args.commandArgs.Player.SendErrorMessage(ReadConfig.ErrorString);
         }
+    }
+    private void CtlPrefixAdd(SubCmdArgs args)
+    {
+        CtlTitleAdd(ref args, "Prefix");
+    }
+
+    private void CtlPrefixDel(SubCmdArgs args)
+    {
+        CtlTitleDel(ref args, "Prefix");
+    }
+
+    private void CtlPrefixList(SubCmdArgs args)
+    {
+        CtlTitleList(ref args, "Prefix");
+    }
+
+    private void CtlPrefixTest(SubCmdArgs args)
+    {
+        CtlTitleTest(ref args, "Prefix");
+    }
+
+    private void CtlPrefixWear(SubCmdArgs args)
+    {
+        CtlTitleWear(ref args, "Prefix");
+    }
+
+    private void CtlSuffixAdd(SubCmdArgs args)
+    {
+        CtlTitleAdd(ref args, "Suffix");
+    }
+
+    private void CtlSuffixDel(SubCmdArgs args)
+    {
+        CtlTitleDel(ref args, "Suffix");
+    }
+
+    private void CtlSuffixList(SubCmdArgs args)
+    {
+        CtlTitleList(ref args, "Suffix");
+    }
+
+    private void CtlSuffixTest(SubCmdArgs args)
+    {
+        CtlTitleTest(ref args, "Suffix");
+    }
+
+    private void CtlSuffixWear(SubCmdArgs args)
+    {
+        CtlTitleWear(ref args, "Suffix");
     }
 }

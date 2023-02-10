@@ -11,12 +11,12 @@ public class TableInfo
         public string DurationText;
         public Prefix(string name, int id, string value, DateTime startTime, DateTime endTime, string durationText)
         {
-            Name = name;
-            Id = id;
-            Value = value;
-            StartTime = startTime;
-            EndTime = endTime;
-            DurationText = durationText;
+            this.Name = name;
+            this.Id = id;
+            this.Value = value;
+            this.StartTime = startTime;
+            this.EndTime = endTime;
+            this.DurationText = durationText;
         }
     }
     public class Suffix : Prefix
