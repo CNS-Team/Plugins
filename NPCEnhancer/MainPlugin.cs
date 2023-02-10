@@ -23,7 +23,6 @@ namespace NPCEnhancer
 
         public static MainPlugin? Instance { get; private set; }
         public List<EnhSetting>[]? Enhancements { get; private set; }
-        // public List<EnhSettingByBanner>[]? EnhancementsByBanner { get; private set; }
 
 
 
@@ -38,7 +37,6 @@ namespace NPCEnhancer
 		{
 			Instance = this;
             Enhancements = new List<EnhSetting>[NPCID.Count];
-            // EnhancementsByBanner = new List<EnhSettingByBanner>[Main.MaxBannerTypes];
 
             Commands.ChatCommands.Add(new Command("npcenhance.hreload", HotReloadCmd, "nenhreload"));
 
@@ -58,7 +56,6 @@ namespace NPCEnhancer
 
         private void LoadEnhancements()
         {
-            // var zombies = new int[]{ NPCID.Zombie, NPCID.ZombieDoctor, NPCID.ZombieElf, NPCID.ZombieElfBeard, NPCID.ZombieMushroom };
 
             var zombies = new EnhSetting
             {
@@ -93,10 +90,6 @@ namespace NPCEnhancer
             {
                 enhancement.Attach();
 			}
-			//foreach (var enhancement in enhancementsByBanner)
-			//{
-			//	enhancement.Attach();
-			//}
 		}
 
 		private void OnNpcSpawn(NpcSpawnEventArgs args)
@@ -112,18 +105,6 @@ namespace NPCEnhancer
                     }
                 }
             }
-            //var bannerID = Item.NPCtoBanner(npc.type);
-
-			//if (EnhancementsByBanner![bannerID] != null)
-			//{
-			//	foreach (var enhancement in EnhancementsByBanner![bannerID])
-			//	{
-			//		if (enhancement.IsValid(npc))
-			//		{
-			//			enhancement.Apply(npc);
-			//		}
-			//	}
-			//}
 
 		}
 
