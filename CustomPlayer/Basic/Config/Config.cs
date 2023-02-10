@@ -4,6 +4,8 @@ using TShockAPI;
 
 using Newtonsoft.Json;
 
+using VBY.Basic.Command;
+
 namespace VBY.Basic.Config;
 
 public class MainRoot
@@ -14,10 +16,8 @@ public class Command
 {
     public CommandInfo Use = new();
     public CommandInfo Admin = new();
-    public TShockAPI.Command[] GetCommands(CommandDelegate use,CommandDelegate admin)
-    {
-        return new TShockAPI.Command[] { Use.GetCommand(use), Admin.GetCommand(admin) };
-    }
+    public TShockAPI.Command[] GetCommands(CommandDelegate use, CommandDelegate admin) => new TShockAPI.Command[] { Use.GetCommand(use), Admin.GetCommand(admin) };
+    public TShockAPI.Command[] GetCommands(SubCmdRoot use, SubCmdRoot admin) => new TShockAPI.Command[] { use.GetCommand(Use.Permissions, Use.Names), admin.GetCommand(Admin.Permissions, Admin.Names) };
 }
 public class CommandInfo
 {
@@ -31,10 +31,7 @@ public class CommandInfo
         Permissions = permissions;
         Names = names;
     }
-    public TShockAPI.Command GetCommand(CommandDelegate cmd)
-    {
-        return new TShockAPI.Command(Permissions, cmd, Names);
-    }
+    public TShockAPI.Command GetCommand(CommandDelegate cmd) => new(Permissions, cmd, Names);
 }
 public class MainConfig<T> where T : MainRoot, new()
 {
@@ -56,7 +53,7 @@ public class MainConfig<T> where T : MainRoot, new()
             return reader.ReadToEnd();
         } 
     }
-    public MainConfig(string configDirectory,string fileName = "config.json")
+    public MainConfig(string configDirectory, string fileName = "config.json")
     {
         ConfigDirectory = configDirectory;
         FileName = fileName;
@@ -135,7 +132,7 @@ public class MainConfig<T> where T : MainRoot, new()
             switch (level) 
             {
                 case TraceLevel.Error:
-                    Utils.WriteColorLine(message);
+                    Utils.WriteColorLine(message, ConsoleColor.Red);
                     break;
                 case TraceLevel.Warning:
                     Utils.WriteColorLine(message, ConsoleColor.DarkYellow);

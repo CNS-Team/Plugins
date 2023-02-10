@@ -295,7 +295,7 @@ public class GroupManager : IEnumerable<Group>
                 // Apply changed group settings while keeping the current instances and add new groups.
                 foreach (Group newGroup in newGroups)
                 {
-                    Group currentGroup = groups.FirstOrDefault(g => g.Name == newGroup.Name);
+                    Group? currentGroup = groups.FirstOrDefault(g => g.Name == newGroup.Name);
                     if (currentGroup != null)
                         newGroup.AssignTo(currentGroup);
                     else
@@ -307,8 +307,7 @@ public class GroupManager : IEnumerable<Group>
                 for (int i = 0; i < groups.Count; i++)
                 {
                     Group group = groups[i];
-                    string parentGroupName;
-                    if (!newGroupParents.TryGetValue(group.Name, out parentGroupName) || string.IsNullOrEmpty(parentGroupName))
+                    if (!newGroupParents.TryGetValue(group.Name, out var parentGroupName) || string.IsNullOrEmpty(parentGroupName))
                         continue;
 
                     group.Parent = groups.FirstOrDefault(g => g.Name == parentGroupName);

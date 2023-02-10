@@ -31,73 +31,73 @@ public partial class CustomPlayerPlugin : TerrariaPlugin
     public override Version Version { get; } = Version.Parse(VersionText);
     public static readonly Config ReadConfig = new(TShock.SavePath, "CustomPlayer.json");
     private static (string Prefix, string Suffix, TimeSpan? Time) TestObject;
-    private readonly SubCmdRoot MainCommand, MainCtlCommand;
+    private readonly SubCmdRoot CmdCommand, CtlCommand;
     private readonly System.Timers.Timer TimeOutTimer = new(1000 * 60 * 5);
     private readonly Command[] AddCommands;
     public CustomPlayerPlugin(Main game) : base(game)
     {
         Order = 1;
-
-        MainCommand = new SubCmdRoot("Bear");
-        MainCtlCommand = new SubCmdRoot("Custom");
+        CmdCommand = new SubCmdRoot("Bear");
+        CtlCommand = new SubCmdRoot("Custom");
         SubCmdNodeList curNode;
         {
-            MainCommand.Add("Permission", "权限", "perm")
-            .Add(CmdPermissionList, "List", "权限列表").AllowServer = false;
+            CmdCommand.AddList("Permission", "权限", "perm")
+            .AddCmd(CmdPermissionList, "List", "权限列表");
         }
         {
-            curNode = MainCommand.Add("Prefix", "前缀");
-            curNode.Add(args => TitleList(ref args, "前缀"), "List", "前缀列表").AllowServer = false;
-            curNode.AddA(args => TitleWear(ref args, "Prefix"), "Wear", "前缀佩戴", "<前缀ID>", "为-1时设置为空").AllowServer = false;
+            curNode = CmdCommand.AddList("Prefix", "前缀");
+            curNode.AddCmd(args => TitleList(ref args, "前缀"), "List", "前缀列表");
+            curNode.AddCmdA(args => TitleWear(ref args, "Prefix"), "Wear", "前缀佩戴", "<前缀ID>", "为-1时设置为空");
         }
         {
-            curNode = MainCommand.Add("Suffix", "后缀");
-            curNode.Add(args => TitleList(ref args, "后缀"), "List", "后缀列表").AllowServer = false;
-            curNode.AddA(args => TitleWear(ref args, "Suffix"), "Wear", "后缀佩戴", "<后缀ID>", "为-1时设置为空").AllowServer = false;
+            curNode = CmdCommand.AddList("Suffix", "后缀");
+            curNode.AddCmd(args => TitleList(ref args, "后缀"), "List", "后缀列表");
+            curNode.AddCmdA(args => TitleWear(ref args, "Suffix"), "Wear", "后缀佩戴", "<后缀ID>", "为-1时设置为空");
         }
-        MainCommand.Add(CmdReload, "Reload", "数据修改后重载").AllowServer = false;
+        CmdCommand.AddCmd(CmdReload, "Reload", "数据修改后重载");
+        CmdCommand.SetAllNodeRun(new AllowInfo(null, false, null));
 
-        MainCtlCommand.Add((SubCmdArgs args) =>
+        CtlCommand.AddCmd((SubCmdArgs args) =>
         {
             args.commandArgs.Parameters.RemoveAt(0);
             Group(args.commandArgs);
         }, "Group", "ts组管理");
         {
-            curNode = MainCtlCommand.Add("GroupCtl", "组管理");
-            curNode.AddA(CmdCtlGroupCtlAdd, "Add", "添加组", "<玩家名> <组名> <时限>");
-            curNode.AddA(CmdCtlGroupCtlDel, "Del", "删除组", "<玩家名> <组名>");
-            curNode.AddA(CmdCtlGroupCtlList, "List", "列出组", "<玩家名>");
+            curNode = CtlCommand.AddList("GroupCtl", "组管理");
+            curNode.AddCmdAA(CtlGroupCtlAdd, "添加组", "<玩家名> <组名> <时限>");
+            curNode.AddCmdAA(CtlGroupCtlDel, "删除组", "<玩家名> <组名>");
+            curNode.AddCmdAA(CtlGroupCtlList, "列出组", "<玩家名>");
         }
         {
-            curNode = MainCtlCommand.Add("Permission", "权限管理", "perm");
-            curNode.AddA(CmdCtlPermissionAdd, "Add", "添加权限", "<玩家名> <权限名> <时限>", " <时限>为-1时为永久,为get时会获取Time.Test命令的设置");
-            curNode.AddA(CmdCtlPermissionDel, "Del", "删除权限", "<玩家名> <权限名>");
-            curNode.AddA(CmdCtlPermissionList, "List", "权限列表", "<玩家名>");
+            curNode = CtlCommand.AddList("Permission", "权限管理", "perm");
+            curNode.AddCmdAA(CtlPermissionAdd, "添加权限", "<玩家名> <权限名> <时限>", " <时限>为-1时为永久,为get时会获取Time.Test命令的设置");
+            curNode.AddCmdAA(CtlPermissionDel, "删除权限", "<玩家名> <权限名>");
+            curNode.AddCmdAA(CtlPermissionList, "权限列表", "<玩家名>");
         }
         {
-            curNode = MainCtlCommand.Add("Prefix", "前缀管理");
-            curNode.AddA(args => CtlTitleAdd(ref args, "Prefix"), "Add", "添加前缀", "<玩家名> <前缀头衔> <时限>", " <时限>为-1时为永久,为get时会获取Time.Test命令的设置\n <前缀头衔>为get时会获取Prefix.Test命令的设置");
-            curNode.AddA(args => CtlTitleDel(ref args, "Prefix"), "Del", "删除前缀", "<玩家名> <前缀ID/前缀头衔>");
-            curNode.AddA(args => CtlTitleList(ref args, "Prefix"), "List", "前缀列表", "<玩家名>");
-            curNode.AddA(args => CtlTitleTest(ref args, "Prefix"), "Test", "前缀测试", "<前缀头衔>", " 会把输入的前缀设置为当前玩家的前缀").AllowServer = false;
-            curNode.AddA(args => CtlTitleWear(ref args, "Prefix"), "Wear", "佩戴前缀", "<玩家名> <前缀ID> <服务器ID>");
+            curNode = CtlCommand.AddList("Prefix", "前缀管理");
+            curNode.AddCmdAA(CtlPrefixAdd, "添加前缀", "<玩家名> <前缀头衔> <时限>", " <时限>为-1时为永久,为get时会获取Time.Test命令的设置\n <前缀头衔>为get时会获取Prefix.Test命令的设置");
+            curNode.AddCmdAA(CtlPrefixDel, "删除前缀", "<玩家名> <前缀ID/前缀头衔>");
+            curNode.AddCmdAA(CtlPrefixList, "前缀列表", "<玩家名>");
+            curNode.AddCmdAA(CtlPrefixTest, "前缀测试", "<前缀头衔>", " 会把输入的前缀设置为当前玩家的前缀").AllowServer = false;
+            curNode.AddCmdAA(CtlPrefixWear, "佩戴前缀", "<玩家名> <前缀ID> <服务器ID>");
         }
         {
-            curNode = MainCtlCommand.Add("Suffix", "后缀管理");
-            curNode.AddA(args => CtlTitleAdd(ref args, "Suffix"), "Add", "添加后缀", "<玩家名> <后缀头衔> <时限>", " <时限>为-1时为永久,为get时会获取Time.Test命令的设置\n <后缀头衔>为get时会获取Suffix.Test命令的设置");
-            curNode.AddA(args => CtlTitleDel(ref args, "Suffix"), "Del", "删除后缀", "<玩家名> <后缀ID/后缀头衔>");
-            curNode.AddA(args => CtlTitleList(ref args, "Suffix"), "List", "后缀列表", "<玩家名>");
-            curNode.AddA(args => CtlTitleTest(ref args, "Suffix"), "Test", "后缀测试", "<后缀头衔>", " 会把输入的后缀设置为当前玩家的后缀").AllowServer = false;
-            curNode.AddA(args => CtlTitleWear(ref args, "Suffix"), "Wear", "佩戴后缀", "<玩家名> <后缀ID> <服务器ID>");
+            curNode = CtlCommand.AddList("Suffix", "后缀管理");
+            curNode.AddCmdAA(CtlSuffixAdd, "添加后缀", "<玩家名> <后缀头衔> <时限>", " <时限>为-1时为永久,为get时会获取Time.Test命令的设置\n <后缀头衔>为get时会获取Suffix.Test命令的设置");
+            curNode.AddCmdAA(CtlSuffixDel, "删除后缀", "<玩家名> <后缀ID/后缀头衔>");
+            curNode.AddCmdAA(CtlSuffixList, "后缀列表", "<玩家名>");
+            curNode.AddCmdAA(CtlSuffixTest, "后缀测试", "<后缀头衔>", " 会把输入的后缀设置为当前玩家的后缀").AllowServer = false;
+            curNode.AddCmdAA(CtlSuffixWear, "佩戴后缀", "<玩家名> <后缀ID> <服务器ID>");
         }
         {
-            curNode = MainCtlCommand.Add("Time", "时间相关");
-            curNode.Add(args =>
+            curNode = CtlCommand.AddList("Time", "时间相关");
+            curNode.AddCmd(args =>
             {
-                OnTimer(null, null);
+                OnTimer(null, null!);
                 args.commandArgs.Player.SendSuccessMessage("时间检查完成");
             }, "Check", "立刻进行时间检查");
-            curNode.AddA(args =>
+            curNode.AddCmdA(args =>
             {
                 if (!TestObject.Time.HasValue)
                     TestObject.Time = new TimeSpan();
@@ -110,24 +110,10 @@ public partial class CustomPlayerPlugin : TerrariaPlugin
                     args.commandArgs.Player.SendInfoMessage("转换失败");
             }, "Test", "时间测试", "<时限>");
         }
-        MainCtlCommand.Add(CmdCtlReload, "Reload", "重载");
-        /*MainCtlCommand.AddA((SubCmdArgs args) =>
-        {
-            var player = args.commandArgs.Player;
-            var name = args.Parameters[0];
-            var cply = Utils.FindPlayer(name);
-            if(cply is null)
-            {
-                player.SendInfoMessage("玩家未找到");
-            }
-            else
-            {
-                player.SendInfoMessage(cply.Group?.Name ?? "无");
-            }
-        }, "Info", "信息", "<name>");*/
+        CtlCommand.AddCmd(CtlReload, "Reload", "重载");
 
         PluginInit();
-        AddCommands = ReadConfig.Root.Commands.GetCommands(Cmd, CmdCtl);
+        AddCommands = ReadConfig.Root.Commands.GetCommands(CmdCommand, CtlCommand);
     }
     private static void PluginInit(TSPlayer? player = default)
     {
@@ -159,6 +145,7 @@ public partial class CustomPlayerPlugin : TerrariaPlugin
     }
     public override void Initialize()
     {
+        RestInit();
         Commands.ChatCommands.AddRange(AddCommands);
         PlayerHooks.PlayerPostLogin += OnPlayerPostLogin;
         PlayerHooks.PlayerPermission += OnPlayerPermission;
@@ -169,16 +156,16 @@ public partial class CustomPlayerPlugin : TerrariaPlugin
         {
             var handlers = ServerApi.Hooks.ServerChat;
             var registrations = (IEnumerable)handlers.GetType()
-                .GetField("registrations", BindingFlags.NonPublic | BindingFlags.Instance)
-                .GetValue(handlers);
+                .GetField("registrations", BindingFlags.NonPublic | BindingFlags.Instance)!
+                .GetValue(handlers)!;
             var registratorfield = registrations.GetType().GenericTypeArguments[0]
                 .GetProperty("Registrator", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             var handlerfield = registrations.GetType().GenericTypeArguments[0]
                 .GetProperty("Handler", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             foreach (var registration in registrations)
             {
-                var handler = (HookHandler<ServerChatEventArgs>)handlerfield.GetValue(registration);
-                var plugin = (TerrariaPlugin)registratorfield.GetValue(registration);
+                var handler = (HookHandler<ServerChatEventArgs>)handlerfield.GetValue(registration)!;
+                var plugin = (TerrariaPlugin)registratorfield.GetValue(registration)!;
                 if (plugin is TShock)
                 {
                     TShock.Log.ConsoleInfo("TShock server chat handled forced to de-register");
@@ -227,7 +214,7 @@ public partial class CustomPlayerPlugin : TerrariaPlugin
                 if (obj.EndTime < now)
                 {
                     obj.TimeOuted = true;
-                    var fply = FindPlayer(obj.Name);
+                    var fply = Utils.FindPlayer(obj.Name);
                     if (fply != null)
                     {
                         switch (obj.Type)
@@ -488,7 +475,7 @@ public partial class CustomPlayerPlugin : TerrariaPlugin
     }
     public static void OnPlayerLogout(PlayerLogoutEventArgs args)
     {
-        CustomPlayerPluginHelpers.Players[args.Player.Index] = null;
+        CustomPlayerPluginHelpers.Players[args.Player.Index] = null!;
         CustomPlayerPluginHelpers.TimeOutList.RemoveAll(x => x.Name == args.Player.Name);
     }
 }

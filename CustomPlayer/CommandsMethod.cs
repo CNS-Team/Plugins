@@ -5,12 +5,10 @@ using TShockAPI;
 using VBY.Basic.Command;
 using VBY.Basic.Extension;
 
-using static CustomPlayer.TableInfo;
-
 namespace CustomPlayer;
 public partial class CustomPlayerPlugin
 {
-    private static bool TimeParse(bool forever, string time, ref DateTime startTime, ref DateTime endTime, ref TimeSpan addTime, TSPlayer player)
+    private static bool TimeParse(bool forever, string time, ref DateTime startTime, ref DateTime endTime, ref TimeSpan addTime, TSPlayer? player)
     {
         if (forever)
             endTime = startTime;
@@ -23,7 +21,7 @@ public partial class CustomPlayerPlugin
             }
             else
             {
-                player.SendErrorMessage($"Time.Test 未设置过值");
+                player?.SendErrorMessage($"Time.Test 未设置过值");
                 return true;
             }
         }
@@ -31,41 +29,22 @@ public partial class CustomPlayerPlugin
             endTime = startTime.Add(addTime);
         else
         {
-            player.SendErrorMessage($"转换 {time} 为 TimeSpan 失败");
+            player?.SendErrorMessage($"转换 {time} 为 TimeSpan 失败");
             return true;
         }
         return false;
     }
-    private static bool TitleParse(string type, ref string title, TSPlayer player)
+    private static bool TitleParse(string type, ref string title, TSPlayer? player)
     {
         if (title == "get")
         {
-            switch (type)
+            if (string.IsNullOrEmpty(type == "Prefix" ? TestObject.Prefix : TestObject.Suffix))
             {
-                case nameof(CustomPlayer.Prefix):
-                    {
-                        if (string.IsNullOrEmpty(TestObject.Prefix))
-                        {
-                            player.SendErrorMessage("Prefix.Test 未设置有效值");
-                            return true;
-                        }
-                        else
-                            title = TestObject.Prefix;
-                        break;
-                    }
-
-                case nameof(CustomPlayer.Suffix):
-                    {
-                        if (string.IsNullOrEmpty(TestObject.Suffix))
-                        {
-                            player.SendErrorMessage("Suffix.Test 未设置有效值");
-                            return true;
-                        }
-                        else
-                            title = TestObject.Suffix;
-                        break;
-                    }
+                player?.SendErrorMessage($"{type}.Test 未设置有效值");
+                return true;
             }
+            else
+                title = type == "Prefix" ? TestObject.Prefix : TestObject.Suffix;
         }
         return false;
     }
@@ -155,18 +134,9 @@ public partial class CustomPlayerPlugin
         if (TitleParse(type, ref title, player))
             return;
 
-        var cply = Utils.FindPlayer(name);
-        if (cply != null)
-        {
-            if (forever)
-                cply.Player.SendInfoMessage($"你已获得永久{typeChinese}:{title}");
-            else
-                cply.Player.SendInfoMessage($"你获得{typeChinese}:{title}");
-
-            CustomPlayerPluginHelpers.TimeOutList.Add(new TimeOutObject(name, title, type, startTime, endTime, time));
-            var list = isPrefix ? cply.PrefixList : cply.SuffixList;
-            list.Add(new Prefix(name, addId, title, startTime, startTime, time));
-        }
+        var data = new TimeOutObject(name, title, type, startTime, endTime, time, addId);
+        if (Utils.NotifyPlayer(typeChinese, forever, data, out var cply)) 
+            (isPrefix ? cply.PrefixList : cply.SuffixList).Add(data);
 
         using (var maxReader = Utils.QueryReader($"select max(Id) from {type} where Name = @0", name))
         {
