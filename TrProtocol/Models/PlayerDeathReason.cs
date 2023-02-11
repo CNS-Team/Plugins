@@ -4,17 +4,7 @@ public partial class PlayerDeathReason
 {
     // Token: 0x170003D7 RID: 983
     // (get) Token: 0x060033D3 RID: 13267 RVA: 0x0058D70C File Offset: 0x0058B90C
-    public int? SourceProjectileType
-    {
-        get
-        {
-            if (this._sourceProjectileIndex == -1)
-            {
-                return null;
-            }
-            return new int?(this._sourceProjectileType);
-        }
-    }
+    public int? SourceProjectileType => this._sourceProjectileIndex == -1 ? null : new int?(this._sourceProjectileType);
 
     // Token: 0x060033D4 RID: 13268 RVA: 0x0058D738 File Offset: 0x0058B938
     public static PlayerDeathReason LegacyEmpty()
@@ -85,42 +75,42 @@ public partial class PlayerDeathReason
     public void WriteSelfTo(BinaryWriter writer)
     {
         BitsByte bb = 0;
-        bb[0] = (this._sourcePlayerIndex != -1);
-        bb[1] = (this._sourceNPCIndex != -1);
-        bb[2] = (this._sourceProjectileIndex != -1);
-        bb[3] = (this._sourceOtherIndex != -1);
-        bb[4] = (this._sourceProjectileType != 0);
-        bb[5] = (this._sourceItemType != 0);
-        bb[6] = (this._sourceItemPrefix != 0);
-        bb[7] = (this._sourceCustomReason != null);
+        bb[0] = this._sourcePlayerIndex != -1;
+        bb[1] = this._sourceNPCIndex != -1;
+        bb[2] = this._sourceProjectileIndex != -1;
+        bb[3] = this._sourceOtherIndex != -1;
+        bb[4] = this._sourceProjectileType != 0;
+        bb[5] = this._sourceItemType != 0;
+        bb[6] = this._sourceItemPrefix != 0;
+        bb[7] = this._sourceCustomReason != null;
         writer.Write(bb);
         if (bb[0])
         {
-            writer.Write((short)this._sourcePlayerIndex);
+            writer.Write((short) this._sourcePlayerIndex);
         }
         if (bb[1])
         {
-            writer.Write((short)this._sourceNPCIndex);
+            writer.Write((short) this._sourceNPCIndex);
         }
         if (bb[2])
         {
-            writer.Write((short)this._sourceProjectileIndex);
+            writer.Write((short) this._sourceProjectileIndex);
         }
         if (bb[3])
         {
-            writer.Write((byte)this._sourceOtherIndex);
+            writer.Write((byte) this._sourceOtherIndex);
         }
         if (bb[4])
         {
-            writer.Write((short)this._sourceProjectileType);
+            writer.Write((short) this._sourceProjectileType);
         }
         if (bb[5])
         {
-            writer.Write((short)this._sourceItemType);
+            writer.Write((short) this._sourceItemType);
         }
         if (bb[6])
         {
-            writer.Write((byte)this._sourceItemPrefix);
+            writer.Write((byte) this._sourceItemPrefix);
         }
         if (bb[7])
         {
@@ -135,31 +125,31 @@ public partial class PlayerDeathReason
         BitsByte bitsByte = reader.ReadByte();
         if (bitsByte[0])
         {
-            playerDeathReason._sourcePlayerIndex = (int)reader.ReadInt16();
+            playerDeathReason._sourcePlayerIndex = reader.ReadInt16();
         }
         if (bitsByte[1])
         {
-            playerDeathReason._sourceNPCIndex = (int)reader.ReadInt16();
+            playerDeathReason._sourceNPCIndex = reader.ReadInt16();
         }
         if (bitsByte[2])
         {
-            playerDeathReason._sourceProjectileIndex = (int)reader.ReadInt16();
+            playerDeathReason._sourceProjectileIndex = reader.ReadInt16();
         }
         if (bitsByte[3])
         {
-            playerDeathReason._sourceOtherIndex = (int)reader.ReadByte();
+            playerDeathReason._sourceOtherIndex = reader.ReadByte();
         }
         if (bitsByte[4])
         {
-            playerDeathReason._sourceProjectileType = (int)reader.ReadInt16();
+            playerDeathReason._sourceProjectileType = reader.ReadInt16();
         }
         if (bitsByte[5])
         {
-            playerDeathReason._sourceItemType = (int)reader.ReadInt16();
+            playerDeathReason._sourceItemType = reader.ReadInt16();
         }
         if (bitsByte[6])
         {
-            playerDeathReason._sourceItemPrefix = (int)reader.ReadByte();
+            playerDeathReason._sourceItemPrefix = reader.ReadByte();
         }
         if (bitsByte[7])
         {

@@ -1,5 +1,4 @@
-﻿using CNSUniCore;
-using CNSUniCore.UniCommand;
+﻿using CNSUniCore.UniCommand;
 using CNSUniCore.UniInfos;
 using System.Reflection;
 using Terraria;
@@ -11,13 +10,13 @@ namespace CNSUniCore;
 [ApiVersion(2, 1)]
 public class MainPlugin : TerrariaPlugin
 {
-    public DBManager dbManager;
+    public DBManager? dbManager;
 
-    public CNSUniCore.UniRest.RestManager restManager;
+    public CNSUniCore.UniRest.RestManager? restManager;
 
-    public CommandManager commandManager;
+    public CommandManager? commandManager;
 
-    public static MainPlugin Instance { get; private set; }
+    public static MainPlugin? Instance { get; private set; }
 
     public override string Name => "CNSUniCore";
 

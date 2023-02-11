@@ -1,13 +1,8 @@
 ﻿using LazyUtils;
 using LinqToDB;
 using Microsoft.Xna.Framework;
-using OTAPI;
 using PChrome.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Terraria;
-using Terraria.Localization;
 using TerrariaApi.Server;
 using TShockAPI;
 
@@ -44,7 +39,7 @@ public class Plugin : LazyPlugin
         }
         if (npc.takenDamageMultiplier > 1f)
         {
-            num *= (double) npc.takenDamageMultiplier;
+            num *= npc.takenDamageMultiplier;
         }
         if (npc.type == 371 || (npc.SpawnedFromStatue && Config.Instance.AllowGainMoneyFromStatueMobs))
         {
@@ -71,7 +66,7 @@ public class Plugin : LazyPlugin
             val *= multiplier;
         }
 
-        allocator.AddDamage(Main.npc[args.ID], args.Player?.Account?.Name, val);
+        allocator.AddDamage(Main.npc[args.ID], args.Player?.Account?.Name!, val);
     }
 
     private static void OnKillMe(object? _, GetDataHandlers.KillMeEventArgs args)

@@ -1,10 +1,10 @@
+using MaxMind;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Streams;
 using System.Net;
 using System.Reflection;
-using MaxMind;
 using TShockAPI;
 
 namespace Dimension;
@@ -13,7 +13,7 @@ public class GetDataHandlers
 {
     private static Dictionary<PacketTypes, GetDataHandlerDelegate> _getDataHandlerDelegates;
 
-    private Dimensions Dimensions;
+    private readonly Dimensions Dimensions;
 
     public GetDataHandlers(Dimensions Dimensions)
     {
@@ -21,7 +21,7 @@ public class GetDataHandlers
         _getDataHandlerDelegates = new Dictionary<PacketTypes, GetDataHandlerDelegate> {
         {
             PacketTypes.Placeholder,
-            HandleDimensionsMessage
+            this.HandleDimensionsMessage
         } };
     }
 
@@ -48,12 +48,12 @@ public class GetDataHandlers
             return false;
         }
         _ = args.Player.Index;
-        short num = args.Data.ReadInt16();
-        string remoteAddress = args.Data.ReadString();
-        bool result = false;
+        var num = args.Data.ReadInt16();
+        var remoteAddress = args.Data.ReadString();
+        var result = false;
         if (num == 0)
         {
-            result = HandleIpInformation(remoteAddress, args.Player);
+            result = this.HandleIpInformation(remoteAddress, args.Player);
         }
         return result;
     }
@@ -61,10 +61,10 @@ public class GetDataHandlers
     private bool HandleIpInformation(string remoteAddress, TSPlayer player)
     {
         typeof(TSPlayer).GetField("CacheIP", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(player, remoteAddress);
-        if (Dimensions.Geo != null)
+        if (this.Dimensions.Geo != null)
         {
-            string text = Dimensions.Geo.TryGetCountryCode(IPAddress.Parse(remoteAddress));
-            player.Country = ((text == null) ? "N/A" : GeoIPCountry.GetCountryNameByCode(text));
+            var text = this.Dimensions.Geo.TryGetCountryCode(IPAddress.Parse(remoteAddress));
+            player.Country = (text == null) ? "N/A" : GeoIPCountry.GetCountryNameByCode(text);
             if (text == "A1" && TShock.Config.Settings.KickProxyUsers)
             {
                 player.Kick("Proxies are not allowed.", force: true, silent: true);

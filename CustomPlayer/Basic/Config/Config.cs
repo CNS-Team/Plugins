@@ -1,8 +1,6 @@
-﻿using System.Diagnostics;
-
+﻿using Newtonsoft.Json;
+using System.Diagnostics;
 using TShockAPI;
-
-using Newtonsoft.Json;
 
 namespace VBY.Basic.Config;
 
@@ -14,9 +12,9 @@ public class Command
 {
     public CommandInfo Use = new();
     public CommandInfo Admin = new();
-    public TShockAPI.Command[] GetCommands(CommandDelegate use,CommandDelegate admin)
+    public TShockAPI.Command[] GetCommands(CommandDelegate use, CommandDelegate admin)
     {
-        return new TShockAPI.Command[] { Use.GetCommand(use), Admin.GetCommand(admin) };
+        return new TShockAPI.Command[] { this.Use.GetCommand(use), this.Admin.GetCommand(admin) };
     }
 }
 public class CommandInfo
@@ -28,111 +26,127 @@ public class CommandInfo
 #pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
     public CommandInfo(string permissions, string[] names)
     {
-        Permissions = permissions;
-        Names = names;
+        this.Permissions = permissions;
+        this.Names = names;
     }
     public TShockAPI.Command GetCommand(CommandDelegate cmd)
     {
-        return new TShockAPI.Command(Permissions, cmd, Names);
+        return new TShockAPI.Command(this.Permissions, cmd, this.Names);
     }
 }
 public class MainConfig<T> where T : MainRoot, new()
 {
     public string ConfigDirectory;
     public string FileName;
-    public virtual string ConfigPath { get { return Path.Combine(ConfigDirectory, FileName); } }
+    public virtual string ConfigPath => Path.Combine(this.ConfigDirectory, this.FileName);
     public T Root = new();
     public bool Normal;
     public string StateString = "正常";
     public string ErrorString = "无";
-    public virtual string ConfigString 
-    { 
-        get 
+    public virtual string ConfigString
+    {
+        get
         {
-            Type type = GetType();
-            var defaultStream = type.Assembly.GetManifestResourceStream(type.Namespace + "." + FileName);
-            if (defaultStream is null) { throw new Exception($"{type.Namespace}.{FileName} resource no find"); }
+            var type = this.GetType();
+            var defaultStream = type.Assembly.GetManifestResourceStream(type.Namespace + "." + this.FileName);
+            if (defaultStream is null) { throw new Exception($"{type.Namespace}.{this.FileName} resource no find"); }
             using StreamReader reader = new(defaultStream);
             return reader.ReadToEnd();
-        } 
+        }
     }
-    public MainConfig(string configDirectory,string fileName = "config.json")
+    public MainConfig(string configDirectory, string fileName = "config.json")
     {
-        ConfigDirectory = configDirectory;
-        FileName = fileName;
-        if (!Directory.Exists(configDirectory)) Directory.CreateDirectory(configDirectory);
-        if (File.Exists(ConfigPath)) Read(readKey: true); else WriteAndRead(readKey: true);
+        this.ConfigDirectory = configDirectory;
+        this.FileName = fileName;
+        if (!Directory.Exists(configDirectory))
+        {
+            Directory.CreateDirectory(configDirectory);
+        }
+
+        if (File.Exists(this.ConfigPath))
+        {
+            this.Read(readKey: true);
+        }
+        else
+        {
+            this.WriteAndRead(readKey: true);
+        }
     }
-    public virtual bool Read(TSPlayer? ply = null,bool readKey = false,bool log = false,T? obj = default)
+    public virtual bool Read(TSPlayer? ply = null, bool readKey = false, bool log = false, T? obj = default)
     {
-        Normal = true;
+        this.Normal = true;
         try
         {
-            Root = JsonConvert.DeserializeObject<T>(File.ReadAllText(ConfigPath)) ?? new T();
+            this.Root = JsonConvert.DeserializeObject<T>(File.ReadAllText(this.ConfigPath)) ?? new T();
         }
-        catch(FileNotFoundException ex)
+        catch (FileNotFoundException ex)
         {
-            StateString = FileName + "未找到";
-            Normal = false;
-            ErrorString = ex.ToString();
+            this.StateString = this.FileName + "未找到";
+            this.Normal = false;
+            this.ErrorString = ex.ToString();
         }
         catch (JsonReaderException ex)
         {
-            StateString = $"读取{FileName}错误";
-            Normal = false;
-            ErrorString = ex.ToString();
+            this.StateString = $"读取{this.FileName}错误";
+            this.Normal = false;
+            this.ErrorString = ex.ToString();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            StateString = $"未知错误";
-            Normal = false;
-            ErrorString = ex.ToString();
+            this.StateString = $"未知错误";
+            this.Normal = false;
+            this.ErrorString = ex.ToString();
         }
-        if (!Normal)
+        if (!this.Normal)
         {
-            LogAndOut(ErrorString, ply, log, TraceLevel.Error);
-            var newRoot = obj ?? JsonConvert.DeserializeObject<T>(ConfigString);
+            this.LogAndOut(this.ErrorString, ply, log, TraceLevel.Error);
+            var newRoot = obj ?? JsonConvert.DeserializeObject<T>(this.ConfigString);
             if (newRoot is null)
+            {
                 throw new Exception("配置读取错误");
-            Root = newRoot;
-            if (readKey) { Console.WriteLine("请按任意键继续...");  Console.ReadKey(); };
+            }
+
+            this.Root = newRoot;
+            if (readKey) { Console.WriteLine("请按任意键继续..."); Console.ReadKey(); };
         }
-        return Normal;
+        return this.Normal;
     }
     public virtual bool Write(TSPlayer? ply = null, bool readKey = false, bool log = false)
     {
-        Normal = true;
+        this.Normal = true;
         try
         {
-            string writeString;
-            if (Environment.OSVersion.Platform != PlatformID.Win32NT) 
-                writeString = ConfigString.Replace("\r\n", "\n");
-            else 
-                writeString = ConfigString;
-            File.WriteAllText(ConfigPath, writeString);
+            var writeString = Environment.OSVersion.Platform != PlatformID.Win32NT ? this.ConfigString.Replace("\r\n", "\n") : this.ConfigString;
+            File.WriteAllText(this.ConfigPath, writeString);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            StateString = "写入默认配置文件出错";
-            ErrorString = ex.ToString();
-            Normal = false;
+            this.StateString = "写入默认配置文件出错";
+            this.ErrorString = ex.ToString();
+            this.Normal = false;
         }
-        if (!Normal)
+        if (!this.Normal)
         {
-            LogAndOut(ErrorString, ply, log, TraceLevel.Error);
-            if (readKey) Console.ReadKey();
+            this.LogAndOut(this.ErrorString, ply, log, TraceLevel.Error);
+            if (readKey)
+            {
+                Console.ReadKey();
+            }
         }
-        return Normal;
+        return this.Normal;
     }
     public virtual void WriteAndRead(TSPlayer? ply = null, bool readKey = false)
     {
-        if (Write(ply, readKey)) Read(ply, readKey);
+        if (this.Write(ply, readKey))
+        {
+            this.Read(ply, readKey);
+        }
     }
     public virtual void LogAndOut(string message, TSPlayer? ply = null, bool log = false, TraceLevel level = TraceLevel.Info)
     {
-        if(ply == null)
+        if (ply == null)
         {
-            switch (level) 
+            switch (level)
             {
                 case TraceLevel.Error:
                     Utils.WriteColorLine(message);
@@ -167,6 +181,9 @@ public class MainConfig<T> where T : MainRoot, new()
                     break;
             }
         }
-        if (log) TShock.Log.Write(message, level);
+        if (log)
+        {
+            TShock.Log.Write(message, level);
+        }
     }
 }

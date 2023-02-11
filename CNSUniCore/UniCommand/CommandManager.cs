@@ -338,15 +338,15 @@ public class CommandManager
                         else
                         {
                             var text2 = players[s2].Name;
-                            if (MainPlugin.Instance.dbManager.GetPlayer(text2) != null)
+                            if (MainPlugin.Instance.dbManager.GetPlayer(text2!) != null)
                             {
-                                MainPlugin.Instance.dbManager.DeletePlayer(text2);
+                                MainPlugin.Instance.dbManager.DeletePlayer(text2!);
                                 foreach (var serverInfo in ConfigUtils.servers)
                                 {
                                     try
                                     {
                                         serverInfo.CreateToken();
-                                        serverInfo.DelUser(text2);
+                                        serverInfo.DelUser(text2!);
                                     }
                                     catch (Exception)
                                     {

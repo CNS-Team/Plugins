@@ -1,5 +1,4 @@
-﻿using CNSUniCore;
-using CNSUniCore.UniInfos;
+﻿using CNSUniCore.UniInfos;
 using Newtonsoft.Json.Linq;
 
 namespace CNSUniCore;
@@ -30,26 +29,26 @@ public class ServerInfo
         this.Token = "";
     }
 
-    public JObject BanUser(string name, string ip, string uuid, string reason, string time)
+    public JObject? BanUser(string name, string ip, string uuid, string reason, string time)
     {
         return this.TestToken()
             ? this.GetHttp($"{this.GetUrl()}/uniban/add?ip={ip}&uuid={uuid}&name={name}&reason={reason}&time={time}&token={this.Token}")
             : null;
     }
 
-    public JObject AddVip(SponsorInfo sponsorInfo)
+    public JObject? AddVip(SponsorInfo sponsorInfo)
     {
         return this.TestToken()
             ? this.GetHttp($"{this.GetUrl()}/univip/add?name={sponsorInfo.name}&group={sponsorInfo.group}&origin={sponsorInfo.originGroup}&start={sponsorInfo.startTime}&end={sponsorInfo.endTime}&token={this.Token}")
             : null;
     }
 
-    public JObject DelVip(string name)
+    public JObject? DelVip(string name)
     {
         return this.TestToken() ? this.GetHttp($"{this.GetUrl()}/univip/del?name={name}&token={this.Token}") : null;
     }
 
-    public JObject DelUser(string name)
+    public JObject? DelUser(string name)
     {
         return this.TestToken() ? this.GetHttp($"{this.GetUrl()}/uniban/del?name={name}&token={this.Token}") : null;
     }
@@ -77,19 +76,19 @@ public class ServerInfo
         return JObject.Parse(new HttpClient().GetAsync(url).Result.Content.ReadAsStringAsync().Result);
     }
 
-    public JObject RawCommand(string cmd)
+    public JObject? RawCommand(string cmd)
     {
         return this.TestToken() ? this.GetHttp($"{this.GetUrl()}/v3/server/rawcmd?cmd={cmd}&token={this.Token}") : null;
     }
 
-    public JObject AddUser(UserInfo info)
+    public JObject? AddUser(UserInfo info)
     {
         return this.TestToken()
             ? this.GetHttp($"{this.GetUrl()}/unireg/add?id&={info.ID}name={info.Name}&lastaccessed={info.LastAccessed}&ip={info.KnownIPs}&group={info.UserGroup}&password={info.Password}&uuid={info.UUID}&registered={info.Registered}&token={this.Token}")
             : null;
     }
 
-    public JObject UpdateUser(UserInfo info)
+    public JObject? UpdateUser(UserInfo info)
     {
         return this.TestToken()
             ? this.GetHttp(this.GetUrl() + "/unireg/update?name=" + info.Name + "&uuid=" + info.UUID + "&group=" + info.UserGroup + "&registered=" + info.Registered + "&lastaccessed=" + info.LastAccessed + "&ip=" + info.KnownIPs + "&token=" + this.Token)

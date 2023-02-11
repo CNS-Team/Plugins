@@ -1,8 +1,5 @@
 ﻿using LazyUtils;
 using LinqToDB;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
@@ -73,7 +70,7 @@ public class OnlineInfoPlugin : LazyPlugin
     #endregion
 
     #region Methods
-    internal static bool UpdateOnlineInfo(TSPlayer player = null, bool isJoining = true)
+    internal static bool UpdateOnlineInfo(TSPlayer? player = null, bool isJoining = true)
     {
         try
         {

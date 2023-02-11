@@ -9,18 +9,21 @@ public partial class NetworkText
     // Token: 0x060016D9 RID: 5849 RVA: 0x0046C570 File Offset: 0x0046A770
     public NetworkText(string text, Mode mode)
     {
-        _text = text;
-        _mode = mode;
+        this._text = text;
+        this._mode = mode;
     }
 
     // Token: 0x060016DA RID: 5850 RVA: 0x0046C588 File Offset: 0x0046A788
     public static NetworkText[] ConvertSubstitutionsToNetworkText(object[] substitutions)
     {
-        NetworkText[] array = new NetworkText[substitutions.Length];
-        for (int i = 0; i < substitutions.Length; i++)
+        var array = new NetworkText[substitutions.Length];
+        for (var i = 0; i < substitutions.Length; i++)
         {
             if (substitutions[i] is not NetworkText networkText)
+            {
                 networkText = FromLiteral(substitutions[i].ToString());
+            }
+
             array[i] = networkText;
         }
         return array;
@@ -53,15 +56,15 @@ public partial class NetworkText
     // Token: 0x060016DE RID: 5854 RVA: 0x0046C608 File Offset: 0x0046A808
     public int GetMaxSerializedSize()
     {
-        int num = 0;
+        var num = 0;
         num++;
-        num += 4 + Encoding.UTF8.GetByteCount(_text);
-        if (_mode != Mode.Literal)
+        num += 4 + Encoding.UTF8.GetByteCount(this._text);
+        if (this._mode != Mode.Literal)
         {
             num++;
-            for (int i = 0; i < _substitutions.Length; i++)
+            for (var i = 0; i < this._substitutions.Length; i++)
             {
-                num += _substitutions[i].GetMaxSerializedSize();
+                num += this._substitutions[i].GetMaxSerializedSize();
             }
         }
         return num;
@@ -70,7 +73,7 @@ public partial class NetworkText
     // Token: 0x060016DF RID: 5855 RVA: 0x0046C660 File Offset: 0x0046A860
     public void Serialize(BinaryWriter writer)
     {
-        writer.Write((byte)this._mode);
+        writer.Write((byte) this._mode);
         writer.Write(this._text);
         this.SerializeSubstitutionList(writer);
     }
@@ -78,21 +81,21 @@ public partial class NetworkText
     // Token: 0x060016E0 RID: 5856 RVA: 0x0046C684 File Offset: 0x0046A884
     public void SerializeSubstitutionList(BinaryWriter writer)
     {
-        if (_mode == Mode.Literal)
+        if (this._mode == Mode.Literal)
         {
             return;
         }
-        writer.Write((byte)_substitutions.Length);
-        for (int i = 0; i < (_substitutions.Length & 255); i++)
+        writer.Write((byte) this._substitutions.Length);
+        for (var i = 0; i < (this._substitutions.Length & 255); i++)
         {
-            _substitutions[i].Serialize(writer);
+            this._substitutions[i].Serialize(writer);
         }
     }
 
     // Token: 0x060016E1 RID: 5857 RVA: 0x0046C6D0 File Offset: 0x0046A8D0
     public static NetworkText Deserialize(BinaryReader reader)
     {
-        Mode mode = (Mode)reader.ReadByte();
+        var mode = (Mode) reader.ReadByte();
         NetworkText networkText = new(reader.ReadString(), mode);
         networkText.DeserializeSubstitutionList(reader);
         return networkText;
@@ -101,7 +104,7 @@ public partial class NetworkText
     // Token: 0x060016E2 RID: 5858 RVA: 0x0046C6F8 File Offset: 0x0046A8F8
     public static NetworkText DeserializeLiteral(BinaryReader reader)
     {
-        Mode mode = (Mode)reader.ReadByte();
+        var mode = (Mode) reader.ReadByte();
         NetworkText networkText = new(reader.ReadString(), mode);
         networkText.DeserializeSubstitutionList(reader);
         if (mode != Mode.Literal)
@@ -114,23 +117,23 @@ public partial class NetworkText
     // Token: 0x060016E3 RID: 5859 RVA: 0x0046C72C File Offset: 0x0046A92C
     public void DeserializeSubstitutionList(BinaryReader reader)
     {
-        if (_mode == Mode.Literal)
+        if (this._mode == Mode.Literal)
         {
             return;
         }
-        _substitutions = new NetworkText[(reader.ReadByte())];
-        for (int i = 0; i < _substitutions.Length; i++)
+        this._substitutions = new NetworkText[(reader.ReadByte())];
+        for (var i = 0; i < this._substitutions.Length; i++)
         {
-            _substitutions[i] = NetworkText.Deserialize(reader);
+            this._substitutions[i] = NetworkText.Deserialize(reader);
         }
     }
 
     // Token: 0x060016E4 RID: 5860 RVA: 0x0046C774 File Offset: 0x0046A974
     public void SetToEmptyLiteral()
     {
-        _mode = Mode.Literal;
-        _text = string.Empty;
-        _substitutions = null;
+        this._mode = Mode.Literal;
+        this._text = string.Empty;
+        this._substitutions = null;
     }
 
     // Token: 0x060016E5 RID: 5861 RVA: 0x0046C790 File Offset: 0x0046A990
@@ -138,46 +141,46 @@ public partial class NetworkText
     {
         try
         {
-            switch (_mode)
+            switch (this._mode)
             {
                 case Mode.Literal:
-                    return _text;
+                    return this._text;
                 case Mode.Formattable:
-                    {
-                        string text = _text;
-                        object[] substitutions = _substitutions;
-                        return string.Format(text, substitutions);
-                    }
+                {
+                    var text = this._text;
+                    object[] substitutions = this._substitutions;
+                    return string.Format(text, substitutions);
+                }
                 case Mode.LocalizationKey:
-                    {
-                        string text2 = _text;
-                        return $"lang[{text2}][{string.Join<NetworkText>(',', _substitutions)}]";
-                    }
+                {
+                    var text2 = this._text;
+                    return $"lang[{text2}][{string.Join<NetworkText>(',', this._substitutions)}]";
+                }
                 default:
-                    return _text;
+                    return this._text;
             }
         }
         catch
         {
-            SetToEmptyLiteral();
+            this.SetToEmptyLiteral();
         }
-        return _text;
+        return this._text;
     }
 
     // Token: 0x060016E6 RID: 5862 RVA: 0x0046C844 File Offset: 0x0046AA44
     public string ToDebugInfoString(string linePrefix = "")
     {
-        string text = string.Format("{0}Mode: {1}\n{0}Text: {2}\n", linePrefix, _mode, _text);
-        if (_mode == Mode.LocalizationKey)
+        var text = string.Format("{0}Mode: {1}\n{0}Text: {2}\n", linePrefix, this._mode, this._text);
+        if (this._mode == Mode.LocalizationKey)
         {
-            text += string.Format("{0}Localized Text: {1}\n", linePrefix, $"lang[{_text}]");
+            text += string.Format("{0}Localized Text: {1}\n", linePrefix, $"lang[{this._text}]");
         }
-        if (_mode != Mode.Literal)
+        if (this._mode != Mode.Literal)
         {
-            for (int i = 0; i < _substitutions.Length; i++)
+            for (var i = 0; i < this._substitutions.Length; i++)
             {
                 text += string.Format("{0}Substitution {1}:\n", linePrefix, i);
-                text += _substitutions[i].ToDebugInfoString(linePrefix + "\t");
+                text += this._substitutions[i].ToDebugInfoString(linePrefix + "\t");
             }
         }
         return text;

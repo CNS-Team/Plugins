@@ -8,7 +8,7 @@ public sealed class SerializerAttribute : Attribute
 
     public SerializerAttribute(Type type, string version = null)
     {
-        Version = version;
-        Serializer = Activator.CreateInstance(type) as IFieldSerializer;
+        this.Version = version;
+        this.Serializer = Activator.CreateInstance(type) as IFieldSerializer;
     }
 }

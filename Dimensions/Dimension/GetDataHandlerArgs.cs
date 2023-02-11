@@ -12,7 +12,7 @@ internal class GetDataHandlerArgs : EventArgs
 
     public GetDataHandlerArgs(TSPlayer player, MemoryStream data)
     {
-        Player = player;
-        Data = data;
+        this.Player = player;
+        this.Data = data;
     }
 }

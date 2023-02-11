@@ -6,7 +6,6 @@ using LinqToDB.DataProvider.MySql;
 using LinqToDB.DataProvider.SQLite;
 using Microsoft.Data.Sqlite;
 using MySql.Data.MySqlClient;
-using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using TShockAPI;

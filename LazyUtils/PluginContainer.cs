@@ -13,7 +13,7 @@ public class PluginContainer : LazyPlugin
     public PluginContainer(Main game) : base(game) { }
     public override void Initialize()
     {
-        ServerApi.Hooks.GamePostUpdate.Register(this, PostUpdate);
+        ServerApi.Hooks.GamePostUpdate.Register(this, this.PostUpdate);
     }
 
     private void PostUpdate(EventArgs _)
@@ -22,7 +22,11 @@ public class PluginContainer : LazyPlugin
 
         while (TimingUtils.scheduled.TryPeek(out var action, out var time))
         {
-            if (time > TimingUtils.Timer) break;
+            if (time > TimingUtils.Timer)
+            {
+                break;
+            }
+
             action();
             TimingUtils.scheduled.Dequeue();
         }

@@ -9,14 +9,19 @@ public unsafe class PrimitiveFieldSerializer<TPrimitive> : FieldSerializer<TPrim
         Span<byte> buffer = stackalloc byte[SizeOfTPrimitive];
         br.Read(buffer);
         fixed (byte* ptr = buffer)
-            return *(TPrimitive*)ptr;
+        {
+            return *(TPrimitive*) ptr;
+        }
     }
 
     protected override void WriteOverride(BinaryWriter bw, TPrimitive t)
     {
         Span<byte> buffer = stackalloc byte[SizeOfTPrimitive];
         fixed (byte* ptr = buffer)
-            *(TPrimitive*)ptr = t;
+        {
+            *(TPrimitive*) ptr = t;
+        }
+
         bw.Write(buffer);
     }
 }

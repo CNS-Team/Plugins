@@ -9,10 +9,10 @@ internal class OnlineInfo
     public int ServerId { get; set; }
 
     [Column(DataType = LinqToDB.DataType.VarChar, Length = 256)]
-    public string ServerName { get; set; }
+    public string? ServerName { get; set; }
 
     [Column(DataType = LinqToDB.DataType.Text)]
-    public string Players { get; set; }
+    public string? Players { get; set; }
 
     [Column]
     public int PlayerCount { get; set; }

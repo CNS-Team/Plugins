@@ -1,8 +1,8 @@
-﻿using LazyUtils;
-using System.Linq.Expressions;
-using CustomPlayer;
+﻿using CustomPlayer;
+using LazyUtils;
 using LinqToDB;
 using Microsoft.Xna.Framework;
+using System.Linq.Expressions;
 using Terraria;
 using Terraria.ID;
 using TShockAPI;
@@ -32,23 +32,31 @@ internal static class Utils
 
         var account = TShock.UserAccounts.GetUserAccountByName(playerName);
         if (account == null)
+        {
             return (null, null);
+        }
 
         var group = TShock.Groups.GetGroupByName(account.Group);
         return (account, group);
     }
 
-    public static PlayerPack[]? GetAvailablePlayerPacks(this TSPlayer player) =>
-        GetAvailablePlayerPacks(player.Account.Name);
+    public static PlayerPack[]? GetAvailablePlayerPacks(this TSPlayer player)
+    {
+        return GetAvailablePlayerPacks(player.Account.Name);
+    }
 
-    public static PlayerPack[]? GetAvailableSponsorPacks(this TSPlayer player) =>
-        GetAvailableSponsorPacks(player.Account.Name);
+    public static PlayerPack[]? GetAvailableSponsorPacks(this TSPlayer player)
+    {
+        return GetAvailableSponsorPacks(player.Account.Name);
+    }
 
     public static PlayerPack[]? GetAvailablePlayerPacks(string playerName)
     {
         var (account, group) = GetAccountAndGroupByPlayerName(playerName);
         if (account == null || group == null)
+        {
             return null;
+        }
 
         using var query = Db.Get<PlayerRewardInfo>(account.Name);
         var obtainedPlayerPackNames = query.Select(x => x.ObtainedPlayerPacks).Single().Split(',');
@@ -64,7 +72,9 @@ internal static class Utils
     {
         var (account, group) = GetAccountAndGroupByPlayerName(playerName);
         if (account == null || group == null)
+        {
             return null;
+        }
 
         using var query = Db.Get<PlayerRewardInfo>(account.Name);
         var obtainedSponsorPackNames = query.Select(x => x.ObtainedSponsorPacks).Single().Split(',');
@@ -93,12 +103,12 @@ internal static class Utils
 
     private static void GiveItemsDirectly(this TSPlayer player, IEnumerable<Item> items)
     {
-        Terraria.Item ConvertToTrItem(Item item)
+        static Terraria.Item ConvertToTrItem(Item item)
         {
             var trItem = new Terraria.Item();
             trItem.netDefaults(item.ID);
             trItem.stack = item.Stack;
-            trItem.prefix = (byte)item.Prefix;
+            trItem.prefix = (byte) item.Prefix;
             return trItem;
         }
 
@@ -126,9 +136,11 @@ internal static class Utils
 
 internal static class CustomPlayerAdapter
 {
-    public static CustomPlayer.CustomPlayer GetCustomPlayer(string playerName) =>
-        CustomPlayer.Utils.FindPlayer(playerName) ??
+    public static CustomPlayer.CustomPlayer GetCustomPlayer(string playerName)
+    {
+        return CustomPlayer.Utils.FindPlayer(playerName) ??
         CustomPlayer.CustomPlayer.Read(playerName, new FakeTSPlayer(playerName));
+    }
 
     public static IEnumerable<string> GetCustomGroupNames(this CustomPlayer.CustomPlayer cp)
     {
@@ -136,7 +148,9 @@ internal static class CustomPlayerAdapter
         var result = customGroups.Select(x => new { Group = x, Grade = CustomPlayerPluginHelpers.GroupGrade[x] })
             .MaxBy(x => x.Grade);
         if (result != null)
+        {
             yield return result.Group;
+        }
 
         // 因应需求取消继承（懒了X2）
         //return cp.HaveGroupNames

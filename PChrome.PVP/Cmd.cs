@@ -1,8 +1,5 @@
 using LazyUtils;
 using LazyUtils.Commands;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Terraria;
 using Terraria.Utilities;
 using TShockAPI;
@@ -11,7 +8,7 @@ using TShockAPI.DB;
 namespace PChrome.PVP;
 
 [Command("join")]
-internal class Cmd2
+internal static class Cmd2
 {
     [Permissions("cnspvp.use")]
     public static void Pvp(CommandArgs args)

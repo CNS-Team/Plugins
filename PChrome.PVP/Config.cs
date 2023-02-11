@@ -1,6 +1,5 @@
 using LazyUtils;
 using Microsoft.Xna.Framework;
-using System.Collections.Generic;
 using TShockAPI;
 
 namespace PChrome.PVP;
@@ -10,7 +9,7 @@ public class Config : Config<Config>
 {
     public class Group
     {
-        public string name;
+        public string? name;
         public int lower;
         public int upper;
     }
@@ -21,9 +20,9 @@ public class Config : Config<Config>
     {
         public int ID;
 
-        public int[] AllowedProj;
+        public int[]? AllowedProj;
 
-        public Dictionary<int, int> Debuff;
+        public Dictionary<int, int>? Debuff;
     }
 
     public int Life = 800;

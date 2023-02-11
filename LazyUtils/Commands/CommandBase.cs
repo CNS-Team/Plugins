@@ -44,7 +44,7 @@ internal abstract class CommandBase
 
     protected CommandBase()
     {
-        
+
     }
 
     public bool CanExec(TSPlayer plr)

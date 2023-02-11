@@ -2,9 +2,9 @@
 using System;
 using System.Reflection;
 using Terraria;
+using Terraria.GameContent.Creative;
 using TerrariaApi.Server;
 using TShockAPI;
-using Terraria.GameContent.Creative;
 
 [ApiVersion(2, 1)]
 public class PluginContainer : TerrariaPlugin
@@ -23,8 +23,8 @@ public class PluginContainer : TerrariaPlugin
 
     public override void Initialize()
     {
-        Commands.ChatCommands.Add(new Command("tofout.invisibility.on", cmd => ToGhost(cmd.Player), "invon"));
-        Commands.ChatCommands.Add(new Command("tofout.invisibility.off", cmd => ToActive(cmd.Player), "invoff"));
+        Commands.ChatCommands.Add(new Command("tofout.invisibility.on", cmd => this.ToGhost(cmd.Player), "invon"));
+        Commands.ChatCommands.Add(new Command("tofout.invisibility.off", cmd => this.ToActive(cmd.Player), "invoff"));
     }
 
     protected override void Dispose(bool disposing)

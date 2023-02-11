@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace CNSUniCore;
+﻿namespace CNSUniCore;
 
 // Token: 0x02000007 RID: 7
 public class SponsorInfo

@@ -5,58 +5,52 @@ public partial class TEDisplayDoll : TileEntity
     public override void WriteExtraData(BinaryWriter writer)
     {
         BitsByte bb = 0;
-        bb[0] = Items[0] != null;
-        bb[1] = Items[1] != null;
-        bb[2] = Items[2] != null;
-        bb[3] = Items[3] != null;
-        bb[4] = Items[4] != null;
-        bb[5] = Items[5] != null;
-        bb[6] = Items[6] != null;
-        bb[7] = Items[7] != null;
+        bb[0] = this.Items[0] != null;
+        bb[1] = this.Items[1] != null;
+        bb[2] = this.Items[2] != null;
+        bb[3] = this.Items[3] != null;
+        bb[4] = this.Items[4] != null;
+        bb[5] = this.Items[5] != null;
+        bb[6] = this.Items[6] != null;
+        bb[7] = this.Items[7] != null;
         BitsByte bb2 = 0;
-        bb2[0] = Dyes[0] != null;
-        bb2[1] = Dyes[1] != null;
-        bb2[2] = Dyes[2] != null;
-        bb2[3] = Dyes[3] != null;
-        bb2[4] = Dyes[4] != null;
-        bb2[5] = Dyes[5] != null;
-        bb2[6] = Dyes[6] != null;
-        bb2[7] = Dyes[7] != null;
+        bb2[0] = this.Dyes[0] != null;
+        bb2[1] = this.Dyes[1] != null;
+        bb2[2] = this.Dyes[2] != null;
+        bb2[3] = this.Dyes[3] != null;
+        bb2[4] = this.Dyes[4] != null;
+        bb2[5] = this.Dyes[5] != null;
+        bb2[6] = this.Dyes[6] != null;
+        bb2[7] = this.Dyes[7] != null;
         writer.Write(bb);
         writer.Write(bb2);
-        for (int i = 0; i < 8; i++)
+        for (var i = 0; i < 8; i++)
         {
-            ItemData item = Items[i];
-            if (item != null)
-            {
-                item.Write(writer);
-            }
+            var item = this.Items[i];
+            item?.Write(writer);
         }
-        for (int j = 0; j < 8; j++)
+        for (var j = 0; j < 8; j++)
         {
-            ItemData item = Dyes[j];
-            if (item != null)
-            {
-                item.Write(writer);
-            }
+            var item = this.Dyes[j];
+            item?.Write(writer);
         }
     }
     public override TEDisplayDoll ReadExtraData(BinaryReader reader)
     {
         BitsByte bitsByte = reader.ReadByte();
         BitsByte bitsByte2 = reader.ReadByte();
-        for (int i = 0; i < 8; i++)
+        for (var i = 0; i < 8; i++)
         {
             if (bitsByte[i])
             {
-                Items[i] = new ItemData(reader);
+                this.Items[i] = new ItemData(reader);
             }
         }
-        for (int j = 0; j < 8; j++)
+        for (var j = 0; j < 8; j++)
         {
             if (bitsByte2[j])
             {
-                Dyes[j] = new ItemData(reader);
+                this.Dyes[j] = new ItemData(reader);
             }
         }
         return this;

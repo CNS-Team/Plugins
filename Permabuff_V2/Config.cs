@@ -1,32 +1,30 @@
 ﻿using Newtonsoft.Json;
-using System.Collections.Generic;
-using System.IO;
 
 namespace Permabuffs_V2;
 
-	public class BuffGroup2
-	{
-		public string groupName = string.Empty;
-		public string groupPerm = string.Empty;
-		public List<int> buffIDs = new();
-	}
+public class BuffGroup2
+{
+    public string groupName = string.Empty;
+    public string groupPerm = string.Empty;
+    public List<int> buffIDs = new();
+}
 
-	public class RegionBuff2
-	{
-		public string regionName = string.Empty;
-		public Dictionary<int, int> buffs = new();
-	}
+public class RegionBuff2
+{
+    public string regionName = string.Empty;
+    public Dictionary<int, int> buffs = new();
+}
 
-	public class Config
-	{
-		public BuffGroup[] buffgroups = new BuffGroup[]
-		{
+public class Config
+{
+    public BuffGroup[] buffgroups = new BuffGroup[]
+    {
         //34 - Merfolk - Seems broken when used by command.
         new BuffGroup()
-			{
-				groupName = "probuffs", groupPerm = "probuffs", buffIDs = new List<int>()
-				{
-				1, // Obsidian Skin
+            {
+                groupName = "probuffs", groupPerm = "probuffs", buffIDs = new List<int>()
+                {
+                1, // Obsidian Skin
             2, //Regeneration
             3, //Swiftness
             4, //Gills
@@ -119,8 +117,8 @@ namespace Permabuffs_V2;
 
 				}
         },
-			new BuffGroup() { groupName = "petbuffs", groupPerm = "petbuffs", buffIDs = new List<int>() {
-				19, //Shadow Orb
+            new BuffGroup() { groupName = "petbuffs", groupPerm = "petbuffs", buffIDs = new List<int>() {
+                19, //Shadow Orb
             27, //Fairy
             //28 - Werewolf - Client-Activated Only
             40, //Pet Bunny
@@ -241,9 +239,9 @@ namespace Permabuffs_V2;
 
 
         }},
-			new BuffGroup()
-			{
-				groupName = "debuffs", groupPerm = "debuffs", buffIDs = new List<int>() {
+            new BuffGroup()
+            {
+                groupName = "debuffs", groupPerm = "debuffs", buffIDs = new List<int>() {
             //20 - Poisoned - Client-Activated Only
             21, //Potion Sickness
             //22 - Darkness - Client-Activated Only
@@ -295,30 +293,30 @@ namespace Permabuffs_V2;
             320 //Sparkle Slime
 
 				}
-			}
-		};
+            }
+    };
 
-		public RegionBuff[] regionbuffs = new RegionBuff[]
-		{
-			new RegionBuff() { regionName = "spawn", buffs = new Dictionary<int,int>() { {11, 10}}}
-		};
+    public RegionBuff[] regionbuffs = new RegionBuff[]
+    {
+            new RegionBuff() { regionName = "spawn", buffs = new Dictionary<int,int>() { {11, 10}}}
+    };
 
-		public void Write(string path)
-		{
-			File.WriteAllText(path, JsonConvert.SerializeObject(this, Formatting.Indented));
-		}
+    public void Write(string path)
+    {
+        File.WriteAllText(path, JsonConvert.SerializeObject(this, Formatting.Indented));
+    }
 
-		public static Config Read(string path)
-		{
+    public static Config Read(string path)
+    {
         if (!File.Exists(path))
         {
-            Config config = new Config();
+            var config = new Config();
             config.Write(path);
             return config;
         }
         else
         {
-           return JsonConvert.DeserializeObject<Config>(File.ReadAllText(path))!;
+            return JsonConvert.DeserializeObject<Config>(File.ReadAllText(path))!;
         }
-		}
-	}
+    }
+}

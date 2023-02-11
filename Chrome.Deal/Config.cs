@@ -45,4 +45,3 @@ public class Config
     public bool 广播下架物品 = true;
     public bool 广播购买成功 = true;
 }
-

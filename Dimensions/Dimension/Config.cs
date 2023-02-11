@@ -1,5 +1,5 @@
-using System.IO;
 using Newtonsoft.Json;
+using System.IO;
 
 namespace Dimension;
 
@@ -35,8 +35,10 @@ public class Config
 
     public static void WriteTemplates(string file)
     {
-        Config config = new Config();
-        config.EnableGeoIP = false;
+        var config = new Config
+        {
+            EnableGeoIP = false
+        };
         config.Write(file);
     }
 }

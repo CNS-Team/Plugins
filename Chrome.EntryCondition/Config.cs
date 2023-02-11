@@ -30,4 +30,3 @@ public class Config
     public string 任务阻止进入提示 = "Chrome.RPG\n您当前需要完成任务\n{0}\n才能进入该服务器";
     public List<int> 进入需要完成的任务 = new() { };
 }
-

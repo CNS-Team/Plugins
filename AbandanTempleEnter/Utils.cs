@@ -40,4 +40,3 @@ internal static class Utils
     }
 
 }
-

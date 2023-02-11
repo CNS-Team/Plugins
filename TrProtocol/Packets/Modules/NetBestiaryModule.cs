@@ -7,7 +7,7 @@ public class NetBestiaryModule : NetModulesPacket
     public BestiaryUnlockType UnlockType { get; set; }
     public short NPCType { get; set; }
     private bool __shouldSerializeKillCount
-        => UnlockType == BestiaryUnlockType.Kill;
+        => this.UnlockType == BestiaryUnlockType.Kill;
     [Condition(nameof(__shouldSerializeKillCount))]
     public ushort KillCount { get; set; }
 }

@@ -1,10 +1,5 @@
 ﻿using LazyUtils;
 using LinqToDB;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
@@ -64,7 +59,7 @@ public class Plugin : LazyPlugin
         }
 
         var pos = args.Player.TPlayer.position;
-        args.Player.SetData<object>("handle_one_spawn", null);
+        args.Player.SetData<object>("handle_one_spawn", null!);
         args.Player.Spawn(PlayerSpawnContext.ReviveFromDeath);
         args.Player.SetData(TIMER_KEY, TimingUtils.Timer);
         args.Handled = true;
