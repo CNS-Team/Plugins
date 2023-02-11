@@ -7,6 +7,7 @@ using TShockAPI.DB;
 using TShockAPI.Hooks;
 using VBY.Basic;
 using VBY.Basic.Extension;
+using static CustomPlayer.TableInfo;
 
 namespace CustomPlayer;
 public static class Utils
@@ -38,16 +39,6 @@ public static class Utils
     public static string GetString(FormattableStringAdapter text, params object[] args)
     {
         return GetStringMethod(text, args)!;
-    }
-
-    public static string NullOrEmptyReturn(this string? args, string value)
-    {
-        return string.IsNullOrEmpty(args) ? value : args;
-    }
-
-    public static CustomPlayer GetPlayer(this TSPlayer player)
-    {
-        return CustomPlayerPluginHelpers.Players[player.Index];
     }
 
     public static CustomPlayer? FindPlayer(string name)
@@ -90,15 +81,6 @@ public static class Utils
         return TitleQuery("Suffix", name);
     }
 
-    public static void Reload(this CustomPlayer cply)
-    {
-        CustomPlayerPlugin.OnPlayerLogout(new PlayerLogoutEventArgs(cply.Player));
-        CustomPlayerPlugin.OnPlayerPostLogin(new PlayerPostLoginEventArgs(cply.Player));
-    }
-    public static TimeOutObject GetTimeOutObject(this IDataReader reader, string name, string type)
-    {
-        return new TimeOutObject(name, reader.GetString(nameof(TableInfo.ExpirationInfo.Value)), type, reader.GetDateTime(nameof(TableInfo.ExpirationInfo.StartTime)), reader.GetDateTime(nameof(TableInfo.ExpirationInfo.EndTime)), reader.GetString(nameof(TableInfo.ExpirationInfo.DurationText))); ;
-    }
     public static void I(string msg)
     {
         if (CustomPlayerPlugin.ReadConfig.Root.Debug)
@@ -113,4 +95,48 @@ public static class Utils
             TSPlayer.Server.SendInfoMessage(msg, args);
         }
     }
+    public static bool NotifyPlayer(string typeChinese, bool forever, TimeOutObject data, out CustomPlayer cply)
+    {
+        cply = FindPlayer(data.Name)!;
+        if (cply != null)
+        {
+            if (forever)
+            {
+                cply.Player.SendInfoMessage($"你已获得永久{typeChinese}:{data.Value}");
+            }
+            else
+            {
+                cply.Player.SendInfoMessage($"你获得{typeChinese}:{data.Value}");
+            }
+
+            CustomPlayerPluginHelpers.TimeOutList.Add(data);
+            return true;
+        }
+        return false;
+    }
+    #region Extension
+    public static string NullOrEmptyReturn(this string? args, string value)
+    {
+        return string.IsNullOrEmpty(args) ? value : args;
+    }
+
+    public static CustomPlayer GetPlayer(this TSPlayer player)
+    {
+        return CustomPlayerPluginHelpers.Players[player.Index];
+    }
+
+    public static void Reload(this CustomPlayer cply)
+    {
+        CustomPlayerPlugin.OnPlayerLogout(new PlayerLogoutEventArgs(cply.Player));
+        CustomPlayerPlugin.OnPlayerPostLogin(new PlayerPostLoginEventArgs(cply.Player));
+    }
+    public static TimeOutObject GetTimeOutObject(this IDataReader reader, string name, string type)
+    {
+        return new TimeOutObject(name, reader.GetString(nameof(TableInfo.ExpirationInfo.Value)), type, reader.GetDateTime(nameof(TableInfo.ExpirationInfo.StartTime)), reader.GetDateTime(nameof(TableInfo.ExpirationInfo.EndTime)), reader.GetString(nameof(TableInfo.ExpirationInfo.DurationText))); ;
+    }
+    public static void Add(this List<Prefix> list, TimeOutObject data)
+    {
+        list.Add(new Prefix(data.Name, data.Id, data.Value, data.StartTime, data.EndTime, data.DurationText));
+    }
+    #endregion
 }

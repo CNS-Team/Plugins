@@ -5,12 +5,10 @@ using TShockAPI;
 using VBY.Basic.Command;
 using VBY.Basic.Extension;
 
-using static CustomPlayer.TableInfo;
-
 namespace CustomPlayer;
 public partial class CustomPlayerPlugin
 {
-    private static bool TimeParse(bool forever, string time, ref DateTime startTime, ref DateTime endTime, ref TimeSpan addTime, TSPlayer player)
+    private static bool TimeParse(bool forever, string time, ref DateTime startTime, ref DateTime endTime, ref TimeSpan addTime, TSPlayer? player)
     {
         if (forever)
         {
@@ -25,7 +23,7 @@ public partial class CustomPlayerPlugin
             }
             else
             {
-                player.SendErrorMessage($"Time.Test 未设置过值");
+                player?.SendErrorMessage($"Time.Test 未设置过值");
                 return true;
             }
         }
@@ -35,46 +33,23 @@ public partial class CustomPlayerPlugin
         }
         else
         {
-            player.SendErrorMessage($"转换 {time} 为 TimeSpan 失败");
+            player?.SendErrorMessage($"转换 {time} 为 TimeSpan 失败");
             return true;
         }
         return false;
     }
-    private static bool TitleParse(string type, ref string title, TSPlayer player)
+    private static bool TitleParse(string type, ref string title, TSPlayer? player)
     {
         if (title == "get")
         {
-            switch (type)
+            if (string.IsNullOrEmpty(type == "Prefix" ? TestObject.Prefix : TestObject.Suffix))
             {
-                case nameof(CustomPlayer.Prefix):
-                {
-                    if (string.IsNullOrEmpty(TestObject.Prefix))
-                    {
-                        player.SendErrorMessage("Prefix.Test 未设置有效值");
-                        return true;
-                    }
-                    else
-                    {
-                        title = TestObject.Prefix;
-                    }
-
-                    break;
-                }
-
-                case nameof(CustomPlayer.Suffix):
-                {
-                    if (string.IsNullOrEmpty(TestObject.Suffix))
-                    {
-                        player.SendErrorMessage("Suffix.Test 未设置有效值");
-                        return true;
-                    }
-                    else
-                    {
-                        title = TestObject.Suffix;
-                    }
-
-                    break;
-                }
+                player?.SendErrorMessage($"{type}.Test 未设置有效值");
+                return true;
+            }
+            else
+            {
+                title = type == "Prefix" ? TestObject.Prefix : TestObject.Suffix;
             }
         }
         return false;
@@ -182,21 +157,10 @@ public partial class CustomPlayerPlugin
             return;
         }
 
-        var cply = Utils.FindPlayer(name);
-        if (cply != null)
+        var data = new TimeOutObject(name, title, type, startTime, endTime, time, addId);
+        if (Utils.NotifyPlayer(typeChinese, forever, data, out var cply))
         {
-            if (forever)
-            {
-                cply.Player.SendInfoMessage($"你已获得永久{typeChinese}:{title}");
-            }
-            else
-            {
-                cply.Player.SendInfoMessage($"你获得{typeChinese}:{title}");
-            }
-
-            CustomPlayerPluginHelpers.TimeOutList.Add(new TimeOutObject(name, title, type, startTime, endTime, time));
-            var list = isPrefix ? cply.PrefixList : cply.SuffixList;
-            list.Add(new Prefix(name, addId, title, startTime, startTime, time));
+            (isPrefix ? cply.PrefixList : cply.SuffixList).Add(data);
         }
 
         using (var maxReader = Utils.QueryReader($"select max(Id) from {type} where Name = @0", name))
@@ -267,25 +231,27 @@ public partial class CustomPlayerPlugin
             return;
         }
 
-        using var reader = Utils.TitleQuery(type, name, titleId);
-        if (reader.Read())
+        using (var reader = Utils.TitleQuery(type, name, titleId))
         {
-            using (var usingReader = Utils.QueryReader("select PrefixId,SuffixId from Useing where Name = @0 and ServerId = @1", name, serverId))
+            if (reader.Read())
             {
-                if (usingReader.Read())
+                using (var usingReader = Utils.QueryReader("select PrefixId,SuffixId from Useing where Name = @0 and ServerId = @1", name, serverId))
                 {
-                    Utils.Query($"update Useing set {type}Id = @0 where ServerId = @1", titleId, serverId);
+                    if (usingReader.Read())
+                    {
+                        Utils.Query($"update Useing set {type}Id = @0 where ServerId = @1", titleId, serverId);
+                    }
+                    else
+                    {
+                        Utils.Query($"insert into Useing(Name,ServerId,{type}Id) values(@0,@1,@2)", name, serverId, titleId);
+                    }
                 }
-                else
-                {
-                    Utils.Query($"insert into Useing(Name,ServerId,{type}Id) values(@0,@1,@2)", name, serverId, titleId);
-                }
+                player.SendSuccessMessage($"已为玩家:{name} 佩戴{typeChinese}Id:{titleId} 到服务器:{serverId}");
             }
-            player.SendSuccessMessage($"已为玩家:{name} 佩戴{typeChinese}Id:{titleId} 到服务器:{serverId}");
-        }
-        else
-        {
-            player.SendErrorMessage($"玩家:{name} {typeChinese}Id:{titleId} 未找到");
+            else
+            {
+                player.SendErrorMessage($"玩家:{name} {typeChinese}Id:{titleId} 未找到");
+            }
         }
     }
 }

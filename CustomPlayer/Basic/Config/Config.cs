@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Diagnostics;
 using TShockAPI;
+using VBY.Basic.Command;
 
 namespace VBY.Basic.Config;
 
@@ -15,6 +16,11 @@ public class Command
     public TShockAPI.Command[] GetCommands(CommandDelegate use, CommandDelegate admin)
     {
         return new TShockAPI.Command[] { this.Use.GetCommand(use), this.Admin.GetCommand(admin) };
+    }
+
+    public TShockAPI.Command[] GetCommands(SubCmdRoot use, SubCmdRoot admin)
+    {
+        return new TShockAPI.Command[] { use.GetCommand(this.Use.Permissions, this.Use.Names), admin.GetCommand(this.Admin.Permissions, this.Admin.Names) };
     }
 }
 public class CommandInfo
@@ -31,7 +37,7 @@ public class CommandInfo
     }
     public TShockAPI.Command GetCommand(CommandDelegate cmd)
     {
-        return new TShockAPI.Command(this.Permissions, cmd, this.Names);
+        return new(this.Permissions, cmd, this.Names);
     }
 }
 public class MainConfig<T> where T : MainRoot, new()
@@ -149,7 +155,7 @@ public class MainConfig<T> where T : MainRoot, new()
             switch (level)
             {
                 case TraceLevel.Error:
-                    Utils.WriteColorLine(message);
+                    Utils.WriteColorLine(message, ConsoleColor.Red);
                     break;
                 case TraceLevel.Warning:
                     Utils.WriteColorLine(message, ConsoleColor.DarkYellow);

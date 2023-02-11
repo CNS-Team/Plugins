@@ -4,21 +4,11 @@ using TShockAPI;
 using TShockAPI.Hooks;
 using VBY.Basic.Command;
 using VBY.Basic.Extension;
+using static CustomPlayer.Utils;
 
 namespace CustomPlayer;
 public partial class CustomPlayerPlugin
 {
-    private void Cmd(CommandArgs args)
-    {
-        if (ReadConfig.Normal)
-        {
-            this.MainCommand.Run(args);
-        }
-        else
-        {
-            args.Player.SendErrorMessage("配置读取有误,请配置正确再使用此命令");
-        }
-    }
     private void CmdPermissionList(SubCmdArgs args)
     {
         var player = args.commandArgs.Player;
@@ -38,10 +28,6 @@ public partial class CustomPlayerPlugin
         OnPlayerLogout(new PlayerLogoutEventArgs(args.commandArgs.Player));
         OnPlayerPostLogin(new PlayerPostLoginEventArgs(args.commandArgs.Player));
         args.commandArgs.Player.SendSuccessMessage("重载成功");
-    }
-    private void CmdCtl(CommandArgs args)
-    {
-        this.MainCtlCommand.Run(args);
     }
     private static void Group(CommandArgs args)
     {
@@ -64,7 +50,7 @@ public partial class CustomPlayerPlugin
 
                 try
                 {
-                    CustomPlayerPluginHelpers.Groups?.AddGroup(groupName, null!, permissions, TShockAPI.Group.defaultChatColor);
+                    CustomPlayerPluginHelpers.Groups.AddGroup(groupName, null!, permissions, TShockAPI.Group.defaultChatColor);
                     args.Player.SendSuccessMessage(GetString($"Group {groupName} was added successfully."));
                 }
                 catch (GroupExistsException)
@@ -496,7 +482,7 @@ public partial class CustomPlayerPlugin
                 return;
         }
     }
-    private void CmdCtlGroupCtlAdd(SubCmdArgs args)
+    private void CtlGroupCtlAdd(SubCmdArgs args)
     {
         var name = args.Parameters[0];
         var groupName = args.Parameters[1];
@@ -537,7 +523,7 @@ public partial class CustomPlayerPlugin
         }
         if (!CustomPlayerPluginHelpers.Groups.GroupExists(groupName))
         {
-            player.SendInfoMessage("组:{0} 不存在,如果确定存在,请执行:{1}{2} {3}", groupName, Commands.Specifier, this.AddCommands[1].Name, this.MainCtlCommand["Reload"]!.Names[0]);
+            player.SendInfoMessage("组:{0} 不存在,如果确定存在,请执行:{1}{2} {3}", groupName, Commands.Specifier, this.AddCommands[1].Name, this.CtlCommand["Reload"]!.Names[0]);
             return;
         }
         var oldGroupGrade = haveGroups.Any() ? haveGroups.Select(x => CustomPlayerPluginHelpers.GroupGrade[x]).Max() : -1;
@@ -558,7 +544,7 @@ public partial class CustomPlayerPlugin
 
         FindPlayer(name)?.Reload();
     }
-    private void CmdCtlGroupCtlDel(SubCmdArgs args)
+    private void CtlGroupCtlDel(SubCmdArgs args)
     {
         var name = args.Parameters[0];
         var groupName = args.Parameters[1];
@@ -603,7 +589,7 @@ public partial class CustomPlayerPlugin
 
         player.SendInfoMessage($"删除成功 玩家:{name} 组:{groupName}");
     }
-    private void CmdCtlGroupCtlList(SubCmdArgs args)
+    private void CtlGroupCtlList(SubCmdArgs args)
     {
         var name = args.Parameters[0];
         var player = args.commandArgs.Player;
@@ -638,7 +624,7 @@ public partial class CustomPlayerPlugin
             player.SendInfoMessage("组:{0} 剩余时间:{1}", orderObjs[i].Value, orderObjs[i].RemainTime);
         }
     }
-    private void CmdCtlPermissionAdd(SubCmdArgs args)
+    private void CtlPermissionAdd(SubCmdArgs args)
     {
         var name = args.Parameters[0];
         var addPermission = args.Parameters[1];
@@ -654,19 +640,8 @@ public partial class CustomPlayerPlugin
             return;
         }
 
-        var cply = FindPlayer(name);
-        if (cply != null)
+        if (Utils.NotifyPlayer("权限", forever, new TimeOutObject(name, addPermission, nameof(Permission), startTime, endTime, time), out var cply))
         {
-            if (forever)
-            {
-                cply.Player.SendInfoMessage($"你已获得永久权限:{addPermission}");
-            }
-            else
-            {
-                cply.Player.SendInfoMessage("你获得权限:" + addPermission);
-            }
-
-            CustomPlayerPluginHelpers.TimeOutList.Add(new TimeOutObject(name, addPermission, nameof(Permission), startTime, endTime, time));
             cply.AddPermission(addPermission);
         }
 
@@ -680,7 +655,7 @@ public partial class CustomPlayerPlugin
             player.SendInfoMessage($"添加成功 玩家:{name} 权限:{addPermission} 起始时间:{startTime} 结束时间:{endTime} 持续时间:{addTime}");
         }
     }
-    private void CmdCtlPermissionDel(SubCmdArgs args)
+    private void CtlPermissionDel(SubCmdArgs args)
     {
         var player = args.commandArgs.Player;
         var name = args.Parameters[0];
@@ -703,7 +678,7 @@ public partial class CustomPlayerPlugin
             }
         }
     }
-    private void CmdCtlPermissionList(SubCmdArgs args)
+    private void CtlPermissionList(SubCmdArgs args)
     {
         var player = args.commandArgs.Player;
         var name = args.Parameters[0];
@@ -731,12 +706,12 @@ public partial class CustomPlayerPlugin
             }
         }
     }
-    private void CmdCtlReload(SubCmdArgs args)
+    private void CtlReload(SubCmdArgs args)
     {
         if (ReadConfig.Read(args.commandArgs.Player, false, true, ReadConfig.Root))
         {
             PluginInit();
-            CustomPlayerPluginHelpers.Groups = new GroupManager(CustomPlayerPluginHelpers.DB!);
+            CustomPlayerPluginHelpers.Groups = new GroupManager(CustomPlayerPluginHelpers.DB);
             CustomPlayerPluginHelpers.GroupGrade.Clear();
             CustomPlayerPluginHelpers.GroupLevelSet();
             for (var i = 0; i <= CustomPlayerPluginHelpers.Players.Length - 1; i++)
@@ -758,5 +733,54 @@ public partial class CustomPlayerPlugin
             args.commandArgs.Player.SendSuccessMessage("重载错误");
             args.commandArgs.Player.SendErrorMessage(ReadConfig.ErrorString);
         }
+    }
+    private void CtlPrefixAdd(SubCmdArgs args)
+    {
+        CtlTitleAdd(ref args, "Prefix");
+    }
+
+    private void CtlPrefixDel(SubCmdArgs args)
+    {
+        CtlTitleDel(ref args, "Prefix");
+    }
+
+    private void CtlPrefixList(SubCmdArgs args)
+    {
+        CtlTitleList(ref args, "Prefix");
+    }
+
+    private void CtlPrefixTest(SubCmdArgs args)
+    {
+        CtlTitleTest(ref args, "Prefix");
+    }
+
+    private void CtlPrefixWear(SubCmdArgs args)
+    {
+        CtlTitleWear(ref args, "Prefix");
+    }
+
+    private void CtlSuffixAdd(SubCmdArgs args)
+    {
+        CtlTitleAdd(ref args, "Suffix");
+    }
+
+    private void CtlSuffixDel(SubCmdArgs args)
+    {
+        CtlTitleDel(ref args, "Suffix");
+    }
+
+    private void CtlSuffixList(SubCmdArgs args)
+    {
+        CtlTitleList(ref args, "Suffix");
+    }
+
+    private void CtlSuffixTest(SubCmdArgs args)
+    {
+        CtlTitleTest(ref args, "Suffix");
+    }
+
+    private void CtlSuffixWear(SubCmdArgs args)
+    {
+        CtlTitleWear(ref args, "Suffix");
     }
 }

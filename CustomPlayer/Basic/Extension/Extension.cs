@@ -1,54 +1,68 @@
 ﻿using System.Data;
 
-namespace VBY.Basic.Extension;
-
-public static class VBYDbExt
+namespace VBY.Basic.Extension
 {
-    public static int GetInt32(this IDataReader reader, string name)
+    public static class VBYDbExt
     {
-        return reader.GetInt32(reader.GetOrdinal(name));
-    }
-
-    public static string GetString(this IDataReader reader, string name)
-    {
-        return reader.GetString(reader.GetOrdinal(name));
-    }
-
-    public static DateTime GetDateTime(this IDataReader reader, string name)
-    {
-        return reader.GetDateTime(reader.GetOrdinal(name));
-    }
-
-    public static void ForEach(this IDataReader args, Action<IDataReader> action)
-    {
-        while (args.Read())
+        public static int GetInt32(this IDataReader reader, string name)
         {
-            action(args);
+            return reader.GetInt32(reader.GetOrdinal(name));
+        }
+
+        public static string GetString(this IDataReader reader, string name)
+        {
+            return reader.GetString(reader.GetOrdinal(name));
+        }
+
+        public static DateTime GetDateTime(this IDataReader reader, string name)
+        {
+            return reader.GetDateTime(reader.GetOrdinal(name));
+        }
+
+        public static void ForEach(this IDataReader args, Action<IDataReader> action) { while (args.Read())
+            {
+                action(args);
+            }
+        }
+        public static void DoForEach(this IDataReader args, Action<IDataReader> action) { action(args); while (args.Read())
+            {
+                action(args);
+            }
         }
     }
-    public static void DoForEach(this IDataReader args, Action<IDataReader> action)
+    public static class VBYExt
     {
-        action(args); while (args.Read())
+        public static void RemoveRange<T>(this List<T> list, IEnumerable<T> collection)
         {
-            action(args);
+            foreach (var i in collection) { list.Remove(i); }
+        }
+        public static T? Find<T>(this T[] array, Predicate<T> predicate)
+        {
+            foreach (var t in array)
+            {
+                if (predicate(t))
+                {
+                    return t;
+                }
+            }
+            return default;
         }
     }
 }
-public static class VBYExt
+namespace System
 {
-    public static void RemoveRange<T>(this List<T> list, IEnumerable<T> collection)
+    public static class StringExt
     {
-        foreach (var i in collection) { list.Remove(i); }
-    }
-    public static T? Find<T>(this T[] array, Predicate<T> predicate)
-    {
-        foreach (var t in array)
+        public static string LastWord(this string str)
         {
-            if (predicate(t))
+            for (var i = str.Length - 1; i >= 0; i--)
             {
-                return t;
+                if (char.IsUpper(str[i]))
+                {
+                    return str[i..];
+                }
             }
+            return str;
         }
-        return default;
     }
 }
