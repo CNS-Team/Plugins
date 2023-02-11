@@ -77,20 +77,28 @@ public class SubCmdNodeList : SubCmdNode
     public List<SubCmdNode> SubCmds = new();
     internal SubCmdNodeList(string cmdName, string description, params string[] names) : base(cmdName, description, names)
     { this.DescCmd = true; this.NodeType = NodeType.List; }
-    public SubCmdNode? this[string name]
+    public SubCmdNode this[string name]
     {
         get
         {
+            SubCmdNode result = this;
             if (name.Contains('.'))
             {
-                var index = name.IndexOf('.');
-                var find = this.SubCmds.Find(x => x.CmdName == name[..index]);
-                return find is not null && find.NodeType == NodeType.List ? ((SubCmdNodeList) find)[name[(index + 1)..]] : null;
+                var names = name.Split('.', StringSplitOptions.RemoveEmptyEntries);
+                for (var i = 0; i < names.Length; i++)
+                {
+                    result = ((SubCmdNodeList)result)[names[i]];
+                }
             }
             else
             {
-                return this.SubCmds.Find(x => x.CmdName == name);
+                result = this.SubCmds.Find(x => x.CmdName == name)!;
+                if (result is null)
+                {
+                    throw new Exception($"{this.FullCmdName}'s SubCmd '{name}' not find");
+                }
             }
+            return result;
         }
     }
     public override void Run(CommandArgs args)
