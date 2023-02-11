@@ -14,10 +14,7 @@ public class CustomPlayer
     public static bool 对接称号插件 { get; set; } = true;
     public string? Prefix
     {
-        get
-        {
-            return 对接称号插件 ? 称号插件.称号插件.称号信息[this.Name].前缀 : this.prefix;
-        }
+        get => 对接称号插件 ? 称号插件.称号插件.称号信息[this.Name].前缀 : this.prefix;
         set
         {
             if (对接称号插件)
@@ -33,10 +30,7 @@ public class CustomPlayer
     private string? prefix;
     public string? Suffix
     {
-        get
-        {
-            return 对接称号插件 ? 称号插件.称号插件.称号信息[this.Name].后缀 : this.suffix;
-        }
+        get => 对接称号插件 ? 称号插件.称号插件.称号信息[this.Name].后缀 : this.suffix;
         set
         {
             if (对接称号插件)
@@ -52,10 +46,7 @@ public class CustomPlayer
     private string? suffix;
     public Color? ChatColor
     {
-        get
-        {
-            return 对接称号插件 ? 称号插件.称号插件.称号信息[this.Name].颜色 : this.chatColor;
-        }
+        get => 对接称号插件 ? 称号插件.称号插件.称号信息[this.Name].颜色 : this.chatColor;
         set
         {
             if (对接称号插件)

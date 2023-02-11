@@ -231,27 +231,25 @@ public partial class CustomPlayerPlugin
             return;
         }
 
-        using (var reader = Utils.TitleQuery(type, name, titleId))
+        using var reader = Utils.TitleQuery(type, name, titleId);
+        if (reader.Read())
         {
-            if (reader.Read())
+            using (var usingReader = Utils.QueryReader("select PrefixId,SuffixId from Useing where Name = @0 and ServerId = @1", name, serverId))
             {
-                using (var usingReader = Utils.QueryReader("select PrefixId,SuffixId from Useing where Name = @0 and ServerId = @1", name, serverId))
+                if (usingReader.Read())
                 {
-                    if (usingReader.Read())
-                    {
-                        Utils.Query($"update Useing set {type}Id = @0 where ServerId = @1", titleId, serverId);
-                    }
-                    else
-                    {
-                        Utils.Query($"insert into Useing(Name,ServerId,{type}Id) values(@0,@1,@2)", name, serverId, titleId);
-                    }
+                    Utils.Query($"update Useing set {type}Id = @0 where ServerId = @1", titleId, serverId);
                 }
-                player.SendSuccessMessage($"已为玩家:{name} 佩戴{typeChinese}Id:{titleId} 到服务器:{serverId}");
+                else
+                {
+                    Utils.Query($"insert into Useing(Name,ServerId,{type}Id) values(@0,@1,@2)", name, serverId, titleId);
+                }
             }
-            else
-            {
-                player.SendErrorMessage($"玩家:{name} {typeChinese}Id:{titleId} 未找到");
-            }
+            player.SendSuccessMessage($"已为玩家:{name} 佩戴{typeChinese}Id:{titleId} 到服务器:{serverId}");
+        }
+        else
+        {
+            player.SendErrorMessage($"玩家:{name} {typeChinese}Id:{titleId} 未找到");
         }
     }
 }

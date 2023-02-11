@@ -23,7 +23,7 @@ public class GroupManager : IEnumerable<Group>
     }
     public bool GroupExists(string group)
     {
-        return group == "superadmin" ? true : this.groups.Any(g => g.Name.Equals(group));
+        return group == "superadmin" || this.groups.Any(g => g.Name.Equals(group));
     }
 
     IEnumerator IEnumerable.GetEnumerator()
@@ -140,67 +140,65 @@ public class GroupManager : IEnumerable<Group>
         using (var db = this.database.CloneEx())
         {
             db.Open();
-            using (var transaction = db.BeginTransaction())
+            using var transaction = db.BeginTransaction();
+            try
             {
+                using (var command = db.CreateCommand())
+                {
+                    command.CommandText = "UPDATE GroupList SET GroupName = @0 WHERE GroupName = @1";
+                    command.AddParameter("@0", newName);
+                    command.AddParameter("@1", name);
+                    command.ExecuteNonQuery();
+                }
+
+                var oldGroup = this.GetGroupByName(name);
+                var newGroup = new Group(newName, oldGroup.Parent, oldGroup.ChatColor, oldGroup.Permissions)
+                {
+                    Prefix = oldGroup.Prefix,
+                    Suffix = oldGroup.Suffix
+                };
+                this.groups.Remove(oldGroup);
+                this.groups.Add(newGroup);
+
+                // We need to check if the old group has been referenced as a parent and update those references accordingly
+                using (var command = db.CreateCommand())
+                {
+                    command.CommandText = "UPDATE GroupList SET Parent = @0 WHERE Parent = @1";
+                    command.AddParameter("@0", newName);
+                    command.AddParameter("@1", name);
+                    command.ExecuteNonQuery();
+                }
+                foreach (var group in this.groups.Where(g => g.Parent != null && g.Parent == oldGroup))
+                {
+                    group.Parent = newGroup;
+                }
+
+                // We also need to check if any users belong to the old group and automatically apply changes
+                using (var command = db.CreateCommand())
+                {
+                    command.CommandText = "UPDATE Users SET Usergroup = @0 WHERE Usergroup = @1";
+                    command.AddParameter("@0", newName);
+                    command.AddParameter("@1", name);
+                    command.ExecuteNonQuery();
+                }
+                foreach (var player in CustomPlayerPluginHelpers.Players.Where(p => p?.Group == oldGroup))
+                {
+                    player.Group = newGroup;
+                }
+
+                transaction.Commit();
+                return GetString($"Group {name} has been renamed to {newName}.");
+            }
+            catch (Exception ex)
+            {
+                TShock.Log.Error(GetString($"An exception has occurred during database transaction: {ex.Message}"));
                 try
                 {
-                    using (var command = db.CreateCommand())
-                    {
-                        command.CommandText = "UPDATE GroupList SET GroupName = @0 WHERE GroupName = @1";
-                        command.AddParameter("@0", newName);
-                        command.AddParameter("@1", name);
-                        command.ExecuteNonQuery();
-                    }
-
-                    var oldGroup = this.GetGroupByName(name);
-                    var newGroup = new Group(newName, oldGroup.Parent, oldGroup.ChatColor, oldGroup.Permissions)
-                    {
-                        Prefix = oldGroup.Prefix,
-                        Suffix = oldGroup.Suffix
-                    };
-                    this.groups.Remove(oldGroup);
-                    this.groups.Add(newGroup);
-
-                    // We need to check if the old group has been referenced as a parent and update those references accordingly
-                    using (var command = db.CreateCommand())
-                    {
-                        command.CommandText = "UPDATE GroupList SET Parent = @0 WHERE Parent = @1";
-                        command.AddParameter("@0", newName);
-                        command.AddParameter("@1", name);
-                        command.ExecuteNonQuery();
-                    }
-                    foreach (var group in this.groups.Where(g => g.Parent != null && g.Parent == oldGroup))
-                    {
-                        group.Parent = newGroup;
-                    }
-
-                    // We also need to check if any users belong to the old group and automatically apply changes
-                    using (var command = db.CreateCommand())
-                    {
-                        command.CommandText = "UPDATE Users SET Usergroup = @0 WHERE Usergroup = @1";
-                        command.AddParameter("@0", newName);
-                        command.AddParameter("@1", name);
-                        command.ExecuteNonQuery();
-                    }
-                    foreach (var player in CustomPlayerPluginHelpers.Players.Where(p => p?.Group == oldGroup))
-                    {
-                        player.Group = newGroup;
-                    }
-
-                    transaction.Commit();
-                    return GetString($"Group {name} has been renamed to {newName}.");
+                    transaction.Rollback();
                 }
-                catch (Exception ex)
+                catch (Exception rollbackEx)
                 {
-                    TShock.Log.Error(GetString($"An exception has occurred during database transaction: {ex.Message}"));
-                    try
-                    {
-                        transaction.Rollback();
-                    }
-                    catch (Exception rollbackEx)
-                    {
-                        TShock.Log.Error(GetString($"An exception has occurred during database rollback: {rollbackEx.Message}"));
-                    }
+                    TShock.Log.Error(GetString($"An exception has occurred during database rollback: {rollbackEx.Message}"));
                 }
             }
         }
@@ -405,6 +403,10 @@ public class GroupManagerException : Exception
         : base(message, inner)
     {
     }
+
+    public GroupManagerException() : base()
+    {
+    }
 }
 
 /// <summary>
@@ -422,6 +424,14 @@ public class GroupExistsException : GroupManagerException
         : base(GetString($"Group {name} already exists"))
     {
     }
+
+    public GroupExistsException(string message, Exception inner) : base(message, inner)
+    {
+    }
+
+    public GroupExistsException() : base()
+    {
+    }
 }
 
 /// <summary>
@@ -437,6 +447,14 @@ public class GroupNotExistException : GroupManagerException
     /// <param name="name">The group name.</param>
     public GroupNotExistException(string name)
         : base(GetString($"Group {name} does not exist"))
+    {
+    }
+
+    public GroupNotExistException(string message, Exception inner) : base(message, inner)
+    {
+    }
+
+    public GroupNotExistException() : base()
     {
     }
 }
