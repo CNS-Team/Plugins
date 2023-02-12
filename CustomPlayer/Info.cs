@@ -1,5 +1,4 @@
-﻿global using static CustomPlayer.Utils;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using System.Text;
 using TShockAPI;
 using VBY.Basic.Extension;
@@ -10,7 +9,7 @@ public class CustomPlayer
 {
     public string Name;
     public TSPlayer Player;
-    public Group Group;
+    public Group? Group;
     public List<string> Permissions = new(), NegatedPermissions = new();
     public static bool 对接称号插件 { get; set; } = true;
     public string? Prefix
@@ -88,7 +87,7 @@ public class CustomPlayer
         CustomPlayer cply = new(name, player);
 
         //I("select player");
-        using (var playerReader = QueryPlayer(name))
+        using (var playerReader = Utils.QueryPlayer(name))
         {
             if (playerReader.Read())
             {
@@ -111,7 +110,7 @@ public class CustomPlayer
         //I("select perm");
         if (CP.ReadConfig.Root.EnablePermission)
         {
-            using var timeoutReader = QueryReader("select Value,StartTime,EndTime,DurationText from ExpirationInfo where Type = 'Permission' AND Name = @0", name);
+            using var timeoutReader = Utils.QueryReader("select Value,StartTime,EndTime,DurationText from ExpirationInfo where Type = 'Permission' AND Name = @0", name);
             timeoutReader.Reader.ForEach(x =>
             {
                 var tobj = x.GetTimeOutObject(name, nameof(Permission));
@@ -128,10 +127,11 @@ public class CustomPlayer
             });
         }
 
+        var converGroup = false;
         //I("select group");
         if (CP.ReadConfig.Root.EnableGroup)
         {
-            using (var groupReader = QueryReader("select Value,StartTime,EndTime,DurationText from ExpirationInfo where Type = 'Group' AND Name = @0", name))
+            using (var groupReader = Utils.QueryReader("select Value,StartTime,EndTime,DurationText from ExpirationInfo where Type = 'Group' AND Name = @0", name))
             {
                 groupReader.Reader.ForEach(x =>
                 {
@@ -140,7 +140,7 @@ public class CustomPlayer
                     {
                         cply.HaveGroupNames.Add(tobj.Value);
                         CustomPlayerPluginHelpers.TimeOutList.Add(tobj);
-                        //TSPlayer.Server.SendInfoMessage(tobj.Value);
+                        //Utils.I(tobj.Value);
                     }
                     else
                     {
@@ -184,13 +184,14 @@ public class CustomPlayer
             {
                 cply.Group = player.Group;
                 player.Group = curGroup;
+                converGroup = true;
             }
         }
 
         //I("select prefix");
         if (CP.ReadConfig.Root.EnablePrefix)
         {
-            using var prefixReader = PrefixQuery(name);
+            using var prefixReader = Utils.PrefixQuery(name);
             prefixReader.Reader.ForEach(x =>
             {
                 var tobj = new TimeOutObject(name, x.GetString(nameof(TableInfo.Prefix.Value)), nameof(Prefix), x.GetDateTime(nameof(TableInfo.Prefix.StartTime)), x.GetDateTime(nameof(TableInfo.Prefix.EndTime)), x.GetString(nameof(TableInfo.ExpirationInfo.DurationText)), x.GetInt32(nameof(TableInfo.Prefix.Id)));
@@ -210,7 +211,7 @@ public class CustomPlayer
         //I("select suffix");
         if (CP.ReadConfig.Root.EnableSuffix)
         {
-            using var suffixReader = SuffixQuery(name);
+            using var suffixReader = Utils.SuffixQuery(name);
             suffixReader.Reader.ForEach(x =>
             {
                 var tobj = new TimeOutObject(name, x.GetString(nameof(TableInfo.Suffix.Value)), nameof(Suffix), x.GetDateTime(nameof(TableInfo.Suffix.StartTime)), x.GetDateTime(nameof(TableInfo.Suffix.EndTime)), x.GetString(nameof(TableInfo.Suffix.DurationText)), x.GetInt32(nameof(TableInfo.Suffix.Id)));
@@ -233,7 +234,7 @@ public class CustomPlayer
             称号插件.称号插件.称号信息[name] = new 称号插件.Config.聊天信息() { 前前缀 = "", 前缀 = null, 角色名 = null, 后缀 = null, 后后缀 = "" };
         }
         //I("select useing");
-        using (var usingReader = QueryReader("select PrefixId,SuffixId from Useing where Name = @0 and ServerId = @1", name, CP.ReadConfig.Root.ServerId))
+        using (var usingReader = Utils.QueryReader("select PrefixId,SuffixId from Useing where Name = @0 and ServerId = @1", name, CP.ReadConfig.Root.ServerId))
         {
             if (usingReader.Read())
             {
@@ -242,11 +243,11 @@ public class CustomPlayer
             }
             else
             {
-                Query("insert into Useing(Name,ServerId,PrefixId,SuffixId) values(@0,@1,-1,-1)", name, CP.ReadConfig.Root.ServerId);
+                Utils.Query("insert into Useing(Name,ServerId,PrefixId,SuffixId) values(@0,@1,-1,-1)", name, CP.ReadConfig.Root.ServerId);
                 //TSPlayer.Server.SendInfoMessage("insert data");
             }
         }
-        I("return CustomPlayer:{0} group:{1}", name, cply.Group?.Name ?? "null");
+        Utils.I("return CustomPlayer:{0} {1}group:{2}", name, converGroup ? "conver" : "", converGroup ? player.Group.Name : cply.Group?.Name ?? "null");
         return cply;
     }
 }
@@ -290,22 +291,15 @@ public class TimeOutObject
             case nameof(Permission):
             case nameof(Group):
             {
-                Query("delete from ExpirationInfo where Name = @0 AND Value = @1 AND Type = @2 AND StartTime = @3 AND EndTime = @4 AND DurationText = @5", this.Name, this.Value, this.Type, this.StartTime, this.EndTime, this.DurationText);
+                Utils.Query("delete from ExpirationInfo where Name = @0 AND Value = @1 AND Type = @2 AND StartTime = @3 AND EndTime = @4 AND DurationText = @5", this.Name, this.Value, this.Type, this.StartTime, this.EndTime, this.DurationText);
                 //TSPlayer.Server.SendInfoMessage($"delete {Type}:{Value}");
                 break;
             }
-
             case nameof(CustomPlayer.Prefix):
-            {
-                Query("delete from Prefix where Name = @0 AND Value = @1 AND ID = @2 AND StartTime = @3 AND EndTime = @4 AND DurationText = @5", this.Name, this.Value, this.Id, this.StartTime, this.EndTime, this.DurationText);
-                //TSPlayer.Server.SendInfoMessage($"delete prefix:{Value}");
-                break;
-            }
-
             case nameof(CustomPlayer.Suffix):
             {
-                Query("delete from Suffix where Name = @0 AND Value = @1 AND ID = @2 AND StartTime = @3 AND EndTime = @4 AND DurationText = @5", this.Name, this.Value, this.Id, this.StartTime, this.EndTime, this.DurationText);
-                //TSPlayer.Server.SendInfoMessage($"delete suffix:{Value}");
+                Utils.Query($"delete from {this.Type} where Name = @0 AND Value = @1 AND ID = @2 AND StartTime = @3 AND EndTime = @4 AND DurationText = @5", this.Name, this.Value, this.Id, this.StartTime, this.EndTime, this.DurationText);
+                //TSPlayer.Server.SendInfoMessage($"delete prefix:{Value}");
                 break;
             }
         }

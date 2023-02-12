@@ -5,6 +5,8 @@ using System.Diagnostics;
 using TShockAPI;
 using TShockAPI.DB;
 
+using static CustomPlayer.Utils;
+
 namespace CustomPlayer.ModfiyGroup;
 
 public class GroupManager : IEnumerable<Group>
