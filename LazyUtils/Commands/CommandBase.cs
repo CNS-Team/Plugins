@@ -35,7 +35,8 @@ internal abstract class CommandBase
 
     protected CommandBase(MemberInfo member)
     {
-        this.permissions = member.GetCustomAttributes<Permission>().Select(p => p.Name).ToArray();
+        this.permissions = member.GetCustomAttributes<Permission>().Select(p => p.Name)
+            .Concat(member.GetCustomAttributes<PermissionsAttribute>().Select(p => p.perm)).ToArray();
         if (member.GetCustomAttribute<RealPlayerAttribute>() != null)
         {
             this._realPlayer = true;
