@@ -1,0 +1,217 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Newtonsoft.Json;
+using Terraria;
+using TerrariaApi.Server;
+using TShockAPI;
+
+namespace BetterWhitelist;
+
+[ApiVersion(2, 1)]
+public class Main : TerrariaPlugin
+{
+	public static string config_path;
+
+	public static string translation_path;
+
+	public static BConfig _config;
+
+	public static Translation _translation;
+
+	public static Dictionary<string, TSPlayer> players;
+
+	public override string Name => "BetterWhitelist";
+
+	public override Version Version => new Version(2, 1);
+
+	public override string Author => "Bean_Paste";
+
+	public override string Description => "A whitelist of players by checking their names";
+
+	public Main(Terraria.Main game)
+		: base(game)
+	{
+	}
+
+	public override void Initialize()
+	{
+		//IL_0053: Unknown result type (might be due to invalid IL or missing references)
+		//IL_006b: Expected O, but got Unknown
+		//IL_0066: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0070: Expected O, but got Unknown
+		//IL_007c: Unknown result type (might be due to invalid IL or missing references)
+		//IL_0092: Expected O, but got Unknown
+		//IL_009e: Unknown result type (might be due to invalid IL or missing references)
+		//IL_00b4: Expected O, but got Unknown
+		if (Directory.Exists(TShock.SavePath + "/BetterWhitelist"))
+		{
+			Load();
+		}
+		else
+		{
+			Directory.CreateDirectory(TShock.SavePath + "/BetterWhitelist");
+			Load();
+		}
+		Commands.ChatCommands.Add(new Command("bwl.use", new CommandDelegate(bwl), new string[1] { "bwl" }));
+		ServerApi.Hooks.ServerJoin.Register((TerrariaPlugin)this, (HookHandler<JoinEventArgs>)OnJoin);
+		ServerApi.Hooks.ServerLeave.Register((TerrariaPlugin)this, (HookHandler<LeaveEventArgs>)OnLeave);
+	}
+
+	private void OnLeave(LeaveEventArgs args)
+	{
+		//IL_0007: Unknown result type (might be due to invalid IL or missing references)
+		//IL_000d: Expected O, but got Unknown
+		TSPlayer val = new TSPlayer(args.Who);
+		if (players.ContainsKey(val.Name))
+		{
+			players.Remove(val.Name);
+		}
+	}
+
+	private void bwl(CommandArgs args)
+	{
+		if (args.Parameters.Count < 1)
+		{
+			args.Player.SendErrorMessage(_translation.language["HelpText"]);
+			return;
+		}
+		switch (args.Parameters[0])
+		{
+		case "add":
+			if (_config.Disabled)
+			{
+				args.Player.SendErrorMessage(_translation.language["NotEnabled"]);
+				break;
+			}
+			if (_config.WhitePlayers.Contains(args.Parameters[1]))
+			{
+				args.Player.SendSuccessMessage(_translation.language["FailedAdd"]);
+				break;
+			}
+			_config.WhitePlayers.Add(args.Parameters[1]);
+			args.Player.SendSuccessMessage(_translation.language["SuccessfullyAdd"]);
+			File.WriteAllText(config_path, JsonConvert.SerializeObject((object)_config, (Formatting)1));
+			break;
+		case "del":
+			if (_config.Disabled)
+			{
+				args.Player.SendErrorMessage(_translation.language["NotEnabled"]);
+			}
+			else if (_config.WhitePlayers.Contains(args.Parameters[1]))
+			{
+				_config.WhitePlayers.Remove(args.Parameters[1]);
+				args.Player.SendSuccessMessage(_translation.language["SuccessfullyDelete"]);
+				File.WriteAllText(config_path, JsonConvert.SerializeObject((object)_config, (Formatting)1));
+				if (players.ContainsKey(args.Parameters[1]))
+				{
+					players[args.Parameters[1]].Disconnect(_translation.language["DisconnectReason"]);
+				}
+			}
+			break;
+		case "list":
+		{
+			foreach (string whitePlayer in _config.WhitePlayers)
+			{
+				args.Player.SendInfoMessage(whitePlayer);
+			}
+			break;
+		}
+		case "help":
+			args.Player.SendInfoMessage("-------[BetterWhitelist]-------");
+			args.Player.SendInfoMessage(_translation.language["AllHelpText"]);
+			break;
+		case "true":
+			if (!_config.Disabled)
+			{
+				args.Player.SendErrorMessage(_translation.language["FailedEnable"]);
+				break;
+			}
+			_config.Disabled = false;
+			args.Player.SendSuccessMessage(_translation.language["SuccessfullyEnable"]);
+			if (players.Count > 0)
+			{
+				if (_config.WhitePlayers.Count > 0)
+				{
+					for (int i = 0; i < players.Count; i++)
+					{
+						if (!_config.WhitePlayers.Contains(players.Keys.ToList()[i]))
+						{
+							players[players.Keys.ToList()[i]].Disconnect(_translation.language["NotOnList"]);
+						}
+					}
+				}
+				else
+				{
+					foreach (TSPlayer value in players.Values)
+					{
+						value.Disconnect(_translation.language["NotOnList"]);
+					}
+				}
+			}
+			File.WriteAllText(config_path, JsonConvert.SerializeObject((object)_config, (Formatting)1));
+			break;
+		case "false":
+			if (_config.Disabled)
+			{
+				args.Player.SendErrorMessage(_translation.language["FailedDisable"]);
+				break;
+			}
+			_config.Disabled = true;
+			args.Player.SendSuccessMessage(_translation.language["SuccessfullyDisable"]);
+			File.WriteAllText(config_path, JsonConvert.SerializeObject((object)_config, (Formatting)1));
+			break;
+		case "reload":
+			_config = JsonConvert.DeserializeObject<BConfig>(File.ReadAllText(config_path));
+			_translation = JsonConvert.DeserializeObject<Translation>(File.ReadAllText(translation_path));
+			args.Player.SendSuccessMessage(_translation.language["SuccessfullyReload"]);
+			break;
+		}
+	}
+
+	private void OnJoin(JoinEventArgs args)
+	{
+		//IL_0006: Unknown result type (might be due to invalid IL or missing references)
+		//IL_000c: Expected O, but got Unknown
+		TSPlayer val = new TSPlayer(args.Who);
+		if (players.ContainsKey(val.Name))
+		{
+			players.Remove(val.Name);
+		}
+		players.Add(val.Name, val);
+		if (_config.Disabled)
+		{
+			TShock.Log.ConsoleInfo(_translation.language["NotEnabled"]);
+		}
+		else if (!_config.WhitePlayers.Contains(val.Name))
+		{
+			val.Disconnect(_translation.language["NotOnList"]);
+		}
+	}
+
+	private void Load()
+	{
+		_config = BConfig.Load(config_path);
+		_translation = Translation.Load(translation_path);
+		File.WriteAllText(config_path, JsonConvert.SerializeObject((object)_config, (Formatting)1));
+		File.WriteAllText(translation_path, JsonConvert.SerializeObject((object)_translation, (Formatting)1));
+	}
+
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			ServerApi.Hooks.ServerJoin.Deregister((TerrariaPlugin)(object)this, (HookHandler<JoinEventArgs>)OnJoin);
+			ServerApi.Hooks.ServerLeave.Deregister((TerrariaPlugin)(object)this, (HookHandler<LeaveEventArgs>)OnLeave);
+		}
+		this.Dispose(disposing);
+	}
+
+	static Main()
+	{
+		config_path = TShock.SavePath + "/BetterWhitelist/config.json";
+		translation_path = TShock.SavePath + "/BetterWhitelist/language.json";
+		players = new Dictionary<string, TSPlayer>();
+	}
+}

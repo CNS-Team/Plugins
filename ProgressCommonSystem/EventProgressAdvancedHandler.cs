@@ -1,0 +1,3 @@
+namespace ProgressCommonSystem;
+
+public delegate void EventProgressAdvancedHandler(EventProgressAdvancedEventArgs args);
