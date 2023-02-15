@@ -215,11 +215,12 @@ public class Plugin : TerrariaPlugin
 
     public static void UpdateProgress(ProgressType type, bool value, bool force = false)
     {
-        TSPlayer.Server.SendInfoMessage($"[DataSync]更新进度 {Config.GetProgressName(type)} {value}");
         if (!force && LocalProgress.TryGetValue(type, out var oldValue) && oldValue == value)
         {
             return;
         }
+
+        TSPlayer.Server.SendInfoMessage($"[DataSync]更新进度 {Config.GetProgressName(type)} {value}");
 
         LocalProgress[type] = value;
 
