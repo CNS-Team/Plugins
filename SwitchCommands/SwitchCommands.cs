@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.IO.Streams;
-using PlaceholderAPI;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
@@ -118,7 +114,7 @@ public class SwitchCommands : TerrariaPlugin
 				}
 				try
 				{
-					string text = global::PlaceholderAPI.PlaceholderAPI.Instance.placeholderManager.GetText(command.ReplaceTags(val), val);
+					string text = PlaceholderAPI.PlaceholderAPI.Instance.placeholderManager.GetText(command.ReplaceTags(val), val);
 					Commands.HandleCommand(val, text);
 					if (ignorePerms)
 					{
