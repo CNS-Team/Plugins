@@ -13,20 +13,9 @@ public static class RestHelper
 {
     private static object ParseCommand(MethodInfo method, RestRequestArgs args)
     {
-        var objs = new List<object>();
-        foreach (var param in method.GetParameters())
+        var objs = new List<object>() { args };
+        foreach (var param in method.GetParameters().Skip(1))
         {
-            if (objs.Count == 0)
-            {
-                if (param.ParameterType != typeof(RestRequestArgs))
-                {
-                    return null;
-                }
-
-                objs.Add(args);
-                continue;
-            }
-
             try
             {
                 var reqparam = args.Parameters[param.Name];
@@ -37,8 +26,8 @@ public static class RestHelper
                 else
                 {
                     objs.Add(param.ParameterType
-                        .GetMethod("Parse", BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(string) }, null)
-                        .Invoke(null, new object[] { reqparam }));
+                        .GetMethod("Parse", BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(string) }, null)!
+                        .Invoke(null, new object[] { reqparam })!);
                 }
             }
             catch
@@ -52,8 +41,10 @@ public static class RestHelper
 
     internal static void Register(Type type, string name, LazyPlugin plugin)
     {
-        foreach (var method in type.GetMethods())
+        foreach (var method in type.GetMethods(BindingFlags.Static | BindingFlags.Public))
         {
+            var param = method.GetParameters();
+            if (param.Length == 0 || param[0].ParameterType != typeof(RestRequestArgs)) continue;
             TShock.RestApi.Register(new SecureRestCommand($"/{name}/{method.Name}", args => ParseCommand(method, args),
                 method.GetCustomAttributes<Permission>().Select(p => p.Name)
                     .Concat(method.GetCustomAttributes<PermissionsAttribute>().Select(p => p.perm)).ToArray()));
