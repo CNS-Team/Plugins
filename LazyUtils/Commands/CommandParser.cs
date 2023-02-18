@@ -4,9 +4,9 @@ using TShockAPI;
 
 namespace LazyUtils.Commands;
 
-internal partial class SingleCommand
+internal static class CommandParser
 {
-    private delegate bool Parser(string arg, out object obj);
+    public delegate bool Parser(string arg, out object obj);
 
     private static bool TryParseBool(string arg, out object obj)
     {
@@ -66,7 +66,7 @@ internal partial class SingleCommand
         [typeof(TSPlayer)] = TryParseTSPlayer
     };
 
-    private static readonly Dictionary<Type, string> _friendlyName = new()
+    private static readonly Dictionary<Type, string> friendlyName = new()
     {
         [typeof(bool)] = "bool",
         [typeof(int)] = "int",
@@ -75,4 +75,7 @@ internal partial class SingleCommand
         [typeof(DateTime)] = "date",
         [typeof(TSPlayer)] = "player"
     };
+
+    public static Parser GetParser(Type type) => parsers[type];
+    public static string GetFriendlyName(Type type) => friendlyName[type];
 }
