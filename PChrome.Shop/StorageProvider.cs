@@ -1,9 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TShockAPI;
 
 namespace PChrome.Shop;
@@ -17,7 +12,7 @@ public abstract class StorageProvider<T> : IStorageProvider
 
     public bool TryGiveTo(TSPlayer player, string content)
     {
-        return this.TryGiveTo(player, JsonConvert.DeserializeObject<T>(content));
+        return this.TryGiveTo(player, JsonConvert.DeserializeObject<T>(content)!);
     }
 
     public bool TryTakeFrom(TSPlayer player, int count, out string content, bool inf)
@@ -29,6 +24,6 @@ public abstract class StorageProvider<T> : IStorageProvider
 
     public string SerializeToText(string content)
     {
-        return this.SerializeToText(JsonConvert.DeserializeObject<T>(content));
+        return this.SerializeToText(JsonConvert.DeserializeObject<T>(content)!);
     }
 }

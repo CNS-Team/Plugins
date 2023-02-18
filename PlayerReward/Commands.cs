@@ -1,8 +1,8 @@
 ﻿using LazyUtils;
 using LazyUtils.Commands;
+using LinqToDB;
 using System.Text;
 using TShockAPI;
-using LinqToDB;
 
 namespace PlayerReward;
 
@@ -26,7 +26,10 @@ public static class PlayerRewardCommand
         }
         var selectedPack = availablePacks[0];
         if (CommandHelper.ValidateInventorySlotsAvailableFailed(args, selectedPack.Items.Count))
+        {
             return;
+        }
+
         PlayerRewardInfo.AddObtainedPlayerPacks(args.Player.Account.Name, selectedPack.Name);
         args.Player.Give(selectedPack);
         args.Player.SendSuccessMessage($"成功获取 {selectedPack.Name} 礼包");
@@ -56,7 +59,10 @@ public static class PlayerRewardCommand
 
         var selectedPack = availablePacks[id];
         if (CommandHelper.ValidateInventorySlotsAvailableFailed(args, selectedPack.Items.Count))
+        {
             return;
+        }
+
         PlayerRewardInfo.AddObtainedPlayerPacks(args.Player.Account.Name, selectedPack.Name);
         args.Player.Give(selectedPack);
         args.Player.SendSuccessMessage($"成功获取 {selectedPack.Name} 礼包");
@@ -109,7 +115,9 @@ public static class PlayerRewardCommand
             public static void Player(CommandArgs args, string playerName)
             {
                 if (CommandHelper.ValidatePlayerAccountFailed(args, playerName))
+                {
                     return;
+                }
 
                 PlayerRewardInfo.ClearObtainedPlayerPacks(playerName);
                 args.Player.SendSuccessMessage($"成功重置玩家 {playerName} 的玩家礼包");
@@ -147,7 +155,10 @@ public static class SponsorRewardCommand
         }
         var selectedPack = availablePacks[0];
         if (CommandHelper.ValidateInventorySlotsAvailableFailed(args, selectedPack.Items.Count))
+        {
             return;
+        }
+
         PlayerRewardInfo.AddObtainedSponsorPacks(args.Player.Account.Name, selectedPack.Name);
         args.Player.Give(selectedPack);
         args.Player.SendSuccessMessage($"成功获取 {selectedPack.Name} 赞助礼包");
@@ -177,7 +188,10 @@ public static class SponsorRewardCommand
 
         var selectedPack = availablePacks[id];
         if (CommandHelper.ValidateInventorySlotsAvailableFailed(args, selectedPack.Items.Count))
+        {
             return;
+        }
+
         PlayerRewardInfo.AddObtainedSponsorPacks(args.Player.Account.Name, selectedPack.Name);
         args.Player.Give(selectedPack);
         args.Player.SendSuccessMessage($"成功获取 {selectedPack.Name} 赞助礼包");
@@ -230,7 +244,9 @@ public static class SponsorRewardCommand
             public static void Player(CommandArgs args, string playerName)
             {
                 if (CommandHelper.ValidatePlayerAccountFailed(args, playerName))
+                {
                     return;
+                }
 
                 PlayerRewardInfo.ClearObtainedSponsorPacks(playerName);
                 args.Player.SendSuccessMessage($"成功重置玩家 {playerName} 的赞助礼包");
@@ -257,7 +273,10 @@ internal static class CommandHelper
     {
         var slotsLeft = args.TPlayer.inventory.Take(50).Count(x => x.type == 0);
         if (slotsRequired <= slotsLeft)
+        {
             return false;
+        }
+
         args.Player.SendWarningMessage($"背包空间不足，还需要 {slotsRequired - slotsLeft} 个空位，请清理后再试");
         return true;
     }
@@ -265,7 +284,10 @@ internal static class CommandHelper
     public static bool ValidatePlayerAccountFailed(CommandArgs args, string playerName)
     {
         if (TShock.UserAccounts.GetUserAccountByName(playerName) != null)
+        {
             return false;
+        }
+
         args.Player.SendInfoMessage($"未找到名为 {playerName} 的玩家");
         return true;
     }

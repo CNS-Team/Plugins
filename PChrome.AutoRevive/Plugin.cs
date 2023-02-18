@@ -1,10 +1,5 @@
 ﻿using LazyUtils;
 using LinqToDB;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
@@ -25,7 +20,7 @@ public class Plugin : LazyPlugin
         GetDataHandlers.PlayerSpawn.Register(this.OnPlayerSpawn, HandlerPriority.Highest);
     }
 
-    private void OnPlayerSpawn(object _, GetDataHandlers.SpawnEventArgs args)
+    private void OnPlayerSpawn(object? _, GetDataHandlers.SpawnEventArgs args)
     {
         if (args.Player.ContainsData("handle_one_spawn"))
         {
@@ -36,7 +31,7 @@ public class Plugin : LazyPlugin
 
     private const string TIMER_KEY = "AutoRevive.Timer";
 
-    private static void OnKillMe(object _, GetDataHandlers.KillMeEventArgs args)
+    private static void OnKillMe(object? _, GetDataHandlers.KillMeEventArgs args)
     {
         if (args.Player.ContainsData(TIMER_KEY) &&
             args.Player.GetData<long>(TIMER_KEY) + Config.Instance.cooldown > TimingUtils.Timer)
@@ -64,7 +59,7 @@ public class Plugin : LazyPlugin
         }
 
         var pos = args.Player.TPlayer.position;
-        args.Player.SetData<object>("handle_one_spawn", null);
+        args.Player.SetData<object>("handle_one_spawn", null!);
         args.Player.Spawn(PlayerSpawnContext.ReviveFromDeath);
         args.Player.SetData(TIMER_KEY, TimingUtils.Timer);
         args.Handled = true;

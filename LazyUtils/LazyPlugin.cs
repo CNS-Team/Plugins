@@ -43,7 +43,7 @@ public abstract class LazyPlugin : TerrariaPlugin
 
     protected LazyPlugin(Main game) : base(game)
     {
-        AutoLoad();
+        this.AutoLoad();
         if (restToLoad.Count > 0)
             ServerApi.Hooks.GameInitialize.Register(this, args =>
             {

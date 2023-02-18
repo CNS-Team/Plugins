@@ -9,7 +9,7 @@ public class StatusTextUpdateHandlerList
 {
     private List<StatusTextUpdateHandlerItem> Handlers { get; set; } = new();
     private List<IStatusTextUpdateHandler> ProcessedHandlers { get; set; } = new();
-    private object HandlersLock = new object();
+    private readonly object HandlersLock = new object();
 
     public StatusTextUpdateHandlerList()
     {
@@ -18,24 +18,24 @@ public class StatusTextUpdateHandlerList
 
     public void Register(StatusTextUpdateDelegate handler, ulong updateInterval = 60)
     {
-        Register(new StatusTextUpdateHandlerItem(handler, updateInterval));
+        this.Register(new StatusTextUpdateHandlerItem(handler, updateInterval));
     }
 
     public void Register(StatusTextUpdateHandlerItem handlerItem)
     {
-        lock (HandlersLock)
+        lock (this.HandlersLock)
         {
-            Handlers.Add(handlerItem);
-            LoadSettings();
+            this.Handlers.Add(handlerItem);
+            this.LoadSettings();
         }
     }
 
     public void Deregister(StatusTextUpdateDelegate handler)
     {
-        lock (HandlersLock)
+        lock (this.HandlersLock)
         {
-            Handlers.RemoveAll(hi => hi.UpdateDelegate == handler);
-            LoadSettings();
+            this.Handlers.RemoveAll(hi => hi.UpdateDelegate == handler);
+            this.LoadSettings();
         }
     }
 
@@ -44,9 +44,9 @@ public class StatusTextUpdateHandlerList
         try
         {
             List<IStatusTextUpdateHandler> list;
-            lock (HandlersLock)
+            lock (this.HandlersLock)
             {
-                list = new List<IStatusTextUpdateHandler>(ProcessedHandlers);
+                list = new List<IStatusTextUpdateHandler>(this.ProcessedHandlers);
             }
             var isUpdateRequired = list.Aggregate(false, (current, hi) => hi.Invoke(tsplr, forceUpdate) || current);
             // 轮询 Handlers 对应玩家是否需要更新 Status Text
@@ -69,19 +69,19 @@ public class StatusTextUpdateHandlerList
 
     public void LoadSettings()
     {
-        lock (HandlersLock)
+        lock (this.HandlersLock)
         {
             // 依次加载所有 Setting Handlers
-            var handlers = new List<StatusTextUpdateHandlerItem>(Handlers);
-            ProcessedHandlers.Clear();
+            var handlers = new List<StatusTextUpdateHandlerItem>(this.Handlers);
+            this.ProcessedHandlers.Clear();
             var idx = 0;
             foreach (var sts in StatusTxtMgr.Settings.StatusTextSettings)
             {
-                sts.ProcessHandlers(handlers, ProcessedHandlers, idx);
+                sts.ProcessHandlers(handlers, this.ProcessedHandlers, idx);
                 idx++;
             }
             // 将所有未被 Setting Handlers '认领' 的 Plugin Handlers 加入到 Processed Handlers 中
-            ProcessedHandlers.AddRange(handlers);
+            this.ProcessedHandlers.AddRange(handlers);
         }
     }
 }

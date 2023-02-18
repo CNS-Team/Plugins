@@ -1,6 +1,5 @@
 ﻿using LazyUtils;
 using LazyUtils.Commands;
-using LinqToDB.Tools;
 using TShockAPI;
 
 namespace MusicPlayer;
@@ -16,7 +15,7 @@ public static class Commands
         var midi = MidiParser.ParseMidi(fileName);
         midi.PlayFor(player.Index);
     }
-    
+
     [Main]
     [RealPlayer]
     [Permissions("musicplayer.play")]

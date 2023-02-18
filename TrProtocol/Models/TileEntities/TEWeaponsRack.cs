@@ -5,12 +5,12 @@ public partial class TEWeaponsRack : TileEntity
     public override TileEntityType EntityType => TileEntityType.TEWeaponsRack;
     public override void WriteExtraData(BinaryWriter writer)
     {
-        Item.Write(writer);
+        this.Item.Write(writer);
     }
 
     public override TEWeaponsRack ReadExtraData(BinaryReader reader)
     {
-        Item = new(reader);
+        this.Item = new(reader);
         return this;
     }
     public ItemData Item { get; set; }

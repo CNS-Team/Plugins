@@ -77,7 +77,7 @@ public class CommandManager
                 {
                     text3 = "/" + text3;
                 }
-                if (args.Parameters[1].ToLower() == "all")
+                if (string.Equals(args.Parameters[1], "all", StringComparison.OrdinalIgnoreCase))
                 {
                     foreach (var serverInfo2 in ConfigUtils.servers)
                     {
@@ -124,7 +124,7 @@ public class CommandManager
             args.Player.SendInfoMessage("输入/univip help 查看赞助系统帮助");
             return;
         }
-        TSPlayer tsplayer = null;
+        TSPlayer? tsplayer = null;
         switch (args.Parameters[0])
         {
             case "del":
@@ -242,7 +242,7 @@ public class CommandManager
         }
     }
 
-    private async void UniBan(CommandArgs args)
+    private void UniBan(CommandArgs args)
     {
         if (args.Parameters.Count < 1)
         {
@@ -338,15 +338,15 @@ public class CommandManager
                         else
                         {
                             var text2 = players[s2].Name;
-                            if (MainPlugin.Instance.dbManager.GetPlayer(text2) != null)
+                            if (MainPlugin.Instance.dbManager.GetPlayer(text2!) != null)
                             {
-                                MainPlugin.Instance.dbManager.DeletePlayer(text2);
+                                MainPlugin.Instance.dbManager.DeletePlayer(text2!);
                                 foreach (var serverInfo in ConfigUtils.servers)
                                 {
                                     try
                                     {
                                         serverInfo.CreateToken();
-                                        serverInfo.DelUser(text2);
+                                        serverInfo.DelUser(text2!);
                                     }
                                     catch (Exception)
                                     {

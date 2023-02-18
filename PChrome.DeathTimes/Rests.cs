@@ -2,7 +2,6 @@
 using LazyUtils.Commands;
 using Newtonsoft.Json.Linq;
 using Rests;
-using System.Linq;
 using TShockAPI;
 
 namespace PChrome.DeathTimes;

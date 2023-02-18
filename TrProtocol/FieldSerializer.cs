@@ -9,18 +9,21 @@ public abstract class NumericFieldSerializer<T> : FieldSerializer<T>, IConfigura
     private bool interrupt, enabled;
     public override void Write(BinaryWriter bw, object o)
     {
-        if (enabled)
+        if (this.enabled)
         {
             var o2 = Convert.ToInt32(o);
-            if (o2 > upper || o2 < lower)
+            if (o2 > this.upper || o2 < this.lower)
             {
-                if (interrupt)
+                if (this.interrupt)
+                {
                     throw new OutOfBoundsException(
-                        $"Packet ignored due to field {typeof(T)} = {o2} out of bounds ({lower}, {upper})");
-                o = zero;
+                        $"Packet ignored due to field {typeof(T)} = {o2} out of bounds ({this.lower}, {this.upper})");
+                }
+
+                o = this.zero;
             }
         }
-        WriteOverride(bw, (T)o);
+        this.WriteOverride(bw, (T) o);
     }
 
     public IConfigurable Configure(PropertyInfo prop, string version)
@@ -28,12 +31,15 @@ public abstract class NumericFieldSerializer<T> : FieldSerializer<T>, IConfigura
         foreach (var bounds in prop.GetCustomAttributes<BoundsAttribute>())
         {
             if (bounds.Version != version)
+            {
                 continue;
-            zero = (T)Convert.ChangeType(0, prop.PropertyType);
-            upper = bounds.UpperBound;
-            lower = bounds.LowerBound;
-            interrupt = bounds.Interrupt;
-            enabled = true;
+            }
+
+            this.zero = (T) Convert.ChangeType(0, prop.PropertyType);
+            this.upper = bounds.UpperBound;
+            this.lower = bounds.LowerBound;
+            this.interrupt = bounds.Interrupt;
+            this.enabled = true;
         }
         return this;
     }
@@ -44,7 +50,13 @@ public abstract class FieldSerializer<T> : IFieldSerializer
 
     protected abstract void WriteOverride(BinaryWriter bw, T t);
 
-    public virtual object Read(BinaryReader br) => ReadOverride(br);
+    public virtual object Read(BinaryReader br)
+    {
+        return this.ReadOverride(br);
+    }
 
-    public virtual void Write(BinaryWriter bw, object o) => WriteOverride(bw, (T)o);
+    public virtual void Write(BinaryWriter bw, object o)
+    {
+        this.WriteOverride(bw, (T) o);
+    }
 }

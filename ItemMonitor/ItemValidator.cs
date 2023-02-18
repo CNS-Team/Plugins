@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Terraria;
+﻿using Terraria;
 using Terraria.ID;
 using TShockAPI;
 
@@ -47,7 +42,7 @@ internal class ItemHolder : Dictionary<int, int>, IEquatable<ItemHolder>
         return hashCode;
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         return obj is ItemHolder holder && this.Equals(holder);
     }
@@ -119,17 +114,14 @@ internal sealed class ItemValidator : IDisposable
     {
         var itemToPickUp = new Item();
         itemToPickUp.netDefaults(type);
-        if (itemToPickUp.IsAir || ItemID.Sets.NebulaPickup[itemToPickUp.type])
-        {
-            return true;
-        }
-
-        if (itemToPickUp.type == 58 || itemToPickUp.type == 1734 || itemToPickUp.type == 1867)
-        {
-            return true;
-        }
-
-        return itemToPickUp.type == 184 || itemToPickUp.type == 1735 || itemToPickUp.type == 1868 ? true : itemToPickUp.type == 4143;
+        return itemToPickUp.IsAir || ItemID.Sets.NebulaPickup[itemToPickUp.type]
+            || itemToPickUp.type == ItemID.Heart
+            || itemToPickUp.type == ItemID.CandyApple
+            || itemToPickUp.type == ItemID.CandyCane
+            || itemToPickUp.type == ItemID.Star
+            || itemToPickUp.type == ItemID.SoulCake
+            || itemToPickUp.type == ItemID.SugarPlum
+            || itemToPickUp.type == ItemID.ManaCloakStar;
     }
 
     public void AddItem(int item, int num)

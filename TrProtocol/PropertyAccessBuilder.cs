@@ -8,9 +8,12 @@ internal static class PropertyAccessBuilder
     public static Action<object, object> BuildDynamicSetter(this PropertyInfo info)
     {
         if (info.SetMethod is null)
+        {
             return null;
-        Type objType = info.DeclaringType;
-        Type propertyType = info.PropertyType;
+        }
+
+        var objType = info.DeclaringType;
+        var propertyType = info.PropertyType;
         var method = info.SetMethod;
         Type[] methodArgs = { typeof(object), typeof(object) };
         DynamicMethod dm = new(
@@ -19,14 +22,19 @@ internal static class PropertyAccessBuilder
             methodArgs,
             typeof(PropertyAccessBuilder).Module);
 
-        ILGenerator il = dm.GetILGenerator();
+        var il = dm.GetILGenerator();
         il.Emit(OpCodes.Ldarg_0);
         il.Emit(OpCodes.Castclass, objType);
         il.Emit(OpCodes.Ldarg_1);
         if (propertyType.IsValueType)
+        {
             il.Emit(OpCodes.Unbox_Any, propertyType);
+        }
         else
+        {
             il.Emit(OpCodes.Castclass, propertyType);
+        }
+
         il.Emit(OpCodes.Call, method);
         il.Emit(OpCodes.Ret);
 
@@ -40,9 +48,12 @@ internal static class PropertyAccessBuilder
     public static Func<object, object> BuildDynamicGetter(this PropertyInfo info)
     {
         if (info.GetMethod is null)
+        {
             return null;
-        Type objType = info.DeclaringType;
-        Type propertyType = info.PropertyType;
+        }
+
+        var objType = info.DeclaringType;
+        var propertyType = info.PropertyType;
         var method = info.GetMethod;
         Type[] methodArgs = { typeof(object) };
         DynamicMethod dm = new(
@@ -51,12 +62,15 @@ internal static class PropertyAccessBuilder
             methodArgs,
             typeof(PropertyAccessBuilder).Module);
 
-        ILGenerator il = dm.GetILGenerator();
+        var il = dm.GetILGenerator();
         il.Emit(OpCodes.Ldarg_0);
         il.Emit(OpCodes.Castclass, objType);
         il.Emit(OpCodes.Call, method);
         if (propertyType.IsValueType)
+        {
             il.Emit(OpCodes.Box, propertyType);
+        }
+
         il.Emit(OpCodes.Castclass, typeof(object));
         il.Emit(OpCodes.Ret);
 

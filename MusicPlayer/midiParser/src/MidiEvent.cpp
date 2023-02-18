@@ -276,8 +276,6 @@ double MidiEvent::getDurationInSeconds(void) const {
 		return seconds - seconds2;
 	}
 }
-
-
 } // end namespace smf
 
 

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Terraria;
+﻿using System.Text;
 using TShockAPI;
 
 namespace StatusTxtMgr.Utils;
@@ -26,6 +21,13 @@ internal static class Common
     }
 
     public static ulong TickCount = 0;
-    public static void CountTick() => TickCount++;
-    public static void ClearTickCount() => TickCount = 0;
+    public static void CountTick()
+    {
+        TickCount++;
+    }
+
+    public static void ClearTickCount()
+    {
+        TickCount = 0;
+    }
 }

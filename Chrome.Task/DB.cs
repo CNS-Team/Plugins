@@ -2,12 +2,14 @@
 using Newtonsoft.Json;
 using TShockAPI;
 using TShockAPI.DB;
+using static 任务系统.任务系统;
 
-namespace Quest;
+namespace 任务系统;
 
 public static class DB
 {
     public static string tableName = "任务系统";
+    public static string tableName2 = "任务系统解锁";
     public static string RPGtableName = "Chrome_RPG";
     /// <summary>
     /// 创建表
@@ -25,6 +27,41 @@ public static class DB
             new SqlColumn("已完成任务", MySqlDbType.Text) { Length = 500 },
             new SqlColumn("任务目标", MySqlDbType.Text) { Length = 500 },
             new SqlColumn("任务目标2", MySqlDbType.Int32) { Length = 255 }));
+
+        var sqlcreator2 = new SqlTableCreator(TShock.DB, TShock.DB.GetSqlType() == SqlType.Sqlite ? new SqliteQueryCreator() : new MysqlQueryCreator());
+
+        sqlcreator2.EnsureTableStructure(new SqlTable(tableName2,
+            new SqlColumn("Key", MySqlDbType.VarChar, new int?(256)) { Primary = true },
+            new SqlColumn("Value", MySqlDbType.Text) { Length = 500 }));
+    }
+    public static void ReadValue()
+    {
+        var Value = "{}";
+        using (var 表 = TShock.DB.QueryReader("SELECT * FROM " + tableName2 + " WHERE `Key` = @0", "1"))
+        {
+            if (表.Read())
+            {
+                Value = 表.Get<string>("Value");
+            }
+            else
+            {
+                TShock.DB.Query("INSERT INTO " + tableName2 + " (`Key`, `Value`) VALUES " + "(@0, @1);", "1", "{}");
+            }
+        }
+        任务系统.解锁 = JsonConvert.DeserializeObject<配置表.解锁数据库>(Value);
+        foreach (var n in 任务系统.解锁.解锁NPC数据)
+        {
+            任务系统.上锁NPC.Remove(n);
+        }
+        foreach (var n in 任务系统.解锁.解锁事件数据)
+        {
+            解锁事件(n, false);
+        }
+    }
+    public static void WriteValue()
+    {
+        TShock.DB.Query("UPDATE " + tableName2 + " SET `Value` = @0 WHERE `Key` = @1", JsonConvert.SerializeObject(任务系统.解锁, Formatting.Indented), "1");
+        //DB.ReadValue();
     }
     /// <summary>
     /// 查当前主线任务
@@ -163,7 +200,7 @@ public static class DB
             }
         }
         var j = JsonConvert.DeserializeObject<Dictionary<int, int>>(任务目标);
-        return j ?? new() { };
+        return j ?? new Dictionary<int, int>();
     }
     /// <summary>
     /// 查任务目标2
@@ -198,11 +235,11 @@ public static class DB
         var 玩家名 = plr.Name;
         List<int> 主线 = new() { };
         var 支线 = false;
-        var 任务 = QuestPlugin.配置.任务.Find(s => s.任务ID == 任务ID);
+        var 任务 = 任务系统.配置.任务.Find(s => s.任务ID == 任务ID);
         AddCompleteTask(玩家名, 任务ID);
         foreach (var z in 任务.解锁任务)
         {
-            var 下一任务 = QuestPlugin.配置.任务.Find(s => s.任务ID == z);
+            var 下一任务 = 任务系统.配置.任务.Find(s => s.任务ID == z);
             if (下一任务.是否主线)
             {
                 AddBranchTask(玩家名, z);
@@ -210,11 +247,6 @@ public static class DB
             }
             else
             {
-                var r = QuestPlugin.GetTask(任务ID);
-                if (r.职业名限制.Count != 0 && !r.职业名限制.Contains(QueryRPGGrade(玩家名)))
-                {
-                    return;
-                }
                 if (!支线)
                 {
                     plr.SendSuccessMessage("[c/12FC41:您有新的支线任务，输入\"/查询任务 支线 \"查看]");
@@ -222,6 +254,24 @@ public static class DB
 
                 支线 = true;
                 AddCanGetTask(玩家名, z);
+            }
+        }
+        foreach (var n in 任务.解锁NPC)
+        {
+            if (!任务系统.解锁.解锁NPC数据.Contains(n))
+            {
+                任务系统.上锁NPC.Remove(n);
+                任务系统.解锁.解锁NPC数据.Add(n);
+                WriteValue();
+            }
+        }
+        foreach (var n in 任务.解锁事件)
+        {
+            if (!任务系统.解锁.解锁事件数据.Contains(n))
+            {
+                解锁事件(n, false);
+                任务系统.解锁.解锁事件数据.Add(n);
+                WriteValue();
             }
         }
         if (主线.Count == 0)
@@ -250,13 +300,13 @@ public static class DB
     public static void CompleteSideTask(string 玩家名, int 任务ID)
     {
         var plr = TSPlayer.FindByNameOrID(玩家名)[0];
-        var 任务 = QuestPlugin.配置.任务.Find(s => s.任务ID == 任务ID);
+        var 任务 = 任务系统.配置.任务.Find(s => s.任务ID == 任务ID);
         var 支线 = false;
         AddCompleteTask(玩家名, 任务ID);
         DelSideTask(玩家名, 任务ID);
         foreach (var z in 任务.解锁任务)
         {
-            var 下一任务 = QuestPlugin.配置.任务.Find(s => s.任务ID == z);
+            var 下一任务 = 任务系统.配置.任务.Find(s => s.任务ID == z);
             if (下一任务.是否主线)
             {
                 // AddBranchTask(玩家名, z);
@@ -264,11 +314,6 @@ public static class DB
             }
             else
             {
-                var r = QuestPlugin.GetTask(任务ID);
-                if (r.职业名限制.Count != 0 && !r.职业名限制.Contains(QueryRPGGrade(玩家名)))
-                {
-                    return;
-                }
                 if (!支线)
                 {
                     plr.SendSuccessMessage("[c/12FC41:您有新的支线任务，输入\"/查询任务 支线 \"查看]");
@@ -278,7 +323,37 @@ public static class DB
                 AddCanGetTask(玩家名, z);
             }
         }
+        foreach (var n in 任务.解锁NPC)
+        {
+            if (!任务系统.解锁.解锁NPC数据.Contains(n))
+            {
+                任务系统.上锁NPC.Remove(n);
+                任务系统.解锁.解锁NPC数据.Add(n);
+                WriteValue();
+            }
+        }
+        foreach (var n in 任务.解锁事件)
+        {
+            if (!任务系统.解锁.解锁事件数据.Contains(n))
+            {
+                解锁事件(n, false);
+                任务系统.解锁.解锁事件数据.Add(n);
+                WriteValue();
+            }
+        }
         TShock.Log.Info($"{玩家名} 完成支线任务 {任务ID}");
+    }
+    public static int 查等级(string 玩家名)
+    {
+        var 等级 = 1;
+        using (var 表 = TShock.DB.QueryReader("SELECT * FROM Chrome_RPG WHERE `玩家名` = @0", 玩家名))
+        {
+            if (表.Read())
+            {
+                等级 = 表.Get<int>("等级");
+            }
+        }
+        return 等级;
     }
     /// <summary>
     /// 查职业

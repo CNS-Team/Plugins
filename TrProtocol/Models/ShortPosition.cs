@@ -7,13 +7,13 @@ public partial struct ShortPosition
 {
     public ShortPosition(short x, short y)
     {
-        X = x;
-        Y = y;
+        this.X = x;
+        this.Y = y;
     }
     public short X;
     public short Y;
     public override string ToString()
     {
-        return $"[{X}, {Y}]";
+        return $"[{this.X}, {this.Y}]";
     }
 }

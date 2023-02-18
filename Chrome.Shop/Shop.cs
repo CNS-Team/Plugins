@@ -1,12 +1,12 @@
-﻿using Newtonsoft.Json;
-using Terraria;
+﻿using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
+using TShockAPI.Hooks;
 
 namespace QwRPG.shop;
 
 [ApiVersion(2, 1)]//api版本
-public class ShopPlugin : TerrariaPlugin
+public class Shop : TerrariaPlugin
 {
     /// <summary>
     /// 插件作者
@@ -27,17 +27,17 @@ public class ShopPlugin : TerrariaPlugin
     /// <summary>
     /// 插件处理
     /// </summary>
-    public ShopPlugin(Main game) : base(game)
+    public Shop(Main game) : base(game)
     {
     }
     //插件启动时，用于初始化各种狗子
     public static Config 配置 = new();
-    public static Config.QwRPG配置表 Qw配置 = new();
     public override void Initialize()
     {
         ServerApi.Hooks.GameInitialize.Register(this, this.OnInitialize);//钩住游戏初始化时
+        GeneralHooks.ReloadEvent += new GeneralHooks.ReloadEventD(Config.Reload);
         Config.GetConfig();
-        Reload();
+        Config.Reload();
     }
     /// <summary>
     /// 插件关闭时
@@ -48,7 +48,7 @@ public class ShopPlugin : TerrariaPlugin
         {
             // Deregister hooks here
             ServerApi.Hooks.GameInitialize.Deregister(this, this.OnInitialize);//销毁游戏初始化狗子
-
+            GeneralHooks.ReloadEvent -= new GeneralHooks.ReloadEventD(Config.Reload);
         }
         base.Dispose(disposing);
     }
@@ -56,7 +56,6 @@ public class ShopPlugin : TerrariaPlugin
     private void OnInitialize(EventArgs args)//游戏初始化的狗子
     {
         //第一个是权限，第二个是子程序，第三个是指令
-        Commands.ChatCommands.Add(new Command("QwRPG.admin", this.重载, "reload") { });
         Commands.ChatCommands.Add(new Command("QwRPG.shop", this.ShopCommand, "shop") { });
     }
     private void ShopCommand(CommandArgs args)
@@ -111,7 +110,7 @@ public class ShopPlugin : TerrariaPlugin
                         }
                         else
                         {
-                            args.Player.SendMessage($"[c/FF0000:{s + 1}.]||{配置.Shops[s].显示名}[i/s{配置.Shops[s].商品[0].数量}:{配置.Shops[s].商品[0].物品}]||[c/FF8000:{配置.Shops[s].价格}{Qw配置.货币名}]", 255, 255, 255);
+                            args.Player.SendMessage($"[c/FF0000:{s + 1}.]||{配置.Shops[s].显示名}[i/s{配置.Shops[s].商品[0].数量}:{配置.Shops[s].商品[0].物品}]||[c/FF8000:{配置.Shops[s].价格}{Chrome.RPG.Chrome.配置.货币名}]", 255, 255, 255);
                         }
                     }
                     args.Player.SendInfoMessage("已展示所有商品");
@@ -136,13 +135,13 @@ public class ShopPlugin : TerrariaPlugin
                         return;
                     }
                     var 商品 = 配置.Shops[s];
-                    var 货币 = DB.QueryCost(args.Player.Name);
-                    var 货币名 = Qw配置.货币名;
+                    var 货币 = Chrome.RPG.DB.QueryCost(args.Player.Name);
+                    var 货币名 = Chrome.RPG.Chrome.配置.货币名;
                     long 价格 = 商品.价格;
                     var 进度 = 商品.进度限制;
                     if (进度.Count > 0)
                     {
-                        var 当前进度 = this.Progress(args);
+                        var 当前进度 = Chrome.RPG.Chrome.进度详情();
                         foreach (var b in 进度)
                         {
                             if (当前进度.Exists(a => a == b))
@@ -161,7 +160,7 @@ public class ShopPlugin : TerrariaPlugin
                         args.Player.SendInfoMessage($"您的{货币名}不足，该商品需要{价格}{货币名}");
                         return;
                     }
-                    DB.DelCost(args.Player.Name, 价格);
+                    Chrome.RPG.DB.DelCost(args.Player.Name, 价格);
                     foreach (var a in 商品.商品)
                     {
                         args.Player.GiveItem(a.物品, a.数量, a.前缀);
@@ -178,244 +177,5 @@ public class ShopPlugin : TerrariaPlugin
         {
             args.Player.SendErrorMessage($"[Chrome.Shop]发生错误！");
         }
-    }
-    private void 重载(CommandArgs args)
-    {
-        try
-        {
-            Reload();
-            //args.Player.SendErrorMessage($"[QwRPG.Shop]重载成功！");
-        }
-        catch
-        {
-            TSPlayer.Server.SendErrorMessage($"[Chrome.Shop]配置文件读取错误");
-        }
-    }
-    public static void Reload()
-    {
-        try
-        {
-            配置 = JsonConvert.DeserializeObject<Config>(File.ReadAllText(Path.Combine("tshock/Chrome.Shop.json")));
-            File.WriteAllText("tshock/Chrome.Shop.json", JsonConvert.SerializeObject(配置, Formatting.Indented));
-            Qw配置 = JsonConvert.DeserializeObject<Config.QwRPG配置表>(File.ReadAllText(Path.Combine("tshock/Chrome.RPG.json")));
-        }
-        catch
-        {
-            TSPlayer.Server.SendErrorMessage($"[QwRPG.Shop]配置文件读取错误");
-        }
-    }
-    private List<string> Progress(CommandArgs args)//获取进度详情
-    {
-        var list = new List<string>();
-        if (NPC.downedSlimeKing)//史莱姆王
-        {
-            list.Add("史莱姆王");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedBoss1)//克苏鲁之眼
-        {
-            list.Add("克苏鲁之眼");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedBoss2)//世界吞噬者 或 克苏鲁之脑
-        {
-            list.Add("世界吞噬者,克苏鲁之脑");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedQueenBee)//蜂后
-        {
-            list.Add("蜂王");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedBoss3)//骷髅王
-        {
-            list.Add("骷髅王");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedDeerclops)//独眼巨鹿
-        {
-            list.Add("独眼巨鹿");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (Main.hardMode)
-        {
-            list.Add("血肉墙");
-        }
-        else
-        {
-            list.Add("");
-        }
-
-        if (NPC.downedQueenSlime)
-        {
-            list.Add("史莱姆皇后");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedMechBoss2)
-        {
-            list.Add("双子魔眼");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedMechBoss1)
-        {
-            list.Add("毁灭者");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedMechBoss3)
-        {
-            list.Add("机械骷髅王");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedPlantBoss)
-        {
-            list.Add("世纪之花");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedGolemBoss)
-        {
-            list.Add("石巨人");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedFishron)
-        {
-            list.Add("猪龙鱼公爵");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedEmpressOfLight)
-        {
-            list.Add("光之女皇");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedAncientCultist)
-        {
-            list.Add("拜月教邪教徒");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedMoonlord)
-        {
-            list.Add("月亮领主");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedGoblins)
-        {
-            list.Add("哥布林军队");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedPirates)
-        {
-            list.Add("海盗入侵");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedChristmasTree && NPC.downedChristmasSantank && NPC.downedChristmasIceQueen)
-        {
-            list.Add("霜月");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedHalloweenTree && NPC.downedHalloweenKing)
-        {
-            list.Add("南瓜月");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedMartians)
-        {
-            list.Add("火星暴乱");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedTowerSolar)
-        {
-            list.Add("日耀柱");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedTowerVortex)
-        {
-            list.Add("星旋柱");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedTowerNebula)
-        {
-            list.Add("星云柱");
-        }
-        else
-        {
-            list.Add("");
-        }
-        if (NPC.downedTowerStardust)
-        {
-            list.Add("星尘柱");
-        }
-        else
-        {
-            list.Add("");
-        }
-        return list;
     }
 }

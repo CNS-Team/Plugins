@@ -4,7 +4,7 @@ using TShockAPI;
 
 namespace AbandanTempleEnter;
 
-internal class Utils
+internal static class Utils
 {
     public static Config Config { get; set; } = new();
 
@@ -18,20 +18,25 @@ internal class Utils
         if (Config.hardMode)
         {
             if (!Main.hardMode)
+            {
                 return false;
+            }
         }
         if (Config.threeBoss)
         {
             if (!NPC.downedMechBoss1 || !NPC.downedMechBoss2 || !NPC.downedMechBoss3)
+            {
                 return false;
+            }
         }
         if (Config.plantBoss)
         {
             if (!NPC.downedPlantBoss)
+            {
                 return false;
+            }
         }
         return true;
     }
 
 }
-

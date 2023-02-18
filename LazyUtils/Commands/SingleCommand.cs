@@ -9,7 +9,7 @@ using TShockAPI;
 
 namespace LazyUtils.Commands;
 
-internal class SingleCommand : CommandBase
+internal partial class SingleCommand : CommandBase
 {
     private readonly CommandParser.Parser[] argParsers;
     private readonly FastReflectionDelegate method;
@@ -56,5 +56,4 @@ internal class SingleCommand : CommandBase
 
         return this.GetResult(0);
     }
-
 }

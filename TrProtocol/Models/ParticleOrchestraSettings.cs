@@ -4,12 +4,12 @@ public partial class ParticleOrchestraSettings
 {
     public void Serialize(BinaryWriter writer)
     {
-        writer.Write(PositionInWorld.X);
-        writer.Write(PositionInWorld.Y);
-        writer.Write(MovementVector.X);
-        writer.Write(MovementVector.Y);
-        writer.Write(PackedShaderIndex);
-        writer.Write(IndexOfPlayerWhoInvokedThis);
+        writer.Write(this.PositionInWorld.X);
+        writer.Write(this.PositionInWorld.Y);
+        writer.Write(this.MovementVector.X);
+        writer.Write(this.MovementVector.Y);
+        writer.Write(this.PackedShaderIndex);
+        writer.Write(this.IndexOfPlayerWhoInvokedThis);
     }
 
     public static ParticleOrchestraSettings DeserializeFrom(BinaryReader reader)
@@ -33,4 +33,3 @@ public partial class ParticleOrchestraSettings
 
     public const int SerializationSize = 21;
 }
-

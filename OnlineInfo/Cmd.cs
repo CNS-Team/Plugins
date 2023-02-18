@@ -1,7 +1,5 @@
 ﻿using LazyUtils;
 using LazyUtils.Commands;
-using System;
-using System.Linq;
 using TShockAPI;
 
 namespace OnlineInfo;
@@ -46,8 +44,6 @@ public static class CmdOnlineInfo
             "  /oi cn\n" +
             "    获取全服在线人数及玩家");
     }
-
-
 }
 
 [Command("oic")]

@@ -2,11 +2,6 @@
 using LinqToDB;
 using Newtonsoft.Json;
 using PChrome.Shop;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Terraria;
 using TerrariaApi.Server;
 
@@ -57,7 +52,7 @@ public class Plugin : TerrariaPlugin
                 {
                     context.Insert(new ShopItem()
                     {
-                        content = JsonConvert.SerializeObject((object) item),
+                        content = JsonConvert.SerializeObject(item),
                         infinity = true,
                         price = item.price,
                         provider = "物品"

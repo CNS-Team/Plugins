@@ -1,5 +1,4 @@
 ﻿using StatusTxtMgr.Utils;
-using System.Text;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
@@ -20,8 +19,8 @@ public class StatusTxtMgr : TerrariaPlugin
 
     #region Fields
     // Config
-    private static string ConfigFilePath = Path.Combine(TShock.SavePath, "StatusTxtMgr.json");
-    private static ConfigFile<STMSettings> Config = new();
+    private static readonly string ConfigFilePath = Path.Combine(TShock.SavePath, "StatusTxtMgr.json");
+    private static readonly ConfigFile<STMSettings> Config = new();
     internal static STMSettings Settings => Config.Settings;
 
     // Exported Hooks
@@ -36,27 +35,27 @@ public class StatusTxtMgr : TerrariaPlugin
     #region Initialize / Dispose
     public StatusTxtMgr(Main game) : base(game)
     {
-        Order = 1;
+        this.Order = 1;
     }
 
     public override void Initialize()
     {
-        ServerApi.Hooks.GameInitialize.Register(this, OnGameInitialize);
-        ServerApi.Hooks.GamePostUpdate.Register(this, OnGamePostUpdate);
-        ServerApi.Hooks.ServerJoin.Register(this, OnServerJoin);
-        GeneralHooks.ReloadEvent += OnReload;
+        ServerApi.Hooks.GameInitialize.Register(this, this.OnGameInitialize);
+        ServerApi.Hooks.GamePostUpdate.Register(this, this.OnGamePostUpdate);
+        ServerApi.Hooks.ServerJoin.Register(this, this.OnServerJoin);
+        GeneralHooks.ReloadEvent += this.OnReload;
 
-        Commands.ChatCommands.Add(new Command(cmdst, "statustext", "st"));
+        Commands.ChatCommands.Add(new Command(this.cmdst, "statustext", "st"));
     }
 
     protected override void Dispose(bool disposing)
     {
         if (disposing)
         {
-            ServerApi.Hooks.GameInitialize.Deregister(this, OnGameInitialize);
-            ServerApi.Hooks.GamePostUpdate.Deregister(this, OnGamePostUpdate);
-            ServerApi.Hooks.ServerJoin.Deregister(this, OnServerJoin);
-            GeneralHooks.ReloadEvent -= OnReload;
+            ServerApi.Hooks.GameInitialize.Deregister(this, this.OnGameInitialize);
+            ServerApi.Hooks.GamePostUpdate.Deregister(this, this.OnGamePostUpdate);
+            ServerApi.Hooks.ServerJoin.Deregister(this, this.OnServerJoin);
+            GeneralHooks.ReloadEvent -= this.OnReload;
         }
         base.Dispose(disposing);
     }
@@ -68,15 +67,15 @@ public class StatusTxtMgr : TerrariaPlugin
         switch (args.Parameters.Count)
         {
             case 0:
-                isPlrSTVisible[args.Player.Index] = !isPlrSTVisible[args.Player.Index];
-                if (isPlrSTVisible[args.Player.Index])
+                this.isPlrSTVisible[args.Player.Index] = !this.isPlrSTVisible[args.Player.Index];
+                if (this.isPlrSTVisible[args.Player.Index])
                 {
-                    isPlrNeedInit[args.Player.Index] = true;
+                    this.isPlrNeedInit[args.Player.Index] = true;
                     args.Player.SendSuccessMessage("已开启模板显示");
                 }
                 else
                 {
-                    isPlrNeedInit[args.Player.Index] = false;
+                    this.isPlrNeedInit[args.Player.Index] = false;
                     args.Player.SendData(PacketTypes.Status, "", 0, 0x1f);
                     args.Player.SendSuccessMessage("已关闭模板显示");
                 }
@@ -87,20 +86,20 @@ public class StatusTxtMgr : TerrariaPlugin
                 {
                     case "on":
                     case "show":
-                        if (!isPlrSTVisible[args.Player.Index])
+                        if (!this.isPlrSTVisible[args.Player.Index])
                         {
-                            isPlrSTVisible[args.Player.Index] = true;
-                            isPlrNeedInit[args.Player.Index] = true;
+                            this.isPlrSTVisible[args.Player.Index] = true;
+                            this.isPlrNeedInit[args.Player.Index] = true;
                         }
                         args.Player.SendSuccessMessage("已开启模板显示");
                         break;
 
                     case "off":
                     case "hide":
-                        if (isPlrSTVisible[args.Player.Index])
+                        if (this.isPlrSTVisible[args.Player.Index])
                         {
-                            isPlrSTVisible[args.Player.Index] = false;
-                            isPlrNeedInit[args.Player.Index] = false;
+                            this.isPlrSTVisible[args.Player.Index] = false;
+                            this.isPlrNeedInit[args.Player.Index] = false;
                             args.Player.SendData(PacketTypes.Status, "", 0, 0x1f);
                         }
                         args.Player.SendSuccessMessage("已关闭模板显示");
@@ -121,13 +120,16 @@ public class StatusTxtMgr : TerrariaPlugin
     {
         // Config Loading
         if (!Directory.Exists(TShock.SavePath))
+        {
             Directory.CreateDirectory(TShock.SavePath);
-        LoadConfig();
+        }
+
+        this.LoadConfig();
     }
 
     private void OnReload(ReloadEventArgs args)
     {
-        LoadConfig();
+        this.LoadConfig();
     }
 
     private void LoadConfig()
@@ -136,7 +138,10 @@ public class StatusTxtMgr : TerrariaPlugin
         {
             Config.Read(ConfigFilePath, out var incompleteSettings);
             if (incompleteSettings)
+            {
                 Config.Write(ConfigFilePath);
+            }
+
             handlerList.LoadSettings();
         }
         catch (Exception ex)
@@ -151,11 +156,13 @@ public class StatusTxtMgr : TerrariaPlugin
         {
             foreach (var tsplr in Utils.Common.PlayersOnline)
             {
-                if (!isPlrSTVisible[tsplr.Index])
+                if (!this.isPlrSTVisible[tsplr.Index])
+                {
                     continue;
+                }
 
-                StringBuilder sb = Utils.StringBuilderCache.Acquire();
-                if (handlerList.Invoke(tsplr, sb, isPlrNeedInit[tsplr.Index]))
+                var sb = Utils.StringBuilderCache.Acquire();
+                if (handlerList.Invoke(tsplr, sb, this.isPlrNeedInit[tsplr.Index]))
                 {
                     tsplr.SendData(PacketTypes.Status, Utils.StringBuilderCache.GetStringAndRelease(sb), 0, 0x1f);
                     // 0x1f -> HideStatusTextPercent
@@ -164,7 +171,7 @@ public class StatusTxtMgr : TerrariaPlugin
                 {
                     Utils.StringBuilderCache.Release(sb);
                 }
-                isPlrNeedInit[tsplr.Index] = false;
+                this.isPlrNeedInit[tsplr.Index] = false;
             }
 
             Utils.Common.CountTick();
@@ -177,8 +184,8 @@ public class StatusTxtMgr : TerrariaPlugin
 
     private void OnServerJoin(JoinEventArgs args)
     {
-        isPlrSTVisible[args.Who] = true;
-        isPlrNeedInit[args.Who] = true;
+        this.isPlrSTVisible[args.Who] = true;
+        this.isPlrNeedInit[args.Who] = true;
     }
     #endregion
 

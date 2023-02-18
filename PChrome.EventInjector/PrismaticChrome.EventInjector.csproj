@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\template.targets" />
   <ItemGroup>
-    <PackageReference Include="linq2db" Version="4.4.0" />
+    <PackageReference Include="linq2db" Version="4.4.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.5.0-2.final" />
+    <PackageReference Include="System.CodeDom" Version="7.0.0" />
     <ProjectReference Include="..\LazyUtils\LazyUtils.csproj" />
   </ItemGroup>
 </Project>

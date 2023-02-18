@@ -1,16 +1,7 @@
 ﻿using LazyUtils;
 using LinqToDB;
-using Microsoft.Xna.Framework;
 using PChrome.Core;
-using System;
-using System.Collections.Generic;
-using System.IO.Ports;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Terraria;
-using Terraria.Localization;
-using TShockAPI;
 
 namespace PChrome.RPG;
 

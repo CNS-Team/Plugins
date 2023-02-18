@@ -2,6 +2,7 @@
 
 public class LiquidUpdate : Packet
 {
+    [Obsolete]
     public override MessageID Type => MessageID.LiquidUpdate;
     public short TileX { get; set; }
     public short TileY { get; set; }

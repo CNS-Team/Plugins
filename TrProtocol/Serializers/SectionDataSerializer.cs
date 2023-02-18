@@ -36,9 +36,12 @@ public partial struct SectionData
 
                 data.ChestCount = br.ReadInt16();
                 if (data.ChestCount > 8000)
+                {
                     throw new Exception("Too many chests!");
+                }
+
                 data.Chests = new ChestData[data.ChestCount];
-                for (int i = 0; i < data.ChestCount; i++)
+                for (var i = 0; i < data.ChestCount; i++)
                 {
                     ref var chest = ref data.Chests[i];
                     chest.ID = br.ReadInt16();
@@ -49,9 +52,12 @@ public partial struct SectionData
 
                 data.SignCount = br.ReadInt16();
                 if (data.SignCount > 1000)
+                {
                     throw new Exception("Too many signs!");
+                }
+
                 data.Signs = new SignData[data.SignCount];
-                for (int i = 0; i < data.SignCount; i++)
+                for (var i = 0; i < data.SignCount; i++)
                 {
                     ref var sign = ref data.Signs[i];
                     sign.ID = br.ReadInt16();
@@ -62,13 +68,16 @@ public partial struct SectionData
 
                 data.TileEntityCount = br.ReadInt16();
                 if (data.TileEntityCount > 1000)
+                {
                     throw new Exception("Too many tile entities!");
+                }
+
                 data.TileEntities = new TileEntity[data.TileEntityCount];
-                for (int i = 0; i < data.TileEntityCount; i++)
+                for (var i = 0; i < data.TileEntityCount; i++)
                 {
                     data.TileEntities[i] = TileEntity.Read(br);
                 }
-                
+
                 return data;
             }
 
@@ -81,15 +90,21 @@ public partial struct SectionData
                 var flags1 = tile.Flags1;
                 // if HasFlag2 flag is true
                 if (flags1[0])
+                {
                     tile.Flags2 = br.ReadByte();
+                }
 
                 var flags2 = tile.Flags2;
                 if (flags2[0])
+                {
                     tile.Flags3 = br.ReadByte();
+                }
 
                 var flags3 = tile.Flags3;
                 if (flags3[0])
+                {
                     tile.Flags4 = br.ReadByte();
+                }
 
                 // if HasTile flag is true
                 if (flags1[1])
@@ -104,7 +119,9 @@ public partial struct SectionData
 
                     // if HasTileColor flag is true
                     if (flags3[3])
+                    {
                         tile.TileColor = br.ReadByte();
+                    }
                 }
 
                 // if HasWall flag is true
@@ -113,17 +130,21 @@ public partial struct SectionData
                     tile.WallType = br.ReadByte();
                     // if HasWallColor flag is true
                     if (flags3[4])
+                    {
                         tile.WallColor = br.ReadByte();
+                    }
                 }
 
                 // if Liquid1 or Liquid2 flag is true
                 if (flags1[3] || flags1[4])
+                {
                     tile.Liquid = br.ReadByte();
+                }
 
                 // read the additional byte if wall type is big
                 if (flags3[6])
                 {
-                    tile.WallType = (ushort)((br.ReadByte() << 8) | tile.WallType);
+                    tile.WallType = (ushort) ((br.ReadByte() << 8) | tile.WallType);
                 }
 
                 // if HasCountByte or HasCountInt16 flag is true
@@ -131,7 +152,7 @@ public partial struct SectionData
                 {
                     tile.Count = flags1[6] ? br.ReadByte() : br.ReadInt16();
                 }
-                
+
                 return tile;
             }
         }
@@ -141,7 +162,10 @@ public partial struct SectionData
             // simplified using cannot be used here
             using (var ds = new DeflateStream(compressed, CompressionLevel.SmallestSize, true))
             using (var bw = new BinaryWriter(ds))
+            {
                 serialize(bw);
+            }
+
             writer.Write(compressed.ToArray());
 
             void serialize(BinaryWriter bw)
@@ -151,13 +175,13 @@ public partial struct SectionData
                 bw.Write(data.Width);
                 bw.Write(data.Height);
 
-                for (int i = 0; i < data.Tiles.Length; i++)
+                for (var i = 0; i < data.Tiles.Length; i++)
                 {
                     serializeTile(bw, data.Tiles[i]);
                 }
 
                 bw.Write(data.ChestCount);
-                for (int i = 0; i < data.ChestCount; i++)
+                for (var i = 0; i < data.ChestCount; i++)
                 {
                     var chest = data.Chests[i];
                     bw.Write(chest.ID);
@@ -167,7 +191,7 @@ public partial struct SectionData
                 }
 
                 bw.Write(data.SignCount);
-                for (int i = 0; i < data.SignCount; i++)
+                for (var i = 0; i < data.SignCount; i++)
                 {
                     var sign = data.Signs[i];
                     bw.Write(sign.ID);
@@ -177,7 +201,7 @@ public partial struct SectionData
                 }
 
                 bw.Write(data.TileEntityCount);
-                for (int i = 0; i < data.TileEntityCount; i++)
+                for (var i = 0; i < data.TileEntityCount; i++)
                 {
                     TileEntity.Write(bw, data.TileEntities[i]);
                 }
@@ -195,23 +219,35 @@ public partial struct SectionData
 
                 bw.Write(flags1);
                 // if HasFlag2 flag is true
-                if (flags1[0]) bw.Write(flags2);
+                if (flags1[0])
+                {
+                    bw.Write(flags2);
+                }
 
                 // if HasFlag3 flag is true
-                if (flags2[0]) bw.Write(flags3);
+                if (flags2[0])
+                {
+                    bw.Write(flags3);
+                }
 
                 // if HasFlag3 flag is true
-                if (flags3[0]) bw.Write(flags4);
+                if (flags3[0])
+                {
+                    bw.Write(flags4);
+                }
 
                 // if HasTile flag is true
                 if (flags1[1])
                 {
                     // write a byte when this flag is false
                     if (flags1[5])
+                    {
                         bw.Write(tile.TileType);
+                    }
                     else
-                        bw.Write((byte)tile.TileType);
-
+                    {
+                        bw.Write((byte) tile.TileType);
+                    }
 
                     if (Constants.tileFrameImportant[tile.TileType])
                     {
@@ -221,34 +257,44 @@ public partial struct SectionData
 
                     // if HasTileColor flag is true
                     if (flags3[3])
+                    {
                         bw.Write(tile.TileColor);
+                    }
                 }
 
                 // if HasWall flag is true
                 if (flags1[2])
                 {
-                    bw.Write((byte)tile.WallType);
+                    bw.Write((byte) tile.WallType);
                     // if HasWallColor flag is true
                     if (flags3[4])
+                    {
                         bw.Write(tile.WallColor);
+                    }
                 }
 
                 // if Liquid1 or Liquid2 flag is true
                 if (flags1[3] || flags1[4])
+                {
                     bw.Write(tile.Liquid);
+                }
 
                 // write an additional byte if wall type is greater than byte's max
                 if (flags3[6])
                 {
-                    bw.Write((byte)(tile.WallType >> 8));
+                    bw.Write((byte) (tile.WallType >> 8));
                 }
 
                 if (flags1[6] || flags1[7])
                 {
                     if (flags1[7])
+                    {
                         bw.Write(tile.Count);
+                    }
                     else
-                        bw.Write((byte)tile.Count);
+                    {
+                        bw.Write((byte) tile.Count);
+                    }
                 }
             }
         }

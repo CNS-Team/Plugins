@@ -9,38 +9,14 @@ namespace AbandanTempleEnter;
 public class AbandanTempleEnter : TerrariaPlugin
 {
 
-    public override string Author
-    {
-        get
-        {
-            return "Cai";
-        }
-    }
+    public override string Author => "Cai";
 
 
-    public override string Description
-    {
-        get
-        {
-            return "阻止玩家在解锁进度前进入神庙";
-        }
-    }
+    public override string Description => "阻止玩家在解锁进度前进入神庙";
 
-    public override string Name
-    {
-        get
-        {
-            return "AbandanTempleEnter";
-        }
-    }
+    public override string Name => "AbandanTempleEnter";
 
-    public override Version Version
-    {
-        get
-        {
-            return new Version(1, 1, 0, 0);
-        }
-    }
+    public override Version Version => new Version(1, 1, 0, 0);
 
     public AbandanTempleEnter(Main game) : base(game)
     {
@@ -49,8 +25,8 @@ public class AbandanTempleEnter : TerrariaPlugin
 
     public override void Initialize()
     {
-        GeneralHooks.ReloadEvent += OnReload;
-        ServerApi.Hooks.GameUpdate.Register(this, OnGameUpdate);
+        GeneralHooks.ReloadEvent += this.OnReload;
+        ServerApi.Hooks.GameUpdate.Register(this, this.OnGameUpdate);
         Utils.Config = Config.GetConfig();
     }
 
@@ -71,8 +47,8 @@ public class AbandanTempleEnter : TerrariaPlugin
     {
         if (disposing)
         {
-            GeneralHooks.ReloadEvent -= OnReload;
-            ServerApi.Hooks.GameUpdate.Deregister(this, OnGameUpdate);
+            GeneralHooks.ReloadEvent -= this.OnReload;
+            ServerApi.Hooks.GameUpdate.Deregister(this, this.OnGameUpdate);
         }
         base.Dispose(disposing);
     }

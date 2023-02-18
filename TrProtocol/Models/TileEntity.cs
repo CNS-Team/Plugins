@@ -18,7 +18,7 @@ public abstract partial class TileEntity
     };
     public static TileEntity Read(BinaryReader br)
     {
-        var type = (TileEntityType)br.ReadByte();
+        var type = (TileEntityType) br.ReadByte();
         if (tileEntityDict.TryGetValue(type, out var t))
         {
             var entity = Activator.CreateInstance(t) as TileEntity;
@@ -28,11 +28,13 @@ public abstract partial class TileEntity
             return entity;
         }
         else
+        {
             return null;
+        }
     }
     public static void Write(BinaryWriter bw, TileEntity t)
     {
-        bw.Write((byte)t.EntityType);
+        bw.Write((byte) t.EntityType);
         bw.Write(t.ID);
         bw.Write(t.Position.X);
         bw.Write(t.Position.Y);

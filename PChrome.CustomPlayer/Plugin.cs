@@ -1,18 +1,9 @@
 ﻿using LazyUtils;
 using Microsoft.Xna.Framework;
-using Newtonsoft.Json;
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Terraria;
-using Terraria.Chat;
 using Terraria.GameContent.NetModules;
 using Terraria.Localization;
 using Terraria.Net;
@@ -203,7 +194,7 @@ public class Plugin : LazyPlugin
                 return;
             }
 
-            var packet = NetTextModule.SerializeServerMessage(NetworkText.FromLiteral(text), color ?? new Color((int) tsplayer.Group.R, (int) tsplayer.Group.G, (int) tsplayer.Group.B), (byte) args.Who);
+            var packet = NetTextModule.SerializeServerMessage(NetworkText.FromLiteral(text), color ?? new Color(tsplayer.Group.R, tsplayer.Group.G, tsplayer.Group.B), (byte) args.Who);
 
             NetManager.Instance.Broadcast(packet, args.Who);
             NetMessage.SendData(4, -1, -1, NetworkText.FromLiteral(name), args.Who, 0f, 0f, 0f, 0, 0, 0);
@@ -233,7 +224,7 @@ public class Plugin : LazyPlugin
     }
     private static void PlayerHooks_PlayerPermission(PlayerPermissionEventArgs args)
     {
-        var perms = GetPermissionWithCache(args.Player?.Account?.Name);
+        var perms = GetPermissionWithCache(args.Player?.Account?.Name!);
         if (perms.Contains(args.Permission))
         {
             args.Result = PermissionHookResult.Granted;

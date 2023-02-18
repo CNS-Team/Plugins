@@ -13,12 +13,12 @@ public partial class SquareData
                 TilePosY = br.ReadInt16(),
                 Width = br.ReadByte(),
                 Height = br.ReadByte(),
-                ChangeType = (TileChangeType)br.ReadByte(),
+                ChangeType = (TileChangeType) br.ReadByte(),
             };
             square.Tiles = new SimpleTileData[square.Width, square.Height];
-            for (int i = 0; i < square.Width; i++)
+            for (var i = 0; i < square.Width; i++)
             {
-                for (int j = 0; j < square.Height; j++)
+                for (var j = 0; j < square.Height; j++)
                 {
                     var tile = new SimpleTileData
                     {
@@ -63,10 +63,10 @@ public partial class SquareData
             bw.Write(t.TilePosY);
             bw.Write(t.Width);
             bw.Write(t.Height);
-            bw.Write((byte)t.ChangeType);
-            for (int i = 0; i < t.Tiles.GetLength(0); i++)
+            bw.Write((byte) t.ChangeType);
+            for (var i = 0; i < t.Tiles.GetLength(0); i++)
             {
-                for (int j = 0; j < t.Tiles.GetLength(1); j++)
+                for (var j = 0; j < t.Tiles.GetLength(1); j++)
                 {
                     var tile = t.Tiles[i, j];
                     var flags1 = tile.Flags1;

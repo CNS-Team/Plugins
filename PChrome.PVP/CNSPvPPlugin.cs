@@ -1,14 +1,8 @@
 using LazyUtils;
 using LinqToDB;
 using Microsoft.Xna.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Timers;
 using Terraria;
 using Terraria.DataStructures;
-using Terraria.Utilities;
 using TerrariaApi.Server;
 using TShockAPI;
 
@@ -158,7 +152,7 @@ public class CNSPvPPlugin : LazyPlugin
         {
             args.Handled = true;
             Main.projectile[args.Index].active = false;
-            args.Player.SendData(PacketTypes.ProjectileDestroy, "", args.Identity, (int) args.Owner);
+            args.Player.SendData(PacketTypes.ProjectileDestroy, "", args.Identity, args.Owner);
             return;
         }
         var weaponDebuffInfo = Config<Config>.Instance.WeaponDebuff.FirstOrDefault(w =>

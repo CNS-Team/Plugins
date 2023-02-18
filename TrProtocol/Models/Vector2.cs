@@ -7,8 +7,8 @@ public partial struct Vector2
 {
     public Vector2(float x, float y)
     {
-        X = x;
-        Y = y;
+        this.X = x;
+        this.Y = y;
     }
 
     public float X;
@@ -16,6 +16,6 @@ public partial struct Vector2
 
     public override string ToString()
     {
-        return $"[{X}, {Y}]";
+        return $"[{this.X}, {this.Y}]";
     }
 }

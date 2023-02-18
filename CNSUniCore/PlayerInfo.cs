@@ -1,11 +1,11 @@
 ﻿namespace CNSUniCore;
 public class PlayerInfo
 {
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
-    public string IP { get; set; }
+    public string? IP { get; set; }
 
-    public string UUID { get; set; }
+    public string? UUID { get; set; }
 
     public string Reason { get; set; } = "";
 
