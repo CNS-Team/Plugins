@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using LazyUtils.Commands;
 using TShockAPI;
 
 namespace LazyUtils;
@@ -53,12 +54,10 @@ public static class RestHelper
     {
         foreach (var method in type.GetMethods())
         {
-            if (method.IsDefined(typeof(Permission)))
-            {
-                TShock.RestApi.Register(new SecureRestCommand($"/{name}/{method.Name}", args => ParseCommand(method, args),
-                    method.GetCustomAttribute<Permission>().Name));
-                Console.WriteLine($"[{plugin.Name}] rest endpoint registered: /{name}/{method.Name}");
-            }
+            TShock.RestApi.Register(new SecureRestCommand($"/{name}/{method.Name}", args => ParseCommand(method, args),
+                method.GetCustomAttributes<Permission>().Select(p => p.Name)
+                    .Concat(method.GetCustomAttributes<PermissionsAttribute>().Select(p => p.perm)).ToArray()));
+            Console.WriteLine($"[{plugin.Name}] rest endpoint registered: /{name}/{method.Name}");
         }
     }
 }
