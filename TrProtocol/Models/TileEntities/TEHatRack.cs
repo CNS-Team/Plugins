@@ -6,35 +6,37 @@ public partial class TEHatRack : TileEntity
     public override void WriteExtraData(BinaryWriter writer)
     {
         BitsByte bb = 0;
-        bb[0] = Items[0] != null;
-        bb[1] = Items[1] != null;
-        bb[2] = Dyes[0] != null;
-        bb[3] = Dyes[1] != null;
+        bb[0] = this.Items[0] != null;
+        bb[1] = this.Items[1] != null;
+        bb[2] = this.Dyes[0] != null;
+        bb[3] = this.Dyes[1] != null;
         writer.Write(bb);
-        for (int i = 0; i < 2; i++)
+        for (var i = 0; i < 2; i++)
         {
-            if (Items[i] != null)
-                Items[i].Write(writer);
+            this.Items[i]?.Write(writer);
         }
-        for (int j = 0; j < 2; j++)
+        for (var j = 0; j < 2; j++)
         {
-            if (Dyes[j] != null)
-                Dyes[j].Write(writer);
+            this.Dyes[j]?.Write(writer);
         }
     }
 
     public override TEHatRack ReadExtraData(BinaryReader reader)
     {
         BitsByte bitsByte = reader.ReadByte();
-        for (int i = 0; i < 2; i++)
+        for (var i = 0; i < 2; i++)
         {
             if (bitsByte[i])
-                Items[i] = new ItemData(reader);
+            {
+                this.Items[i] = new ItemData(reader);
+            }
         }
-        for (int j = 0; j < 2; j++)
+        for (var j = 0; j < 2; j++)
         {
             if (bitsByte[j + 2])
-                Dyes[j] = new ItemData(reader);
+            {
+                this.Dyes[j] = new ItemData(reader);
+            }
         }
         return this;
     }

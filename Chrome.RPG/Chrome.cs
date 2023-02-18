@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using StatusTxtMgr;
+﻿using StatusTxtMgr;
 using Terraria;
 using Terraria.Localization;
 using TerrariaApi.Server;
@@ -10,8 +9,9 @@ using TShockAPI.Hooks;
 namespace Chrome.RPG;
 
 [ApiVersion(2, 1)]//api版本
-public class ChromePlugin : TerrariaPlugin
+public class Chrome : TerrariaPlugin
 {
+    #region 插件信息
     /// <summary>
     /// 插件作者
     /// </summary>
@@ -31,12 +31,12 @@ public class ChromePlugin : TerrariaPlugin
     /// <summary>
     /// 插件处理
     /// </summary>
-    public ChromePlugin(Main game) : base(game)
+    public Chrome(Main game) : base(game)
     {
     }
-    //插件启动时，用于初始化各种狗子
+    #endregion
     public static Config 配置 = new();
-    //public static string 货币名 = 配置.货币名;
+    #region 钩子
     public override void Initialize()
     {
         ServerApi.Hooks.GameInitialize.Register(this, this.OnInitialize);//钩住游戏初始化时
@@ -44,10 +44,10 @@ public class ChromePlugin : TerrariaPlugin
         ServerApi.Hooks.NpcKilled.Register(this, new HookHandler<NpcKilledEventArgs>(this.OnNpcKill));//动物死亡钩子
         GetDataHandlers.KillMe += this.Kill;
         ServerApi.Hooks.ServerChat.Register(this, OnChat);
-        global::StatusTxtMgr.StatusTxtMgr.Hooks.StatusTextUpdate.Register(this.ST, 180uL);
-        GeneralHooks.ReloadEvent += new GeneralHooks.ReloadEventD(this.Reload);
+        global::StatusTxtMgr.StatusTxtMgr.Hooks.StatusTextUpdate.Register(this.StatusText, 180uL);
+        GeneralHooks.ReloadEvent += new GeneralHooks.ReloadEventD(Config.Reload);
         Config.GetConfig();
-        Reload();
+        Config.Reload();
     }
     /// <summary>
     /// 插件关闭时
@@ -62,62 +62,161 @@ public class ChromePlugin : TerrariaPlugin
             ServerApi.Hooks.NpcKilled.Deregister(this, new HookHandler<NpcKilledEventArgs>(this.OnNpcKill));//动物死亡钩子
             GetDataHandlers.KillMe -= this.Kill;
             ServerApi.Hooks.ServerChat.Deregister(this, OnChat);
-            GeneralHooks.ReloadEvent -= new GeneralHooks.ReloadEventD(this.Reload);
+            global::StatusTxtMgr.StatusTxtMgr.Hooks.StatusTextUpdate.Deregister(this.StatusText);
+            GeneralHooks.ReloadEvent -= new GeneralHooks.ReloadEventD(Config.Reload);
         }
         base.Dispose(disposing);
     }
-
-    private void ST(StatusTextUpdateEventArgs args)
+    private void OnJoin(JoinEventArgs args)
     {
-        var plr = args.tsplayer;
-        var sb = args.statusTextBuilder;
-        long 货币 = 0;
-        long 货币上限;
-        long 升级货币 = 0;
-        货币上限 = Main.hardMode ? 配置.肉山前最大货币数量 : 配置.肉山后最大货币数量;
-        if (货币 > 货币上限)
+        var plr = TShock.Players[args.Who];
+        using var 表 = TShock.DB.QueryReader("SELECT * FROM Chrome_RPG WHERE 玩家名=@0", plr.Name);
+        if (!表.Read())
         {
-            DB.AmountCost(plr.Name, 货币上限);
-            货币 = 货币上限;
+            TShock.DB.Query("INSERT INTO Chrome_RPG (`玩家名`, `点券`, `职业`,`等级`,`是否显示`,`职业重置次数`) VALUES " + "(@0, @1, @2, @3, @4, @5);", plr.Name, 0, 配置.玩家初始职业, 1, "true", 0);
         }
-        if (配置.启用侧边栏信息 && DB.QueryStatus(plr.Name) == "true")
+    }
+    private void OnNpcKill(NpcKilledEventArgs args)
+    {
+        if (args.npc.lastInteraction == 255 || args.npc.lastInteraction < 0)
         {
-            var 当前职业 = "无";
-            using (var 表 = TShock.DB.QueryReader("SELECT * FROM Chrome_RPG WHERE `玩家名`=@0", plr.Name))
+            return;
+        }
+        var plr = TShock.Players[args.npc.lastInteraction];
+        if (!plr.IsLoggedIn)
+        {
+            return;
+        }
+        if (args.npc.SpawnedFromStatue && 配置.杀死雕像生成NPC不给货币)
+        {
+            return;
+        }
+        var 当前职业 = "无";
+        //long 货币 = 0;
+        using (var 表 = TShock.DB.QueryReader("SELECT * FROM Chrome_RPG WHERE `玩家名`=@0", plr.Name))
+        {
+            if (表.Read())
             {
-                if (表.Read())
-                {
-                    当前职业 = 表.Get<string>("职业");
-                    货币 = 表.Get<long>("点券");
-                }
+                当前职业 = 表.Get<string>("职业");
+                //货币 = 表.Get<long>("点券");
             }
-            string 前缀;
-            List<Config.职业格式> togroup = new();
-            foreach (var 职业 in 配置.职业配置表)
+        }
+        if (配置.击败肉山前不继续加货币职业.Exists(s => s == 当前职业))
+        {
+            return;
+        }
+        //if()
+        if (配置.杀死不给货币NPC.Exists(s => s == args.npc.type)) { return; }
+
+
+        var 怪物血量 = args.npc.lifeMax;
+        DB.AddCost(plr.Name, (long) (怪物血量 * 配置.获取货币血量比例), true);
+    }
+    private void Kill(object? o, GetDataHandlers.KillMeEventArgs args)
+    {
+        if (!args.Player.IsLoggedIn)
+        {
+            return;
+        }
+        if (配置.死亡掉落货币百分率 < 1)
+        {
+            var 货币 = DB.QueryCost(args.Player.Name);
+            if (货币 > 0)
             {
-                //bool flag4 = keyValuePair.Value.ParentGroup == args.Player.Group.Name;
-                if (职业.上一职业 == 当前职业)
-                {
-                    togroup.Add(职业);
-                }
+                货币 = (long) (货币 * 配置.死亡掉落货币百分率);
+                DB.DelCost(args.Player.Name, 货币, true);
             }
-            升级货币 = togroup.Count() == 0 || !配置.职业配置表.Exists(s => s.上一职业 == 当前职业) ? 0 : togroup[0].升级货币;
-            前缀 = 配置.职业配置表.Exists(s => s.职业 == 当前职业) ? 配置.职业配置表.Find(s => s.职业 == 当前职业).前缀 : "";
-            var percent = (double) 货币 / 升级货币;
-
-            var percentText = percent.ToString("0.0%");
-            sb.AppendLine($"[c/F5AA19:—][c/F23812:流][c/F36C15:光][c/F48817:之][c/F5AA19:城]·[c/F5AA19:苍][c/F48817:穹][c/F36C15:传][c/F23812:说][c/F5AA19:—]\n[c/D2B369:职业]: {当前职业}\n[c/CB7942:等级]：{前缀}\n[c/53D9E2:{配置.货币名}]: [c/5CFD17:{货币}]/[c/FD4C17:{升级货币}] （{percentText}）");
-
-            //plr.SendData(PacketTypes.Status, $"-----Chrome_RPG-----                                                                        \n职业: {当前职业}                                                                        \n{配置.货币名}: {货币}/{货币上限}                                                                        \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+        }
+    }
+    public static void OnChat(ServerChatEventArgs args)
+    {
+        var plr = TShock.Players[args.Who];
+        var 职业名 = Config.查职业(plr.Name);
+        var 职业 = Config.获取职业(职业名);
+        if (职业 == null)
+        {
+            //plr.SendErrorMessage("未知职业!");
+            return;
+        }
+        var 等级 = Config.获取等级(职业, Config.查等级(plr.Name));
+        string 等级名;
+        string 颜色;
+        int 级;
+        if (等级 == null)
+        {
+            等级名 = "";
+            颜色 = "";
+            级 = 1;
         }
         else
         {
-            sb.AppendLine("");
+            等级名 = 等级.等级名;
+            级 = 等级.等级;
+            颜色 = 等级.颜色;
         }
-
-        //sb.AppendLine($"-----Chrome_RPG-----\n职业: {当前职业}\n{配置.货币名}: {货币}/{货币上限}");
+        var 前缀 = 职业.前缀.Replace("{等级}", 级.ToString()).Replace("{职业}", 职业名).Replace("{等级名}", 等级名).Replace("{颜色}", 颜色);
+        var 后缀 = 职业.后缀.Replace("{等级}", 级.ToString()).Replace("{职业}", 职业名).Replace("{等级名}", 等级名).Replace("{颜色}", 颜色);
+        称号插件.称号插件.称号信息[plr.Name].前前缀 = 前缀;
+        称号插件.称号插件.称号信息[plr.Name].后后缀 = 后缀;
     }
+    private void StatusText(StatusTextUpdateEventArgs args)
+    {
+        try
+        {
+            var plr = args.tsplayer;
+            var sb = args.statusTextBuilder;
+            var 货币 = DB.QueryCost(plr.Name);
+            var 货币上限 = Main.hardMode ? 配置.肉山前最大货币数量 : 配置.肉山后最大货币数量;
+            if (货币 > 货币上限)
+            {
+                DB.AmountCost(plr.Name, 货币上限);
+                货币 = 货币上限;
+            }
+            if (配置.启用侧边栏信息 && DB.QueryStatus(plr.Name) == "true")
+            {
+                var 职业名 = Config.查职业(plr.Name);
+                var 职业 = Config.获取职业(职业名);
+                if (职业 == null)
+                {
+                    return;
+                }
 
+                var 等级 = Config.查等级(plr.Name);
+                string percentText;
+                string 等级名;
+                long 升级货币;
+                var 级 = Config.获取等级(职业, 等级);
+                //string 颜色 = "";
+                等级名 = 级 == null ? "" : 级.等级名;
+                if (!Config.是否有下级(职业, 等级))
+                {
+                    percentText = "100%";
+                    升级货币 = 0;
+                }
+                else
+                {
+                    升级货币 = Config.获取升级所需货币(职业, 等级);
+                    var percent = (double) (货币 / 升级货币);
+                    percentText = percent.ToString("0.0%");
+                    if (percent > 100)
+                    {
+                        percentText = "100%";
+                    }
+                }
+
+                sb.AppendLine($"[c/F5AA19:—][c/F23812:流][c/F36C15:光][c/F48817:之][c/F5AA19:城]·[c/F5AA19:苍][c/F48817:穹][c/F36C15:传][c/F23812:说][c/F5AA19:—]\n[c/D2B369:职业]: [c/D166FF:{职业名}]\n[c/CB7942:等级]:[c/FFC466:{等级}] [c/D166FF:{等级名}]\n[c/53D9E2:{配置.货币名}]: [c/5CFD17:{货币}]/[c/FD4C17:{升级货币}] [c/FF6866:（{percentText}）]");
+            }
+        }
+        catch (Exception e)
+        {
+            if (配置.显示报错)
+            {
+                TShock.Log.ConsoleInfo(e.ToString());
+            }
+        }
+    }
+    #endregion
+    #region 指令
     private void OnInitialize(EventArgs args)//游戏初始化的狗子
     {
         //第一个是权限，第二个是子程序，第三个是指令
@@ -129,49 +228,6 @@ public class ChromePlugin : TerrariaPlugin
         Commands.ChatCommands.Add(new Command("QwRPG.use", this.Reset, "重置职业", "重选职业") { HelpText = "重置职业" });
         Commands.ChatCommands.Add(new Command("QwRPG.use", CmdStatus, "status", "切换显示") { HelpText = "切换显示" });
     }
-
-
-
-    /*
-public static void Status(TSPlayer plr)
-{
-long 货币 = 0;
-long 货币上限;
-if (Main.hardMode)
-{
-   货币上限 = 配置.肉山前最大货币数量;
-}
-else
-{
-   货币上限 = 配置.肉山后最大货币数量;
-}
-if (货币 > 货币上限)
-{
-   DB.AmountCost(plr.Name, 货币上限);
-   货币 = 货币上限;
-}
-if (配置.启用侧边栏信息 && DB.QueryStatus(plr.Name) == "true")
-{
-   string 当前职业 = "无";
-   using (var 表 = TShock.DB.QueryReader("SELECT * FROM Chrome_RPG WHERE `玩家名`=@0", plr.Name))
-   {
-       if (表.Read())
-       {
-           当前职业 = 表.Get<string>("职业");
-           货币 = 表.Get<long>("点券");
-       }
-   }
-   plr.SendData(PacketTypes.Status, $"-----Chrome_RPG-----                                                                        \n职业: {当前职业}                                                                        \n{配置.货币名}: {货币}/{货币上限}                                                                        \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-
-}
-else
-{
-   plr.SendData(PacketTypes.Status, "");
-}
-
-}
-*/
-
     private static void CmdStatus(CommandArgs args)
     {
         if (!args.Player.IsLoggedIn)
@@ -193,11 +249,6 @@ else
     }
     private void Reset(CommandArgs args)
     {
-        if (!配置.是否允许重置职业)
-        {
-            args.Player.SendErrorMessage("不允许重置职业！");
-            return;
-        }
         if (args.Parameters.Count == 0 || args.Parameters[0] != "yes")
         {
             args.Player.SendErrorMessage("请确定要重置职业：/重置职业 yes");
@@ -240,7 +291,6 @@ else
                     args.Player.SendInfoMessage("/bank clear <用户名> --清空货币");
                     args.Player.SendInfoMessage("/bank add <用户名> <货币数量> --给予货币");
                     args.Player.SendInfoMessage("/bank del <用户名> <货币数量> --收走货币");
-                    args.Player.SendInfoMessage("/bank rank <用户名> <职业> --修改玩家职业");
                 }
                 return;
             }
@@ -340,28 +390,6 @@ else
                     DB.DelCost(args.Parameters[1], 给货币, true);
                     args.Player.SendInfoMessage($"收走成功！");
                     break;
-                case "rank":
-                    if (!args.Player.HasPermission("QwRPG.admin")) { args.Player.SendErrorMessage("你没有权限使用此命令!"); return; }
-                    if (args.Parameters.Count != 3)
-                    {
-                        args.Player.SendInfoMessage("/bank rank <用户名> <职业> --修改玩家职业");
-                        return;
-                    }
-                    if (!DB.IsExist(args.Parameters[1]))
-                    {
-                        args.Player.SendErrorMessage("没有找到该玩家");
-                        return;
-                    }
-                    if (配置.职业配置表.Exists(s => s.上一职业 == args.Parameters[2]) || 配置.职业配置表.Exists(s => s.职业 == args.Parameters[2]))
-                    {
-                        DB.RankGrade(args.Parameters[1], args.Parameters[2]);
-                        args.Player.SendInfoMessage("修改成功");
-                    }
-                    else
-                    {
-                        args.Player.SendErrorMessage("修改失败！未知职业");
-                    }
-                    break;
                 default:
                     args.Player.SendInfoMessage("/bank query --查询货币");
                     args.Player.SendInfoMessage("/bank pay <用户名> <货币数量> --转账");
@@ -370,227 +398,205 @@ else
                         args.Player.SendInfoMessage("/bank clear <用户名> --清空货币");
                         args.Player.SendInfoMessage("/bank add <用户名> <货币数量> --给予货币");
                         args.Player.SendInfoMessage("/bank del <用户名> <货币数量> --收走货币");
-                        args.Player.SendInfoMessage("/bank rank <用户名> <职业> --修改玩家职业");
                     }
                     return;
             }
         }
-        catch
+        catch (Exception e)
         {
             args.Player.SendErrorMessage("发生错误！");
+            TShock.Log.ConsoleInfo(e.ToString());
         }
     }
     private void LookRank(CommandArgs args)
     {
-
-        if (!args.Player.IsLoggedIn)
+        var plr = args.Player;
+        if (!plr.IsLoggedIn)
         {
-            args.Player.SendErrorMessage("你必须登录后执行此命令!");
+            plr.SendErrorMessage("你必须登录后执行此命令!");
             return;
+        }
+        var 玩家名 = plr.Name;
+        var 职业名 = Config.查职业(玩家名);
+        var 职业 = Config.获取职业(职业名);
+        if (职业 == null)
+        {
+            plr.SendErrorMessage("未知职业!");
+            return;
+        }
+        var 等级 = Config.查等级(玩家名);
+        if (Config.是否有下级(职业, 等级))
+        {
+            升级预览(plr, 职业, 等级);
         }
         else
         {
-            var 玩家名 = args.Player.Name;
-            var 当前职业 = "";
-            using (var 表 = TShock.DB.QueryReader("SELECT * FROM Chrome_RPG WHERE `玩家名`=@0", 玩家名))
+            var 可转职职业 = 职业.转职职业;
+            if (可转职职业.Count == 0)
             {
-                if (表.Read())
-                {
-                    当前职业 = 表.Get<string>("职业");
-                }
+                plr.SendInfoMessage("已升至最高等级!");
+                return;
             }
-            var 货币名 = 配置.货币名;
-            List<Config.职业格式> togroup = new();
-            foreach (var 职业 in 配置.职业配置表)
-            {
-                //bool flag4 = keyValuePair.Value.ParentGroup == args.Player.Group.Name;
-                if (职业.上一职业 == 当前职业)
-                {
-                    togroup.Add(职业);
-                }
-            }
-            if (togroup.Count == 0)
-            {
-                args.Player.SendInfoMessage("已升至最高等级!");
-            }
-            else
-            {
-                args.Player.SendInfoMessage($"当前职业下一级预览：");
-                foreach (var text in togroup)
-                {
-
-                    args.Player.SendInfoMessage($"/升级 {text.职业}({货币名}{text.升级货币})");
-                    if (配置.转职时显示职业预览)
-                    {
-                        var 升级物品 = "";
-                        var 升级BUFF = "";
-                        foreach (var z in text.升级指令)
-                        {
-
-                            if (z.Contains("/g ") || z.Contains(".g "))//g 1 我 数量 前缀
-                            {
-                                var w = z.Split(" ");
-                                if (w.Length == 2)
-                                {
-                                    升级物品 += $"[i:{w[1]}] ";
-                                }
-                                if (w.Length >= 3)
-                                {
-                                    升级物品 += $"[i/s{w[3]}:{w[1]}] ";
-                                }
-                            }
-                            if (z.Contains(".gpermabuff ") || z.Contains("/gpermabuff"))//gpermabuff id 我
-                            {
-                                var b = z.Split(" ");
-                                if (b.Length >= 2)
-                                {
-                                    升级BUFF = 升级BUFF + "[" + TShock.Utils.GetBuffName(Convert.ToInt32(b[1])) + "]";
-                                }
-                            }
-                        }
-                        if (升级物品 == "")
-                        {
-                            升级物品 = "无";
-                        }
-                        if (升级BUFF == "")
-                        {
-                            升级BUFF = "无";
-                        }
-                        args.Player.SendInfoMessage($" >升级物品:{升级物品}");
-                        args.Player.SendInfoMessage($" >升级BUFF:{升级BUFF}");
-                    }
-                }
-            }
+            转职预览(plr, 职业, 等级);
         }
     }
+
     private void Rank(CommandArgs args)
     {
-        if (!args.Player.IsLoggedIn)
+        var plr = args.Player;
+        if (!plr.IsLoggedIn)
         {
-            args.Player.SendErrorMessage("你必须登录后执行此命令!");
+            plr.SendErrorMessage("你必须登录后执行此命令!");
             return;
+        }
+        var 玩家名 = plr.Name;
+        var 职业名 = Config.查职业(玩家名);
+        var 职业 = Config.获取职业(职业名);
+        if (职业 == null)
+        {
+            plr.SendErrorMessage("未知职业!");
+            return;
+        }
+        var 等级 = Config.查等级(玩家名);
+        if (Config.是否有下级(职业, 等级))
+        {
+            this.升级操作(plr, Config.获取等级(职业, 等级));
         }
         else
         {
-            var 玩家名 = args.Player.Name;
-            var 当前职业 = DB.QueryRPGGrade(args.Player.Name);
-            var 货币名 = 配置.货币名;
-            List<Config.职业格式> togroup = new();
-            foreach (var 职业 in 配置.职业配置表)
-            {
-                //bool flag4 = keyValuePair.Value.ParentGroup == args.Player.Group.Name;
-                if (职业.上一职业 == 当前职业)
-                {
-                    togroup.Add(职业);
-                }
-            }
-            if (togroup.Count == 0)
+            var 可转职职业 = 职业.转职职业;
+            if (可转职职业.Count == 0)
             {
                 args.Player.SendInfoMessage("已升至最高等级!");
+                return;
             }
-            else
+            if (可转职职业.Count == 1)
             {
-                if (togroup.Count > 1 && args.Parameters.Count == 0)
-                {
-                    args.Player.SendInfoMessage($"你现在需要选择职业：");
-                    foreach (var text in togroup)
-                    {
 
-                        args.Player.SendInfoMessage($"/升级 {text.职业}({货币名}{text.升级货币})");
-                        if (配置.转职时显示职业预览)
-                        {
-                            var 升级物品 = "";
-                            var 升级BUFF = "";
-                            foreach (var z in text.升级指令)
-                            {
-                                if (z.Contains("/g ") || z.Contains(".g "))//g 1 我 数量 前缀
-                                {
-                                    var w = z.Split(" ");
-                                    if (w.Length == 2)
-                                    {
-                                        升级物品 += $"[i:{w[1]}] ";
-                                    }
-                                    if (w.Length >= 3)
-                                    {
-                                        升级物品 += $"[i/s{w[3]}:{w[1]}] ";
-                                    }
-                                }
-                                if (z.Contains(".gpermabuff ") || z.Contains("/gpermabuff"))//gpermabuff id 我
-                                {
-                                    var b = z.Split(" ");
-                                    if (b.Length >= 2)
-                                    {
-                                        升级BUFF = 升级BUFF + "[" + TShock.Utils.GetBuffName(Convert.ToInt32(b[1])) + "]";
-                                    }
-                                }
-                            }
-                            if (升级物品 == "")
-                            {
-                                升级物品 = "无";
-                            }
-                            if (升级BUFF == "")
-                            {
-                                升级BUFF = "无";
-                            }
-                            args.Player.SendInfoMessage($" >升级物品:{升级物品}");
-                            args.Player.SendInfoMessage($" >升级BUFF:{升级BUFF}");
-                        }
-                    }
-                }
-                else
+                this.转职操作(args.Player, 职业, 可转职职业[0], Config.获取等级(职业, 等级));
+                return;
+            }
+            if (可转职职业.Count > 1 && args.Parameters.Count == 0)
+            {
+                转职预览(plr, 职业, 等级);
+                return;
+            }
+            var 升级到职业 = args.Parameters[0];
+            if (!可转职职业.Exists(f => f.职业 == 升级到职业))
+            {
+                args.Player.SendErrorMessage($"无法升级到{升级到职业}，没有该选项!");
+                return;
+            }
+            this.转职操作(args.Player, 职业, 可转职职业!.Find(s => s.职业 == 升级到职业), Config.获取等级(职业, 等级));
+            return;
+        }
+    }
+    #endregion
+    #region 操作
+    public static void 升级预览(TSPlayer plr, Config.职业格式 职业, int 等级)
+    {
+        plr.SendInfoMessage($"当前职业下一级预览：");
+        var 级 = Config.获取等级(职业, 等级 + 1);
+        var 升级货币 = 级.升级货币;
+        plr.SendInfoMessage($"/升级({配置.货币名}{升级货币})");
+        if (配置.转职时显示职业预览)
+        {
+            var 升级物品 = "";
+            var 升级BUFF = "";
+            foreach (var z in 级.升级指令)
+            {
+                if (z.Contains("/g ") || z.Contains(".g "))//g 1 我 数量 前缀
                 {
-                    var flag7 = togroup.Count > 1 && args.Parameters.Count == 1;
-                    if (flag7)
+                    var w = z.Split(" ");
+                    if (w.Length == 2)
                     {
-                        if (!配置.职业配置表.Exists(s => s.上一职业 == 当前职业))
+                        升级物品 += $"[i:{w[1]}] ";
+                    }
+                    if (w.Length >= 3)
+                    {
+                        升级物品 += $"[i/s{w[3]}:{w[1]}] ";
+                    }
+                }
+                if (z.Contains(".gpermabuff ") || z.Contains("/gpermabuff"))//gpermabuff id 我
+                {
+                    var b = z.Split(" ");
+                    if (b.Length >= 2)
+                    {
+                        升级BUFF = 升级BUFF + "[" + TShock.Utils.GetBuffName(Convert.ToInt32(b[1])) + "]";
+                    }
+                }
+            }
+            if (升级物品 == "")
+            {
+                升级物品 = "无";
+            }
+            if (升级BUFF == "")
+            {
+                升级BUFF = "无";
+            }
+            plr.SendInfoMessage($" >升级物品:{升级物品}");
+            plr.SendInfoMessage($" >升级BUFF:{升级BUFF}");
+        }
+    }
+    public static void 转职预览(TSPlayer plr, Config.职业格式 当前职业, int 等级)
+    {
+        plr.SendInfoMessage($"当前职业转职预览：");
+        var 升级货币 = Config.获取升级所需货币(当前职业, 等级);
+        foreach (var text in 当前职业.转职职业)
+        {
+            var 转职货币 = 升级货币 + text.转职货币;
+            plr.SendInfoMessage($"/升级 {text.职业}({配置.货币名}{转职货币})");
+            if (配置.转职时显示职业预览)
+            {
+                var 升级物品 = "";
+                var 升级BUFF = "";
+                foreach (var z in text.转职指令)
+                {
+                    if (z.Contains("/g ") || z.Contains(".g "))//g 1 我 数量 前缀
+                    {
+                        var w = z.Split(" ");
+                        if (w.Length == 2)
                         {
-                            args.Player.SendInfoMessage("未知职业无法升级!");
+                            升级物品 += $"[i:{w[1]}] ";
                         }
-                        else
+                        if (w.Length >= 3)
                         {
-                            if (!togroup.Exists(f => f.职业 == args.Parameters[0]))
-                            {
-                                args.Player.SendErrorMessage($"无法升级到{args.Parameters[0]}，没有该选项!");
-                            }
-                            else
-                            {
-                                var 职业 = togroup.Find(s => s.职业 == args.Parameters[0]);
-                                this.RankGrabe(args.Player, 职业!);
-                            }
+                            升级物品 += $"[i/s{w[3]}:{w[1]}] ";
                         }
                     }
-                    else
+                    if (z.Contains(".gpermabuff ") || z.Contains("/gpermabuff"))//gpermabuff id 我
                     {
-                        if (togroup.Count == 1)
+                        var b = z.Split(" ");
+                        if (b.Length >= 2)
                         {
-                            if (!配置.职业配置表.Exists(s => s.上一职业 == 当前职业))
-                            {
-                                args.Player.SendInfoMessage("未知职业无法升级!");
-                            }
-                            else
-                            {
-                                var 职业 = togroup[0];
-                                this.RankGrabe(args.Player, 职业);
-                            }
+                            升级BUFF = 升级BUFF + "[" + TShock.Utils.GetBuffName(Convert.ToInt32(b[1])) + "]";
                         }
                     }
                 }
+                if (升级物品 == "")
+                {
+                    升级物品 = "无";
+                }
+                if (升级BUFF == "")
+                {
+                    升级BUFF = "无";
+                }
+                plr.SendInfoMessage($" >升级物品:{升级物品}");
+                plr.SendInfoMessage($" >升级BUFF:{升级BUFF}");
             }
         }
     }
-    public void RankGrabe(TSPlayer plr, Config.职业格式 职业)
+    public void 升级操作(TSPlayer plr, Config.等级格式 等级)//当前等级,当前职业
     {
-        var 升级职业 = 职业.职业;
-        var 升级货币 = 职业.升级货币;
-        var 进度 = 职业.进度限制;
-        var 任务 = 职业.任务限制;
         var 玩家名 = plr.Name;
-        var 货币 = DB.QueryCost(plr.Name);
-        var 当前职业 = DB.QueryRPGGrade(plr.Name);
+        var 货币 = DB.QueryCost(玩家名);
+        var 升级货币 = 等级.升级货币;
         var 货币名 = 配置.货币名;
+        var 进度 = 等级.进度限制;
+        var 任务 = 等级.任务限制;
         if (进度.Count > 0)
         {
-            var 当前进度 = this.Progress();
+            var 当前进度 = 进度详情();
             foreach (var b in 进度)
             {
                 if (!当前进度.Contains(b))
@@ -602,23 +608,23 @@ else
         }
         if (任务.Count > 0)
         {
-            var 完成任务 = DB.QueryFinishTask(玩家名);
+            var 完成任务 = 任务系统.DB.QueryFinishTask(玩家名);
             var text = "";
             foreach (var b in 任务)
             {
                 if (!完成任务.Contains(b))
                 {
-                    var r = Quest.QuestPlugin.GetTask(b);
+                    var r = 任务系统.任务系统.GetTask(b);
                     text += $"{r.任务ID}.{r.任务名称}\n";
                     plr.SendMessage($"[c/DCE923:升级失败。需要完成任务]\n{text}", 18, 252, 221);
                     return;
                 }
             }
         }
-        if (职业.使用物品升级.Count != 0)
+        if (等级.物品升级.Count != 0)
         {
             {
-                foreach (var r in 职业.使用物品升级)
+                foreach (var r in 等级.物品升级)
                 {
                     var _item = r.Split(',');
                     var item_bool = false;
@@ -649,7 +655,7 @@ else
             }
             //消耗任务物品
             {
-                foreach (var r in 职业.使用物品升级)
+                foreach (var r in 等级.物品升级)
                 {
                     var _item = r.Split(',');
                     for (var i = 10; i < 49; i++) //背包从第二排开始到最后一个背包位置
@@ -659,7 +665,7 @@ else
                             if (plr.TPlayer.inventory[i].stack >= Convert.ToInt32(_item[1]))
                             {
                                 var stack = plr.TPlayer.inventory[i].stack -= Convert.ToInt32(_item[1]);
-                                Quest.QuestPlugin.PlayItemSet(plr.Index, i, Convert.ToInt32(_item[0]), stack);
+                                任务系统.任务系统.PlayItemSet(plr.Index, i, Convert.ToInt32(_item[0]), stack);
                                 break;
                             }
                             else
@@ -671,142 +677,149 @@ else
                         }
                     }
                 }
-
             }
         }
-        else
+        if (货币 < 升级货币)
         {
-            if (货币 < 升级货币)
-            {
-                plr.SendInfoMessage($"升级失败,你当前{货币名}{货币},升级所需{货币名}{升级货币}");
-                return;
-            }
+            plr.SendInfoMessage($"升级失败,你当前{货币名}{货币},升级所需{货币名}{升级货币}");
+            return;
         }
-
-
-
         DB.DelCost(plr.Name, 升级货币, true);
-        DB.RankGrade(plr.Name, 升级职业);
+        DB.RankGrade(玩家名);
         //args.Player.tempGroup = TShock.Groups.GetGroupByName("superadmin");
-        foreach (var z in 职业.升级指令)
+        foreach (var z in 等级.升级指令)
         {
-            if (z == null) { continue; }
             var text = string.Format(z, 玩家名);
             Commands.HandleCommand(TSPlayer.Server, text);
         }
         //args.Player.tempGroup = null;
         if (配置.升级广播)
         {
-            TShock.Utils.Broadcast($"恭喜[c/FFFF66:{玩家名}]从[c/FFFF33:{当前职业}]升级为[c/FF8000:{职业.职业}]", 55, 169, 226);
+            TShock.Utils.Broadcast($"恭喜[c/FFFF66:{玩家名}]升到[c/FFFF33:{等级.等级 + 1}]级!", 55, 169, 226);
         }
     }
-    private async void OnJoin(JoinEventArgs args)
+    public void 转职操作(TSPlayer plr, Config.职业格式 当前职业, Config.转职格式 转职职业, Config.等级格式 等级)
     {
-        var plr = TShock.Players[args.Who];
-        using (var 表 = TShock.DB.QueryReader("SELECT * FROM Chrome_RPG WHERE 玩家名=@0", plr.Name))
-        {
-            if (!表.Read())
-            {
-                TShock.DB.Query("INSERT INTO Chrome_RPG (`玩家名`, `点券`, `职业`,`是否显示`,`职业重置次数`) VALUES " + "(@0, @1, @2, @3,@4);", plr.Name, 0, 配置.玩家初始职业, "true", 0);
-            }
-        }
-        await Task.Delay(3000);
-        //Status(plr);
-    }
-    private void OnNpcKill(NpcKilledEventArgs args)
-    {
-        if (args.npc.lastInteraction == 255 || args.npc.lastInteraction < 0)
-        {
-            return;
-        }
-        var plr = TShock.Players[args.npc.lastInteraction];
-        if (!plr.IsLoggedIn)
-        {
-            return;
-        }
-        if (args.npc.SpawnedFromStatue && 配置.杀死雕像生成NPC不给货币)
-        {
-            return;
-        }
-        var 当前职业 = "无";
-        //long 货币 = 0;
-        using (var 表 = TShock.DB.QueryReader("SELECT * FROM Chrome_RPG WHERE `玩家名`=@0", plr.Name))
-        {
-            if (表.Read())
-            {
-                当前职业 = 表.Get<string>("职业");
-                //货币 = 表.Get<long>("点券");
-            }
-        }
-        if (配置.击败肉山前不继续加货币职业.Exists(s => s == 当前职业))
-        {
-            return;
-        }
-        //if()
-        if (配置.杀死不给货币NPC.Exists(s => s == args.npc.type)) { return; }
-
-
-        var 怪物血量 = args.npc.lifeMax;
-        DB.AddCost(plr.Name, (long) (怪物血量 * 配置.获取货币血量比例), true);
-    }
-    private void Kill(object? o, GetDataHandlers.KillMeEventArgs args)
-    {
-        if (!args.Player.IsLoggedIn)
-        {
-            return;
-        }
-        if (配置.死亡掉落货币百分率 < 1)
-        {
-            var 货币 = DB.QueryCost(args.Player.Name);
-            if (货币 > 0)
-            {
-                货币 = (long) (货币 * 配置.死亡掉落货币百分率);
-                DB.DelCost(args.Player.Name, 货币, true);
-            }
-        }
-    }
-    public static void OnChat(ServerChatEventArgs args)
-    {
-        var plr = TShock.Players[args.Who];
         var 玩家名 = plr.Name;
-        string? 职业 = null;
-        using (var 表 = TShock.DB.QueryReader("SELECT * FROM Chrome_RPG WHERE `玩家名` = @0", 玩家名))
+        var 升级到职业 = 转职职业.职业;
+        var 升级货币 = 等级.升级货币;
+        var 转职货币 = 升级货币 + 转职职业.转职货币;
+        var 进度 = 等级.进度限制;
+        var 任务 = 等级.任务限制;
+        var 当前货币 = DB.QueryCost(plr.Name);
+        var 货币名 = 配置.货币名;
+        if (进度.Count > 0)
         {
-            if (表.Read())
+            var 当前进度 = 进度详情();
+            foreach (var b in 进度)
             {
-                职业 = 表.Get<string>("职业");
+                if (!当前进度.Contains(b))
+                {
+                    plr.SendInfoMessage($"转职失败。需要打败[c/FF3333:{b}]");
+                    return;
+                }
             }
-            else
+        }
+        if (任务.Count > 0)
+        {
+            var 完成任务 = 任务系统.DB.QueryFinishTask(玩家名);
+            var text = "";
+            foreach (var b in 任务)
             {
-                return;
+                if (!完成任务.Contains(b))
+                {
+                    var r = 任务系统.任务系统.GetTask(b);
+                    text += $"{r.任务ID}.{r.任务名称}\n";
+                    plr.SendMessage($"[c/DCE923:转职失败。需要完成任务]\n{text}", 18, 252, 221);
+                    return;
+                }
             }
         }
-        var z = 配置.职业配置表.Find(s => s.职业 == 职业);
-        if (z != null)
+        if (等级.物品升级.Count != 0)
         {
-            称号插件.称号插件.称号信息[plr.Name].前前缀 = z.前缀;
-            称号插件.称号插件.称号信息[plr.Name].后后缀 = z.后缀;
+            {
+                foreach (var r in 等级.物品升级)
+                {
+                    var _item = r.Split(',');
+                    var item_bool = false;
+                    for (var i = 10; i < 49; i++) //背包从第二排开始到最后一个背包位置
+                    {
+                        if (plr.TPlayer.inventory[i].netID == Convert.ToInt32(_item[0]))
+                        {
+                            if (plr.TPlayer.inventory[i].stack >= Convert.ToInt32(_item[1]))
+                            {
+                                item_bool = true;
+                                break;
+                            }
+                            else
+                            {
+
+                                plr.SendErrorMessage("没有足够的物品");
+                                return;
+                            }
+                        }
+                    }
+                    if (!item_bool)
+                    {
+                        plr.SendErrorMessage($"[c/FF6103:您的背包中没有任务物品:][i/s{Convert.ToInt32(_item[1])}:{Convert.ToInt32(_item[0])}]");
+                        plr.SendInfoMessage("[c/A066D3:任务物品请不要放在背包最上排中]");
+                        return;
+                    }
+                }
+            }
+            //消耗任务物品
+            {
+                foreach (var r in 等级.物品升级)
+                {
+                    var _item = r.Split(',');
+                    for (var i = 10; i < 49; i++) //背包从第二排开始到最后一个背包位置
+                    {
+                        if (plr.TPlayer.inventory[i].netID == Convert.ToInt32(_item[0]))
+                        {
+                            if (plr.TPlayer.inventory[i].stack >= Convert.ToInt32(_item[1]))
+                            {
+                                var stack = plr.TPlayer.inventory[i].stack -= Convert.ToInt32(_item[1]);
+                                任务系统.任务系统.PlayItemSet(plr.Index, i, Convert.ToInt32(_item[0]), stack);
+                                break;
+                            }
+                            else
+                            {
+
+                                plr.SendErrorMessage("没有足够的物品");
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (当前货币 < 转职货币)
+        {
+            plr.SendInfoMessage($"转职失败,你当前{货币名}{当前货币},升级所需{货币名}{转职货币}");
+            return;
+        }
+        DB.DelCost(plr.Name, 转职货币, true);
+        DB.RankGrade(plr.Name, 升级到职业);
+        //args.Player.tempGroup = TShock.Groups.GetGroupByName("superadmin");
+        foreach (var z in 等级.升级指令)
+        {
+            var text = string.Format(z, 玩家名);
+            Commands.HandleCommand(TSPlayer.Server, text);
+        }
+        foreach (var z in 转职职业.转职指令)
+        {
+            var text = string.Format(z, 玩家名);
+            Commands.HandleCommand(TSPlayer.Server, text);
+        }
+        //args.Player.tempGroup = null;
+        if (配置.升级广播)
+        {
+            TShock.Utils.Broadcast($"恭喜[c/FFFF66:{玩家名}]从[c/FFFF33:{当前职业.职业}]转职为[c/FF8000:{转职职业.职业}]", 55, 169, 226);
         }
     }
-    private void Reload(ReloadEventArgs args)
-    {
-        try
-        {
-            Reload();
-            args.Player.SendErrorMessage($"[Chrome.RPG]重载成功！");
-        }
-        catch
-        {
-            TSPlayer.Server.SendErrorMessage($"[Chrome.RPG]配置文件读取错误");
-        }
-    }
-    public static void Reload()
-    {
-        DB.Reload();
-        配置 = JsonConvert.DeserializeObject<Config>(File.ReadAllText(Path.Combine("tshock/Chrome.RPG.json")));
-        File.WriteAllText("tshock/Chrome.RPG.json", JsonConvert.SerializeObject(配置, Formatting.Indented));
-    }
-    private List<string> Progress()//获取进度详情
+
+    [Obsolete("使用DataSync所提供的进度")]
+    public static List<string> 进度详情()//获取进度详情
     {
         var list = new List<string>();
         if (NPC.downedSlimeKing)//史莱姆王
@@ -1020,4 +1033,5 @@ else
         }
         return list;
     }
+    #endregion
 }

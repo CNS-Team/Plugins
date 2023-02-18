@@ -7,7 +7,7 @@ using TShockAPI.Hooks;
 namespace Chrome.EntryCondition;
 
 [ApiVersion(2, 1)]//api版本
-public class Plugin : TerrariaPlugin
+public class EntryCondition : TerrariaPlugin
 {
     /// <summary>
     /// 插件作者
@@ -28,7 +28,7 @@ public class Plugin : TerrariaPlugin
     /// <summary>
     /// 插件处理
     /// </summary>
-    public Plugin(Main game) : base(game)
+    public EntryCondition(Main game) : base(game)
     {
     }
     public static string path = "tshock/Chrome.EntryCondition.json";
@@ -36,15 +36,14 @@ public class Plugin : TerrariaPlugin
     public static Config 配置 = new();
     public override void Initialize()
     {
-        ServerApi.Hooks.NetGreetPlayer.Register(this, new HookHandler<GreetPlayerEventArgs>(this.GreetPlayer));
-        ServerApi.Hooks.NetGetData.Register(this, new HookHandler<GetDataEventArgs>(this.OnNetGetdata));
+        ServerApi.Hooks.ServerJoin.Register(this, new HookHandler<JoinEventArgs>(this.OnJoin));
+        //ServerApi.Hooks.NetGreetPlayer.Register(this, new HookHandler<GreetPlayerEventArgs>(this.GreetPlayer));
+        //ServerApi.Hooks.NetGetData.Register(this, new HookHandler<GetDataEventArgs>(this.OnNetGetdata));
         //ServerApi.Hooks.NpcStrike.Register(this, new HookHandler<NpcStrikeEventArgs>(this.OnNpcStrike));
         GeneralHooks.ReloadEvent += new GeneralHooks.ReloadEventD(this.Reload);
         Config.GetConfig();
         Reload();
     }
-
-
     /// <summary>
     /// 插件关闭时
     /// </summary>
@@ -52,9 +51,9 @@ public class Plugin : TerrariaPlugin
     {
         if (disposing)
         {
-            // Deregister hooks here
-            ServerApi.Hooks.NetGreetPlayer.Deregister(this, new HookHandler<GreetPlayerEventArgs>(this.GreetPlayer));
-            ServerApi.Hooks.NetGetData.Deregister(this, new HookHandler<GetDataEventArgs>(this.OnNetGetdata));
+            ServerApi.Hooks.ServerJoin.Deregister(this, new HookHandler<JoinEventArgs>(this.OnJoin));
+            //ServerApi.Hooks.NetGreetPlayer.Deregister(this, new HookHandler<GreetPlayerEventArgs>(this.GreetPlayer));
+            //ServerApi.Hooks.NetGetData.Deregister(this, new HookHandler<GetDataEventArgs>(this.OnNetGetdata));
             //ServerApi.Hooks.NpcStrike.Deregister(this, new HookHandler<NpcStrikeEventArgs>(this.OnNpcStrike));
             GeneralHooks.ReloadEvent -= new GeneralHooks.ReloadEventD(this.Reload);
 
@@ -80,22 +79,19 @@ public class Plugin : TerrariaPlugin
             }
         }
     }
-    */
+    
     // Token: 0x06000021 RID: 33 RVA: 0x00002660 File Offset: 0x00000860
     private void OnNetGetdata(GetDataEventArgs args)
     {
-        var plr = TShock.Players[args.Msg.whoAmI];
-        if (plr == null)
+        TSPlayer plr = TShock.Players[args.Msg.whoAmI];
+        if (plr == null) return;
+        if ((int)args.MsgID == 61)
         {
-            return;
-        }
-
-        if ((int) args.MsgID == 61)
-        {
-
+            
         }
     }
-    private void GreetPlayer(GreetPlayerEventArgs args)
+    */
+    private void OnJoin(JoinEventArgs args)
     {
 
         var plr = TShock.Players[args.Who];
@@ -117,27 +113,30 @@ public class Plugin : TerrariaPlugin
         var 阻止提示 = "";
         if (配置.允许进入的职业.Count > 0)
         {
-            var 职业 = DB.QueryGrade(plr.Name);
-            if (!配置.允许进入的职业.Contains(职业))
+            var 职业 = Chrome.RPG.Config.查职业(plr.Name);
+            if (!配置.允许进入的职业.ContainsKey(职业))
             {
                 阻止提示 = 配置.职业阻止进入提示 + "\n";
             }
+            else if (RPG.Config.查等级(plr.Name) < 配置.允许进入的职业[职业])
+            {
+                阻止提示 = 配置.等级不够阻止进入提示.Replace("{0}", 配置.允许进入的职业[职业].ToString()) + "\n";
+            }
         }
-        var 任务 = Quest.DB.QueryFinishTask(plr.Name);
+        var 任务 = 任务系统.DB.QueryFinishTask(plr.Name);
         foreach (var z in 配置.进入需要完成的任务)
         {
             if (!任务.Contains(z))
             {
-                var r = Quest.QuestPlugin.GetTask(z);
+                var r = 任务系统.任务系统.GetTask(z);
                 if (r.是否主线)
                 {
-                    阻止提示 += string.Format(配置.任务阻止进入提示, "您需要完成主线任务   " + r.任务名称 + "\n");
+                    阻止提示 += 配置.任务阻止进入提示.Replace("{0}", "主线").Replace("{1}", r.任务ID.ToString()).Replace("{2}", r.任务名称) + "\n";
                 }
                 else
                 {
-                    阻止提示 += string.Format(配置.任务阻止进入提示, "您需要完成支线任务   " + r.任务名称 + "\n");
+                    阻止提示 += 配置.任务阻止进入提示.Replace("{0}", "支线").Replace("{1}", r.任务ID.ToString()).Replace("{2}", r.任务名称) + "\n";
                 }
-
             }
         }
         if (阻止提示 != "")

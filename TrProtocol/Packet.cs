@@ -9,10 +9,10 @@ public abstract class Packet
     public override string ToString()
     {
         var sb = new StringBuilder();
-        sb.Append($"{Type}{{");
+        sb.Append($"{this.Type}{{");
 
         sb.AppendJoin(
-            ", ", GetType().GetProperties().Select(prop => $"{prop.Name}={prop.GetValue(this)}"));
+            ", ", this.GetType().GetProperties().Select(prop => $"{prop.Name}={prop.GetValue(this)}"));
 
         sb.Append("}}");
 

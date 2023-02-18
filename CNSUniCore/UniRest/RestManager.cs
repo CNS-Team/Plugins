@@ -30,7 +30,7 @@ public class RestManager
         TShock.RestApi.Register(new SecureRestCommand("/univip/updateuser", this.UniUserUpdate, "unireg.admin.update"));
     }
 
-    private object UniUserUpdate(RestRequestArgs args)
+    private object? UniUserUpdate(RestRequestArgs args)
     {
         var num = int.Parse(args.Parameters["id"]);
         var text = args.Parameters["name"];
@@ -54,7 +54,7 @@ public class RestManager
         return null;
     }
 
-    private object UniUserAdd(RestRequestArgs args)
+    private object? UniUserAdd(RestRequestArgs args)
     {
         var id = int.Parse(args.Parameters["id"]);
         var account = new UserAccount(args.Parameters["name"], args.Parameters["password"], group: args.Parameters["group"], uuid: args.Parameters["uuid"], known: args.Parameters["ip"], registered: args.Parameters["registered"], last: args.Parameters["lastaccessed"])
@@ -65,7 +65,7 @@ public class RestManager
         return null;
     }
 
-    private object UniVipDel(RestRequestArgs args)
+    private object? UniVipDel(RestRequestArgs args)
     {
         if (!ConfigUtils.config.EnableSponsor)
         {
@@ -73,7 +73,7 @@ public class RestManager
         }
         var text = args.Parameters["name"];
         var list = TSPlayer.FindByNameOrID(text);
-        TSPlayer tsplayer = null;
+        TSPlayer? tsplayer = null;
         var sponsor = MainPlugin.Instance.dbManager.GetSponsor(text);
         if (sponsor != null)
         {
@@ -93,7 +93,7 @@ public class RestManager
         return null;
     }
 
-    private object UniVipAdd(RestRequestArgs args)
+    private object? UniVipAdd(RestRequestArgs args)
     {
         if (!ConfigUtils.config.EnableSponsor)
         {
@@ -105,7 +105,7 @@ public class RestManager
         var s = args.Parameters["start"];
         var s2 = args.Parameters["end"];
         var list = TSPlayer.FindByNameOrID(text);
-        TSPlayer tsplayer = null;
+        TSPlayer? tsplayer = null;
         var sponsorInfo = MainPlugin.Instance.dbManager.GetSponsor(text);
         if (sponsorInfo != null)
         {
@@ -130,7 +130,7 @@ public class RestManager
         return null;
     }
 
-    private object Broadcast(RestRequestArgs args)
+    private object? Broadcast(RestRequestArgs args)
     {
         var text = args.Parameters["text"];
         TShock.Utils.Broadcast(text, Color.DarkTurquoise);
@@ -154,7 +154,7 @@ public class RestManager
         return new RestObject("200") { { "back", player } };
     }
 
-    private object DelBan(RestRequestArgs args)
+    private object? DelBan(RestRequestArgs args)
     {
         if (!ConfigUtils.config.EnableBan)
         {
@@ -184,15 +184,12 @@ public class RestManager
         Commands.HandleCommand(TSPlayer.Server, "/kick " + name);
         if (userAccountByName2 != null)
         {
-            var ti = 0;
-            var ti2 = 0;
-            var ti3 = 0;
-            var ti4 = 0;
             var BanTime = time;
+            int ti;
             if (BanTime.Contains(":"))
             {
                 var Time = BanTime.Split(":");
-                if (!int.TryParse(Time[0], out ti) || !int.TryParse(Time[1], out ti2) || !int.TryParse(Time[2], out ti3) || !int.TryParse(Time[3], out ti4))
+                if (!int.TryParse(Time[0], out ti) || !int.TryParse(Time[1], out var ti2) || !int.TryParse(Time[2], out _) || !int.TryParse(Time[3], out _))
                 {
                     return new RestObject("401") { { "error", "时间格式错误" } };
                 }

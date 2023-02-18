@@ -15,27 +15,39 @@ internal class PlayerRewardInfo : PlayerConfigBase<PlayerRewardInfo>
 
     #region ObtainedPlayerPacks Helper
 
-    public static void AddObtainedPlayerPacks(string playerName, string packName) =>
+    public static void AddObtainedPlayerPacks(string playerName, string packName)
+    {
         DbStringArrayEmulator.AddElement<PlayerRewardInfo>(playerName, x => x.ObtainedPlayerPacks, packName);
+    }
 
-    public static void RemoveObtainedPlayerPacks(string playerName, string packName) =>
+    public static void RemoveObtainedPlayerPacks(string playerName, string packName)
+    {
         DbStringArrayEmulator.RemoveElement<PlayerRewardInfo>(playerName, x => x.ObtainedPlayerPacks, packName);
+    }
 
-    public static void ClearObtainedPlayerPacks(string playerName) =>
+    public static void ClearObtainedPlayerPacks(string playerName)
+    {
         DbStringArrayEmulator.ClearElements<PlayerRewardInfo>(playerName, x => x.ObtainedPlayerPacks);
+    }
 
     #endregion
 
     #region ObtainedSponsorPacks Helper
 
-    public static void AddObtainedSponsorPacks(string playerName, string packName) =>
+    public static void AddObtainedSponsorPacks(string playerName, string packName)
+    {
         DbStringArrayEmulator.AddElement<PlayerRewardInfo>(playerName, x => x.ObtainedSponsorPacks, packName);
+    }
 
-    public static void RemoveObtainedSponsorPacks(string playerName, string packName) =>
+    public static void RemoveObtainedSponsorPacks(string playerName, string packName)
+    {
         DbStringArrayEmulator.RemoveElement<PlayerRewardInfo>(playerName, x => x.ObtainedSponsorPacks, packName);
+    }
 
-    public static void ClearObtainedSponsorPacks(string playerName) =>
+    public static void ClearObtainedSponsorPacks(string playerName)
+    {
         DbStringArrayEmulator.ClearElements<PlayerRewardInfo>(playerName, x => x.ObtainedSponsorPacks);
+    }
 
     #endregion
 

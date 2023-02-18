@@ -35,18 +35,15 @@ public partial struct BitsByte
     // Token: 0x17000063 RID: 99
     public bool this[int key]
     {
-        get
-        {
-            return ((int)this.value & 1 << key) != 0;
-        }
+        get => (this.value & (1 << key)) != 0;
         set
         {
             if (value)
             {
-                this.value |= (byte)(1 << key);
+                this.value |= (byte) (1 << key);
                 return;
             }
-            this.value &= (byte)(~(byte)(1 << key));
+            this.value &= (byte) ~(byte) (1 << key);
         }
     }
 
@@ -106,10 +103,7 @@ public partial struct BitsByte
     }
 
     // Token: 0x060000EF RID: 239 RVA: 0x00005284 File Offset: 0x00003484
-    public static implicit operator byte(BitsByte bb)
-    {
-        return bb.value;
-    }
+    public static implicit operator byte(BitsByte bb) => bb.value;
 
     // Token: 0x060000F0 RID: 240 RVA: 0x0000528C File Offset: 0x0000348C
     public static implicit operator BitsByte(byte b)
@@ -123,17 +117,17 @@ public partial struct BitsByte
     // Token: 0x060000F1 RID: 241 RVA: 0x000052AC File Offset: 0x000034AC
     public static BitsByte[] ComposeBitsBytesChain(bool optimizeLength, params bool[] flags)
     {
-        int i = flags.Length;
-        int num = 0;
+        var i = flags.Length;
+        var num = 0;
         while (i > 0)
         {
             num++;
             i -= 7;
         }
-        BitsByte[] array = new BitsByte[num];
-        int num2 = 0;
-        int num3 = 0;
-        for (int j = 0; j < flags.Length; j++)
+        var array = new BitsByte[num];
+        var num2 = 0;
+        var num3 = 0;
+        for (var j = 0; j < flags.Length; j++)
         {
             array[num3][num2] = flags[j];
             num2++;
@@ -146,7 +140,7 @@ public partial struct BitsByte
         }
         if (optimizeLength)
         {
-            int num4 = array.Length - 1;
+            var num4 = array.Length - 1;
             while (array[num4] == 0 && num4 > 0)
             {
                 array[num4 - 1][7] = false;

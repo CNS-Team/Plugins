@@ -4,7 +4,7 @@ public partial struct SignData
 {
     public override string ToString()
     {
-        return $"[{TileX}, {TileY}] {Text}";
+        return $"[{this.TileX}, {this.TileY}] {this.Text}";
     }
     public short ID { get; set; }
     public short TileX { get; set; }

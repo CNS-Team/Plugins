@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Permabuffs_V2;
+﻿namespace Permabuffs_V2;
 
 public class BuffGroup
 {

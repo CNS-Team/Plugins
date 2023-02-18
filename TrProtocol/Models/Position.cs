@@ -7,12 +7,12 @@ public partial struct Position
 {
     public Position(int x, int y)
     {
-        X = x;
-        Y = y;
+        this.X = x;
+        this.Y = y;
     }
     public int X, Y;
     public override string ToString()
     {
-        return $"[{X}, {Y}]";
+        return $"[{this.X}, {this.Y}]";
     }
 }

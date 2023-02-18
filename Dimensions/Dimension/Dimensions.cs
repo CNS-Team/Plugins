@@ -23,8 +23,6 @@ public class Dimensions : TerrariaPlugin
 
     public static Config Config;
 
-    private readonly int timer;
-
     private readonly string path = Path.Combine(TShock.SavePath, "Dimensions.json");
 
     public static Dictionary<string, StringBuilder> status;

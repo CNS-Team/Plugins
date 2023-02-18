@@ -88,5 +88,4 @@ internal partial class Command : CommandBase
 
         return most;
     }
-
 }

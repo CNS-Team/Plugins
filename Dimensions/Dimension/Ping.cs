@@ -1,10 +1,11 @@
 ﻿//Copy From @SGKoishi
+using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using TShockAPI;
 
 namespace Chireiden.TShock.Omni;
 
-public class PingClass
+public static class PingClass
 {
     public static async Task<TimeSpan> Ping(TSPlayer player, CancellationToken token = default)
     {
@@ -35,7 +36,7 @@ public class PingClass
         while (!token.IsCancellationRequested)
         {
             try
-            {    
+            {
                 var end = await channel.Reader.ReadAsync(token);
                 if (end == inv)
                 {
@@ -43,8 +44,9 @@ public class PingClass
                     break;
                 }
             }
-            catch (System.OperationCanceledException ex)
+            catch (OperationCanceledException)
             {
+                // Timeout
             }
         }
         player.SetData<Channel<int>?>("chireiden.data.pingchannel1", null);
@@ -81,19 +83,13 @@ public class PingClass
         {
             var player = plr;
             var result = await Ping(player, new System.Threading.CancellationTokenSource(3000).Token);
-            if (result.TotalMilliseconds >= 200)
+            return result.TotalMilliseconds switch
             {
-                return ($"[c/FF0000:{result.TotalMilliseconds:F1}ms]");
-
-            }
-            else if (result.TotalMilliseconds > 80 && result.TotalMilliseconds < 200)
-            {
-                return ($"[c/FFA500:{result.TotalMilliseconds:F1}ms]");
-            }
-            else
-            {
-                return ($"[c/00FF00:{result.TotalMilliseconds:F1}ms]");
-            }
+                double ms when ms >= 200 => $"[c/FF0000:{ms:F1}ms]",
+                double ms when ms > 80 && ms < 200 => $"[c/FFA500:{ms:F1}ms]",
+                double ms when ms <= 80 => $"[c/00FF00:{ms:F1}ms]",
+                _ => throw new SwitchExpressionException()
+            };
         }
         catch (Exception e)
         {

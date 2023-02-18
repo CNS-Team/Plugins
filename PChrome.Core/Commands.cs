@@ -1,11 +1,6 @@
 ﻿using LazyUtils;
 using LazyUtils.Commands;
 using LinqToDB;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TShockAPI;
 
 namespace PChrome.Core;
@@ -60,5 +55,4 @@ public static class Commands
         using var query = args.Player.Get<Money>();
         args.Player.SendInfoMessage($"当前货币总额:{query.Single().money}$");
     }
-
 }

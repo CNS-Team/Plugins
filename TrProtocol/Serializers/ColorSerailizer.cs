@@ -13,9 +13,9 @@ public partial struct Color
 
         protected override void WriteOverride(BinaryWriter bw, Color t)
         {
-            bw.Write((byte)t.R);
-            bw.Write((byte)t.G);
-            bw.Write((byte)t.B);
+            bw.Write((byte) t.R);
+            bw.Write((byte) t.G);
+            bw.Write((byte) t.B);
         }
     }
 }

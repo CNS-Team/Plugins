@@ -3,8 +3,6 @@ using LazyUtils.Commands;
 using Newtonsoft.Json.Linq;
 using PChrome.OnlineTime;
 using Rests;
-using System;
-using System.Linq;
 using TShockAPI;
 
 namespace PChrome.Ranking;

@@ -6,7 +6,6 @@ using LinqToDB.DataProvider.MySql;
 using LinqToDB.DataProvider.SQLite;
 using Microsoft.Data.Sqlite;
 using MySql.Data.MySqlClient;
-using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using TShockAPI;
@@ -45,7 +44,9 @@ internal static class Utils
 
     public static DataConnection GetDBConnection()
     {
-        return new DataConnection(DBProvider, DBConnectionString);
+        var dc = new DataConnection(DBProvider, DBConnectionString);
+        dc.MappingSchema.AddScalarType(typeof(string), new LinqToDB.SqlQuery.SqlDataType(DataType.NVarChar, 255));
+        return dc;
     }
 
     public static DisposableQuery<T> GetDBQuery<T>() where T : class
@@ -57,7 +58,7 @@ internal static class Utils
 
 internal static class Logger
 {
-    private static readonly string AssemblyName = Assembly.GetExecutingAssembly().GetName().Name;
+    private static readonly string AssemblyName = Assembly.GetExecutingAssembly().GetName().Name!;
 
     public static void ConsoleInfo(string message)
     {

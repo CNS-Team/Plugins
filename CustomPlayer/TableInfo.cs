@@ -1,6 +1,6 @@
 ﻿namespace CustomPlayer;
 #pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
-public class TableInfo
+public static class TableInfo
 {
     public class Prefix
     {
@@ -11,12 +11,12 @@ public class TableInfo
         public string DurationText;
         public Prefix(string name, int id, string value, DateTime startTime, DateTime endTime, string durationText)
         {
-            Name = name;
-            Id = id;
-            Value = value;
-            StartTime = startTime;
-            EndTime = endTime;
-            DurationText = durationText;
+            this.Name = name;
+            this.Id = id;
+            this.Value = value;
+            this.StartTime = startTime;
+            this.EndTime = endTime;
+            this.DurationText = durationText;
         }
     }
     public class Suffix : Prefix

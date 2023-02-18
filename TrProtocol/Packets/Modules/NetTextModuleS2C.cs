@@ -10,6 +10,6 @@ public class NetTextModuleS2C : NetModulesPacket, IPlayerSlot
     public Color Color { get; set; }
     public override string ToString()
     {
-        return $"[S2C] {Text._text}";
+        return $"[S2C] {this.Text._text}";
     }
 }

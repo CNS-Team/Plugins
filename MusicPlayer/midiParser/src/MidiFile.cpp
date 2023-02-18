@@ -3149,8 +3149,6 @@ std::ostream& MidiFile::writeLittleEndianDouble(std::ostream& out, double value)
 	out << data.bytes[7];
 	return out;
 }
-
-
 } // end namespace smf
 
 

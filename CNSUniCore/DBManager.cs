@@ -1,6 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
 using System.Data;
-using System.Runtime.CompilerServices;
 using TShockAPI.DB;
 
 namespace CNSUniCore;
@@ -197,7 +196,7 @@ public class DBManager
     // Token: 0x0600000E RID: 14 RVA: 0x000026B8 File Offset: 0x000008B8
     public void AddSponsor(SponsorInfo plr)
     {
-        DbExt.Query(query: $"INSERT INTO unisponsors (Name,OriginGroup,NowGroup,StartTime,EndTime) VALUES ('{plr.name}','{plr.originGroup}','{plr.group}','{plr.startTime}','{plr.endTime}');", olddb: connection, args: Array.Empty<object>());
+        DbExt.Query(query: $"INSERT INTO unisponsors (Name,OriginGroup,NowGroup,StartTime,EndTime) VALUES ('{plr.name}','{plr.originGroup}','{plr.group}','{plr.startTime}','{plr.endTime}');", olddb: this.connection, args: Array.Empty<object>());
     }
 
     // Token: 0x0600000F RID: 15 RVA: 0x00002780 File Offset: 0x00000980
@@ -210,7 +209,7 @@ public class DBManager
     // Token: 0x06000010 RID: 16 RVA: 0x000027B4 File Offset: 0x000009B4
     public void UpdateSponsor(SponsorInfo plr)
     {
-        DbExt.Query(query: $"UPDATE unisponsors SET Name='{plr.name}',OriginGroup='{plr.originGroup}',NowGroup='{plr.group}',StartTime='{plr.startTime}',EndTime='{plr.endTime}' WHERE Name='{plr.name}';", olddb: connection, args: Array.Empty<object>());
+        DbExt.Query(query: $"UPDATE unisponsors SET Name='{plr.name}',OriginGroup='{plr.originGroup}',NowGroup='{plr.group}',StartTime='{plr.startTime}',EndTime='{plr.endTime}' WHERE Name='{plr.name}';", olddb: this.connection, args: Array.Empty<object>());
     }
 
     // Token: 0x06000011 RID: 17 RVA: 0x00002898 File Offset: 0x00000A98

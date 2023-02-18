@@ -1,13 +1,14 @@
-﻿using Newtonsoft.Json;
-using Terraria;
+﻿using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
 using TShockAPI.DB;
+using TShockAPI.Hooks;
+
 
 namespace deal;
 
 [ApiVersion(2, 1)]//api版本
-public class Plugin : TerrariaPlugin
+public class deal : TerrariaPlugin
 {
     /// <summary>
     /// 插件作者
@@ -16,29 +17,29 @@ public class Plugin : TerrariaPlugin
     /// <summary>
     /// 插件说明
     /// </summary>
-    public override string Description => "Chrome_RPG 玩家交易插件";
+    public override string Description => "Chrome.RPG 玩家交易插件";
     /// <summary>
     /// 插件名字
     /// </summary>
-    public override string Name => "Chrome_Deal";
+    public override string Name => "Chrome.Deal";
     /// <summary>
     /// 插件版本
     /// </summary>
-    public override Version Version => new(1, 2, 0, 0);
+    public override Version Version => new(1, 5, 0, 0);
     /// <summary>
     /// 插件处理
     /// </summary>
-    public Plugin(Main game) : base(game)
+    public deal(Main game) : base(game)
     {
     }
     //插件启动时，用于初始化各种狗子
     public static Config 配置 = new();
-    public static Config.QwRPG配置表 Qw配置 = new();
     public override void Initialize()
     {
         ServerApi.Hooks.GameInitialize.Register(this, this.OnInitialize);//钩住游戏初始化时
+        GeneralHooks.ReloadEvent += new GeneralHooks.ReloadEventD(Config.Reload);
         Config.GetConfig();
-        Reload();
+        Config.Reload();
     }
     /// <summary>
     /// 插件关闭时
@@ -49,7 +50,7 @@ public class Plugin : TerrariaPlugin
         {
             // Deregister hooks here
             ServerApi.Hooks.GameInitialize.Deregister(this, this.OnInitialize);//销毁游戏初始化狗子
-
+            GeneralHooks.ReloadEvent -= new GeneralHooks.ReloadEventD(Config.Reload);
         }
         base.Dispose(disposing);
     }
@@ -57,12 +58,12 @@ public class Plugin : TerrariaPlugin
     private void OnInitialize(EventArgs args)//游戏初始化的狗子
     {
         //第一个是权限，第二个是子程序，第三个是指令
-        Commands.ChatCommands.Add(new Command("QwRPG.admin", this.重载, "reload") { });
-        Commands.ChatCommands.Add(new Command("QwRPG.deal", this.Deal, "deal") { });
+        Commands.ChatCommands.Add(new Command("QwRPG.use", this.Deal, "deal") { });
     }
     private void Deal(CommandArgs args)
     {
         var plr = args.Player;
+        var 货币名 = Chrome.RPG.Chrome.配置.货币名;
         if (args.Parameters.Count == 0 || args.Parameters[0] == "help")
         {
             plr.SendInfoMessage("/deal sell <价格> --上架手持物品");
@@ -114,7 +115,7 @@ public class Plugin : TerrariaPlugin
                 plr.SendInfoMessage($"上架{t}成功");
                 if (配置.广播上架物品)
                 {
-                    TShock.Utils.Broadcast($"{plr.Name}上架了{t},售价{价格}{Qw配置.货币名}", 255, 178, 102);
+                    TShock.Utils.Broadcast($"{plr.Name}上架了{t},售价{价格}{Chrome.RPG.Chrome.配置.货币名}", 255, 178, 102);
                 }
 
                 break;
@@ -157,7 +158,7 @@ public class Plugin : TerrariaPlugin
                         return;
                     }
                     DB.DelItem(ID);
-                    DB.AddCost(卖家, 价格);
+                    Chrome.RPG.DB.AddCost(卖家, 价格);
                     plr.GiveItem(NetId, stack, prefix);
                     plr.SendInfoMessage($"收回成功");
                     if (配置.广播下架物品)
@@ -167,10 +168,10 @@ public class Plugin : TerrariaPlugin
 
                     return;
                 }
-                var 货币 = DB.QueryCost(args.Player.Name);
+                var 货币 = Chrome.RPG.DB.QueryCost(args.Player.Name);
                 if (货币 < 价格)
                 {
-                    args.Player.SendInfoMessage($"您的{Qw配置.货币名}不足，该商品需要{价格}{Qw配置.货币名}");
+                    args.Player.SendInfoMessage($"您的{货币名}不足，该商品需要{价格}{货币名}");
                     return;
                 }
                 ShopItem = DB.GetShop(ID);
@@ -183,15 +184,15 @@ public class Plugin : TerrariaPlugin
                 DB.DelItem(ID);
                 if (卖家 != "")
                 {
-                    DB.AddCost(卖家, (long) (价格 * (1 - 配置.税率)));
+                    Chrome.RPG.DB.AddCost(卖家, (long) (价格 * (1 - 配置.税率)));
                 }
 
-                DB.DelCost(plr.Name, 价格);
+                Chrome.RPG.DB.DelCost(plr.Name, 价格);
                 plr.GiveItem(NetId, stack, prefix);
                 plr.SendInfoMessage($"购买成功");
                 if (配置.广播购买成功)
                 {
-                    TShock.Utils.Broadcast($"{plr.Name}购买了{卖家}的ID为：{ID}的商品,成交价{价格}{Qw配置.货币名},税后{价格 * (1 - 配置.税率)}{Qw配置.货币名}", 255, 178, 102);
+                    TShock.Utils.Broadcast($"{plr.Name}购买了{卖家}的ID为：{ID}的商品,成交价{价格}{货币名},税后{价格 * (1 - 配置.税率)}{货币名}", 255, 178, 102);
                 }
 
                 break;
@@ -237,7 +238,7 @@ public class Plugin : TerrariaPlugin
                             var 物品 = 表.Get<int>("物品");
                             var 前缀 = 表.Get<int>("前缀");
                             var 数量 = 表.Get<int>("数量");
-                            args.Player.SendMessage($"[c/FF0000:{ID}.]||{玩家名}[i/s{数量}:{物品}],前缀:{前缀}||[c/FF8000:{价格}{Qw配置.货币名}]", 255, 255, 255);
+                            args.Player.SendMessage($"[c/FF0000:{ID}.]||{玩家名}[i/s{数量}:{物品}],前缀:{前缀}||[c/FF8000:{价格}{货币名}]", 255, 255, 255);
 
                         }
                         continue;
@@ -280,23 +281,5 @@ public class Plugin : TerrariaPlugin
     public static string GetItemDesc(int NetId, int Stack = 1, int PrefixId = 0)
     {
         return Stack > 1 ? $"[i/s{Stack}:{NetId}]" : PrefixId == 0 ? $"[i:{NetId}]" : $"[i/p{PrefixId}:{NetId}]";
-    }
-    private void 重载(CommandArgs args)
-    {
-        try
-        {
-            Reload();
-        }
-        catch
-        {
-            args.Player.SendErrorMessage($"[Chrome.Deal]配置文件读取错误");
-        }
-    }
-    public static void Reload()
-    {
-        DB.Reload();
-        配置 = JsonConvert.DeserializeObject<Config>(File.ReadAllText(Path.Combine("tshock/Chrome.Deal.json")));
-        File.WriteAllText("tshock/Chrome.Deal.json", JsonConvert.SerializeObject(配置, Formatting.Indented));
-        Qw配置 = JsonConvert.DeserializeObject<Config.QwRPG配置表>(File.ReadAllText(Path.Combine("tshock/Chrome.RPG.json")));
     }
 }

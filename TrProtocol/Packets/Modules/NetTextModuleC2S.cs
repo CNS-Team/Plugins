@@ -9,6 +9,6 @@ public class NetTextModuleC2S : NetModulesPacket
     public string Text { get; set; }
     public override string ToString()
     {
-        return $"[C2S] {Text}";
+        return $"[C2S] {this.Text}";
     }
 }

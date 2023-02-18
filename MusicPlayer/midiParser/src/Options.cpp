@@ -1214,8 +1214,6 @@ std::ostream& Options::printRegister(std::ostream& out) {
    }
    return out;
 }
-
-
 } // end namespace smf
 
 

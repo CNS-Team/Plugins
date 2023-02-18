@@ -7,13 +7,20 @@ public class StaticText : IStatusTextSetting, IStatusTextUpdateHandler
 {
     [JsonProperty]
     public static string TypeName => "static_text";
-    public string Text { get; set; }
+    public string? Text { get; set; }
 
-    public void ProcessHandlers(List<StatusTextUpdateHandlerItem> handlers, List<IStatusTextUpdateHandler> processedHandlers, int settingsIdx) =>
+    public void ProcessHandlers(List<StatusTextUpdateHandlerItem> handlers, List<IStatusTextUpdateHandler> processedHandlers, int settingsIdx)
+    {
         processedHandlers.Add(this);
-        
+    }
 
-    public bool Invoke(TSPlayer tsplr, bool forceUpdate = false) => forceUpdate;
+    public bool Invoke(TSPlayer tsplr, bool forceUpdate = false)
+    {
+        return forceUpdate;
+    }
 
-    public string GetPlrST(TSPlayer tsplr) => Text;
+    public string GetPlrST(TSPlayer tsplr)
+    {
+        return this.Text;
+    }
 }

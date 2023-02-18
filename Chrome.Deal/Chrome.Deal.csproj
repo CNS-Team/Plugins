@@ -1,3 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<Import Project="..\template.targets" />
+	<ItemGroup>
+	  <ProjectReference Include="..\Chrome.RPG\Chrome.RPG.csproj" />
+	</ItemGroup>
 </Project>

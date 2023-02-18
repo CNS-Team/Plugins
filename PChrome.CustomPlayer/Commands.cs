@@ -1,13 +1,7 @@
 ﻿using LazyUtils;
 using LazyUtils.Commands;
 using LinqToDB;
-using PChrome.CustomPlayer;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TShockAPI;
 
 namespace PChrome.CustomPlayer;
@@ -75,5 +69,4 @@ public static class Commands
                                     "/custom list <玩家>\n" +
                                     ">");
     }
-
 }

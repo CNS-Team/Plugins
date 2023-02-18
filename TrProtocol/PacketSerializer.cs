@@ -19,19 +19,23 @@ public partial class PacketSerializer
     {
         foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
         {
-            RegisterPacket(type);
+            this.RegisterPacket(type);
         }
     }
 
     public void RegisterPacket<T>() where T : Packet
     {
-        RegisterPacket(typeof(T));
+        this.RegisterPacket(typeof(T));
     }
 
 
     private void RegisterPacket(Type type)
     {
-        if (type.IsAbstract || !type.IsSubclassOf(typeof(Packet))) return;
+        if (type.IsAbstract || !type.IsSubclassOf(typeof(Packet)))
+        {
+            return;
+        }
+
         Serializer serializer = null;
         Deserializer deserializer = null;
 
@@ -44,11 +48,21 @@ public partial class PacketSerializer
         {
             dict.Add(prop.Name, prop);
 
-            if (prop.IsDefined(typeof(IgnoreAttribute))) continue;
-            if (flag == BindingFlags.NonPublic && !prop.IsDefined(typeof(ForceSerializeAttribute))) continue;
+            if (prop.IsDefined(typeof(IgnoreAttribute)))
+            {
+                continue;
+            }
+
+            if (flag == BindingFlags.NonPublic && !prop.IsDefined(typeof(ForceSerializeAttribute)))
+            {
+                continue;
+            }
 
             var ver = prop.GetCustomAttribute<ProtocolVersionAttribute>();
-            if (ver != null && ver.Version != Version) continue;
+            if (ver != null && ver.Version != this.Version)
+            {
+                continue;
+            }
 
             var getter = prop.BuildDynamicGetter();
             var setter = prop.BuildDynamicSetter();
@@ -58,11 +72,11 @@ public partial class PacketSerializer
 
             var cond = prop.GetCustomAttribute<ConditionAttribute>();
 
-            var shouldSerialize = (Client
-                ? (object)prop.GetCustomAttribute<S2COnlyAttribute>()
+            var shouldSerialize = (this.Client
+                ? (object) prop.GetCustomAttribute<S2COnlyAttribute>()
                 : prop.GetCustomAttribute<C2SOnlyAttribute>()) == null;
-            var shouldDeserialize = (!Client
-                ? (object)prop.GetCustomAttribute<S2COnlyAttribute>()
+            var shouldDeserialize = (!this.Client
+                ? (object) prop.GetCustomAttribute<S2COnlyAttribute>()
                 : prop.GetCustomAttribute<C2SOnlyAttribute>()) == null && setter != null;
 
             if (cond != null)
@@ -71,36 +85,34 @@ public partial class PacketSerializer
                 var get2 = property.BuildDynamicGetter();
                 // right here we cache a delegate to the getter.
                 // calls to this delegate would be slower than direct calls but about 10 times faster than MethodBase.Invoke.
-                if (cond.BitIndex == -1)
-                    condition = o => (bool)get2(o);
-                else
-                    condition = o => ((BitsByte)get2(o))[cond.BitIndex] == cond.Prediction;
+                condition = cond.BitIndex == -1 ? (o => (bool) get2(o)) : (o => ((BitsByte) get2(o))[cond.BitIndex] == cond.Prediction);
             }
 
-            IFieldSerializer ser;
-
-            ser = RequestFieldSerializer(t, Version);
-        serFound:
-
-            if (ser is IConfigurable conf) 
-                ser = (IFieldSerializer)conf.Configure(prop, Version);
+            var ser = RequestFieldSerializer(t, this.Version);
 
             if (shouldSerialize)
-                serializer += (o, bw) => { if (condition(o)) ser.Write(bw, getter(o)); };
+            {
+                serializer += (o, bw) => { if (condition(o)) { ser.Write(bw, getter(o)); } };
+            }
+
             if (shouldDeserialize)
-                deserializer += (o, br) => { if (condition(o)) setter(o, ser.Read(br)); };
+            {
+                deserializer += (o, br) => { if (condition(o)) { setter(o, ser.Read(br)); } };
+            }
         }
 
         var inst = Activator.CreateInstance(type);
 
-        if (Client ? (type.GetCustomAttribute<S2COnlyAttribute>() == null) : (type.GetCustomAttribute<C2SOnlyAttribute>()) == null)
-            serializers[type] = (bw, o) => serializer?.Invoke(o, bw);
+        if (this.Client ? (type.GetCustomAttribute<S2COnlyAttribute>() == null) : type.GetCustomAttribute<C2SOnlyAttribute>() == null)
+        {
+            this.serializers[type] = (bw, o) => serializer?.Invoke(o, bw);
+        }
 
-        if ((!Client) ? (type.GetCustomAttribute<S2COnlyAttribute>() == null) : (type.GetCustomAttribute<C2SOnlyAttribute>()) == null)
+        if ((!this.Client) ? (type.GetCustomAttribute<S2COnlyAttribute>() == null) : type.GetCustomAttribute<C2SOnlyAttribute>() == null)
         {
             if (inst is NetModulesPacket p)
             {
-                moduledeserializers.Add(p.ModuleType, br =>
+                this.moduledeserializers.Add(p.ModuleType, br =>
                 {
                     var result = Activator.CreateInstance(type) as NetModulesPacket;
                     deserializer?.Invoke(result, br);
@@ -109,7 +121,7 @@ public partial class PacketSerializer
             }
             else if (inst is Packet p2)
             {
-                deserializers.Add(p2.Type, br =>
+                this.deserializers.Add(p2.Type, br =>
                 {
                     var result = Activator.CreateInstance(type) as Packet;
                     deserializer?.Invoke(result, br);
@@ -125,9 +137,9 @@ public partial class PacketSerializer
 
     public PacketSerializer(bool client, string version = "Terraria248")
     {
-        Client = client;
-        Version = version;
-        LoadPackets();
+        this.Client = client;
+        this.Version = version;
+        this.LoadPackets();
     }
 
     public TextWriter ErrorLogger { get; set; } = Console.Out;
@@ -138,23 +150,31 @@ public partial class PacketSerializer
         using var ms = new MemoryStream(br0.ReadBytes(l - 2));
         using var br = new BinaryReader(ms);
         Packet result = null;
-        var msgid = (MessageID)br.ReadByte();
+        var msgid = (MessageID) br.ReadByte();
         if (msgid == MessageID.NetModules)
         {
-            var moduletype = (NetModuleType)br.ReadInt16();
-            if (moduledeserializers.TryGetValue(moduletype, out var f))
+            var moduletype = (NetModuleType) br.ReadInt16();
+            if (this.moduledeserializers.TryGetValue(moduletype, out var f))
+            {
                 result = f(br);
+            }
             else
-                ErrorLogger.WriteLine($"[Warning] net module type = {moduletype} not defined, ignoring");
+            {
+                this.ErrorLogger.WriteLine($"[Warning] net module type = {moduletype} not defined, ignoring");
+            }
         }
-        else if (deserializers.TryGetValue(msgid, out var f2))
+        else if (this.deserializers.TryGetValue(msgid, out var f2))
+        {
             result = f2(br);
+        }
         else
-            ErrorLogger.WriteLine($"[Warning] message type = {msgid} not defined, ignoring");
+        {
+            this.ErrorLogger.WriteLine($"[Warning] message type = {msgid} not defined, ignoring");
+        }
 
         if (br.BaseStream.Position != br.BaseStream.Length)
         {
-            ErrorLogger.WriteLine($"[Warning] {br.BaseStream.Length - br.BaseStream.Position} not used when deserializing {(Client ? "S2C::" : "C2S::")}{result}");
+            this.ErrorLogger.WriteLine($"[Warning] {br.BaseStream.Length - br.BaseStream.Position} not used when deserializing {(this.Client ? "S2C::" : "C2S::")}{result}");
         }
         return result;
     }
@@ -163,20 +183,19 @@ public partial class PacketSerializer
     {
         using var ms = new MemoryStream();
         using var bw = new BinaryWriter(ms);
-        bw.Write((short)0);
+        bw.Write((short) 0);
 
-        if (serializers.TryGetValue(p.GetType(), out var f))
+        if (this.serializers.TryGetValue(p.GetType(), out var f))
         {
             f(bw, p);
             var l = bw.BaseStream.Position;
             bw.BaseStream.Position = 0;
-            bw.Write((short)l);
+            bw.Write((short) l);
             var bs = ms.ToArray();
             return bs;
         }
 
-        ErrorLogger.WriteLine($"[Warning] packet {p} not defined, ignoring");
+        this.ErrorLogger.WriteLine($"[Warning] packet {p} not defined, ignoring");
         return Array.Empty<byte>();
     }
-
 }

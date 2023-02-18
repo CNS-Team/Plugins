@@ -16,5 +16,4 @@ public class Plugin : LazyPlugin
     {
         TShock.RestApi.RegisterRedirect("/v1/deathtimes/rankboard", "/deathtimes/rankboard");
     }
-
 }

@@ -4,7 +4,7 @@ public struct ChestData
 {
     public override string ToString()
     {
-        return $"[{TileX}, {TileY}] {Name}";
+        return $"[{this.TileX}, {this.TileY}] {this.Name}";
     }
     public short ID { get; set; }
     public short TileX { get; set; }
