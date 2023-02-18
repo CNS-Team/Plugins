@@ -11,20 +11,20 @@ namespace LazyUtils.Commands;
 
 internal partial class SingleCommand : CommandBase
 {
-    private readonly Parser[] argParsers;
+    private readonly CommandParser.Parser[] argParsers;
     private readonly FastReflectionDelegate method;
 
     public SingleCommand(MethodInfo method, string infoPrefix) : base(method)
     {
         var param = method.GetParameters();
-        var ap = new List<Parser>();
+        var ap = new List<CommandParser.Parser>();
         var sb = new StringBuilder();
         sb.Append(infoPrefix);
 
         foreach (var p in param.Skip(1))
         {
-            ap.Add(parsers[p.ParameterType]);
-            sb.Append($"<{p.Name}: {_friendlyName[p.ParameterType]}> ");
+            ap.Add(CommandParser.GetParser(p.ParameterType));
+            sb.Append($"<{p.Name}: {CommandParser.GetFriendlyName(p.ParameterType)}> ");
         }
 
         this.argParsers = ap.ToArray();
