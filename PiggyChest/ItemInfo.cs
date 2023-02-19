@@ -36,9 +36,25 @@ public struct ItemInfo
         return $"{this.ID}:{this.Stack}:{this.Prefix}";
     }
 
-    public static implicit operator ItemInfo(Item item) => new ItemInfo(item.type, item.stack, item.prefix);
+    public static implicit operator ItemInfo(Item item) => item.IsAir ? default : new ItemInfo(item.type, item.stack, item.prefix);
+
     public static implicit operator ItemInfo((int id, int stack, int prefix) tuple) => new ItemInfo(tuple.id, tuple.stack, tuple.prefix);
     public static implicit operator ItemInfo((int id, int stack) tuple) => new ItemInfo(tuple.id, tuple.stack);
+
+    public static bool operator==(in ItemInfo l,in ItemInfo r)
+    {
+        return
+            l.ID == r.ID &&
+            l.Stack == r.Stack &&
+            l.Prefix == r.Prefix;
+    }
+    public static bool operator !=(in ItemInfo l, in ItemInfo r)
+    {
+        return
+            l.ID != r.ID ||
+            l.Stack != r.Stack ||
+            l.Prefix != r.Prefix;
+    }
 
 
     public static ItemInfo Parse(string text)

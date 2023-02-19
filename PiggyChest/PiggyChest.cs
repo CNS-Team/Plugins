@@ -21,6 +21,9 @@ public class MainPlugin : TerrariaPlugin
     public override string Author => "1413";
     public override string Name => "PiggyChest";
 
+    public Config Config { get; set; }
+    public StorageManager Storage { get; set; }
+
     public static MainPlugin? Instance { get; private set; }
 
 
@@ -28,7 +31,7 @@ public class MainPlugin : TerrariaPlugin
 
     public MainPlugin(Main game) : base(game)
     {
-
+        Instance = this;
     }
 
 
@@ -36,6 +39,9 @@ public class MainPlugin : TerrariaPlugin
     {
         Instance = this;
         Commands.ChatCommands.Add(new Command("piggychest.hreload", this.HotReloadCmd, "piggychestreload"));
+        ServerApi.Hooks.NetGetData.Register(this, this.OnGetData);
+        this.Config = Config.LoadConfig();
+        this.Storage = new StorageManager(this.Config);
     }
 
     protected override void Dispose(bool disposing)
@@ -44,11 +50,73 @@ public class MainPlugin : TerrariaPlugin
         if (disposing)
         {
             Commands.ChatCommands.RemoveAll(cmd => cmd.HasAlias("piggychestreload"));
-
+            ServerApi.Hooks.NetGetData.Deregister(this, this.OnGetData);
             Instance = null;
         }
     }
 
+
+
+    // todo: 后续可能需要添加点检查以防客户端乱发包
+    private void OnGetData(GetDataEventArgs args)
+    {
+        switch (args.MsgID)
+        {
+            case PacketTypes.ChestGetContents:
+            {
+                var player = TShock.Players[args.Msg.whoAmI];
+                using var stream = new MemoryStream(args.Msg.readBuffer, args.Index, args.Length);
+                var reader = new BinaryReader(stream);
+
+                int x = reader.ReadInt16();
+                int y = reader.ReadInt16();
+                int chestID = Chest.FindChest(x, y);
+
+                if (chestID > -1 && Chest.UsingChest(chestID) == -1 && this.Config!.ChestNames.Contains(Main.chest[chestID].name))
+                {
+                    var piggyBank = this.Storage.GetBankItems(player.Account.ID, Main.chest[chestID].name);
+                    for (int i = 0; i < 40; i++)
+                    {
+                        Main.chest[chestID].item[i] = piggyBank[i].ToItem();
+                    }
+                }
+            }
+            break;
+            case PacketTypes.ChestOpen:
+            {
+                var player = TShock.Players[args.Msg.whoAmI];
+                using var stream = new MemoryStream(args.Msg.readBuffer, args.Index, args.Length);
+                var reader = new BinaryReader(stream);
+
+                int chestID = reader.ReadInt16();
+                int num3 = reader.ReadInt16();
+                int num4 = reader.ReadInt16();
+                int num5 = reader.ReadByte();
+                string name = string.Empty;
+                if (num5 != 0)
+                {
+                    if (num5 <= 20)
+                    {
+                        name = reader.ReadString();
+                    }
+                    else if (num5 != 255)
+                    {
+                        num5 = 0;
+                    }
+                }
+
+                var piggyBank = this.Storage.GetBankItems(player.Account.ID, Main.chest[chestID].name);
+                for (int i = 0; i < 40; i++)
+                {
+                    piggyBank[i] = Main.chest[chestID].item[i];
+                    Main.chest[chestID].item[i].SetDefaults(ItemID.Coal);
+                }
+                piggyBank.RemoveAll(item => item == default);
+                Storage.SaveBankItems(player.Account.ID, Main.chest[chestID].name, piggyBank);
+            }
+            break;
+        }
+    }
 
 
     #region HotReload
@@ -90,7 +158,7 @@ public class MainPlugin : TerrariaPlugin
         #region Initialize
         Container.Initialize();
         pluginClass
-            .GetMethod(nameof(PostHotReload))
+            .GetMethod(nameof(PostHotReload))!
             .Invoke(instance, Array.Empty<object>());
         #endregion
     }
