@@ -21,8 +21,9 @@ public class StorageManager
         var chestPath = Path.Combine(userPath, chestName + ".txt");
         if (!File.Exists(chestPath))
         {
-            File.WriteAllText(chestPath, "");
-            return new List<ItemInfo>();
+            var list = new List<ItemInfo>();
+            this.SaveBankItems(userID, chestName, list);
+            return list;
         }
         else
         {

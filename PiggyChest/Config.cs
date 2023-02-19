@@ -10,14 +10,14 @@ namespace PiggyChest;
 
 public class Config
 {
-    public const string ConfigPath = "/tshock/PiggyChest.json";
+    public const string ConfigPath = "./tshock/PiggyChest.json";
 
     [JsonProperty(PropertyName = "存储路径")]public string StoragePath { get; set; }
     [JsonProperty(PropertyName = "箱子名称列表")]public List<string> ChestNames { get; set; }
 
     public Config()
     {
-        this.StoragePath = "/PiggyChest/";
+        this.StoragePath = "./PiggyChest/";
         this.ChestNames = new List<string> { "piggy" };
     }
 

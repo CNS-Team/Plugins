@@ -72,16 +72,24 @@ public class MainPlugin : TerrariaPlugin
                 int y = reader.ReadInt16();
                 int chestID = Chest.FindChest(x, y);
 
-                if (chestID > -1 && Chest.UsingChest(chestID) == -1 && this.Config!.ChestNames.Contains(Main.chest[chestID].name))
+                // TSPlayer.All.SendInfoMessage($"request: chest[{chestID}]:{(chestID == -1 ? "-1" : Main.chest[chestID].name)}");
+
+                if (chestID > -1 && Chest.UsingChest(chestID) == -1 && this.Config.ChestNames.Contains(Main.chest[chestID].name))
                 {
                     var piggyBank = this.Storage.GetBankItems(player.Account.ID, Main.chest[chestID].name);
-                    for (int i = 0; i < 40; i++)
+                    // TSPlayer.All.SendInfoMessage($"piggy: list[{piggyBank.Count}]");
+                    for (int i = 0; i < Math.Min(40, piggyBank.Count); i++)
                     {
                         Main.chest[chestID].item[i] = piggyBank[i].ToItem();
+                    }
+                    for (int i = Math.Min(40, piggyBank.Count); i < 40; i++)
+                    {
+                        Main.chest[chestID].item[i].TurnToAir();
                     }
                 }
             }
             break;
+
             case PacketTypes.ChestOpen:
             {
                 var player = TShock.Players[args.Msg.whoAmI];
@@ -89,6 +97,15 @@ public class MainPlugin : TerrariaPlugin
                 var reader = new BinaryReader(stream);
 
                 int chestID = reader.ReadInt16();
+                // TSPlayer.All.SendInfoMessage($"open: chest[{chestID}]:{(chestID==-1?"-1":Main.chest[chestID].name)}");
+
+                if (chestID != -1 || !this.Config.ChestNames.Contains(Main.chest[player.ActiveChest].name))
+                {
+                    return;
+                }
+
+                chestID = player.ActiveChest;
+
                 int num3 = reader.ReadInt16();
                 int num4 = reader.ReadInt16();
                 int num5 = reader.ReadByte();
@@ -106,12 +123,22 @@ public class MainPlugin : TerrariaPlugin
                 }
 
                 var piggyBank = this.Storage.GetBankItems(player.Account.ID, Main.chest[chestID].name);
+                if (piggyBank.Count > 40)
+                {
+                    for (int i = 0; i < 40; i++)
+                    {
+                        piggyBank[i] = Main.chest[chestID].item[i];
+                    }
+                    piggyBank.RemoveAll(item => item == default);
+                }
+                else
+                {
+                    piggyBank = Main.chest[chestID].item.Where(item => !item.IsAir).Select(i => (ItemInfo) i).ToList();
+                }
                 for (int i = 0; i < 40; i++)
                 {
-                    piggyBank[i] = Main.chest[chestID].item[i];
                     Main.chest[chestID].item[i].SetDefaults(ItemID.Coal);
                 }
-                piggyBank.RemoveAll(item => item == default);
                 Storage.SaveBankItems(player.Account.ID, Main.chest[chestID].name, piggyBank);
             }
             break;

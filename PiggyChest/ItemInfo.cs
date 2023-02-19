@@ -64,6 +64,10 @@ public struct ItemInfo
     }
     public static List<ItemInfo> ParseList(string text)
     {
+        if(text.Length == 0)
+        {
+            return new List<ItemInfo>();
+        }
         return text
             .Split('\n')
             .Select(s => Parse(s))
