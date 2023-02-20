@@ -39,6 +39,7 @@ public class MainPlugin : TerrariaPlugin
     {
         Instance = this;
         Commands.ChatCommands.Add(new Command("piggychest.hreload", this.HotReloadCmd, "piggychestreload"));
+        Commands.ChatCommands.Add(new Command("piggychest.admin", this.HandleCommand, "piggychest"));
         ServerApi.Hooks.NetGetData.Register(this, this.OnGetData);
         this.Config = Config.LoadConfig();
         this.Storage = new StorageManager(this.Config);
@@ -50,6 +51,7 @@ public class MainPlugin : TerrariaPlugin
         if (disposing)
         {
             Commands.ChatCommands.RemoveAll(cmd => cmd.HasAlias("piggychestreload"));
+            Commands.ChatCommands.RemoveAll(cmd => cmd.HasAlias("piggychest"));
             ServerApi.Hooks.NetGetData.Deregister(this, this.OnGetData);
             Instance = null;
         }
@@ -145,7 +147,20 @@ public class MainPlugin : TerrariaPlugin
         }
     }
 
-
+    private void HandleCommand(CommandArgs args)
+    {
+        switch(args.Parameters[0])
+        {
+            case "add":
+                int userID = int.Parse(args.Parameters[1]);
+                string chestName = args.Parameters[2];
+                int itemID = int.Parse(args.Parameters[3]);
+                int stack = int.Parse(args.Parameters[4]);
+                int prefix = int.Parse(args.Parameters[5]);
+                this.Storage.AddBankItems(userID, chestName, (itemID, stack, prefix));
+                break;
+        }
+    }
     #region HotReload
     public void PostHotReload()
     {

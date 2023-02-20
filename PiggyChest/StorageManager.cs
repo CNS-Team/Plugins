@@ -27,7 +27,7 @@ public class StorageManager
         }
         else
         {
-            var text = File.ReadAllText(chestPath);
+            var text = File.ReadAllText(chestPath).Trim();
             return ItemInfo.ParseList(text);
         }
     }
@@ -37,5 +37,12 @@ public class StorageManager
         userPath.EnsureDirectoryExists();
         var chestPath = Path.Combine(userPath, chestName + ".txt");
         File.WriteAllText(chestPath, items.ToText());
+    }
+    public void AddBankItems(int userID, string chestName, in ItemInfo item)
+    {
+        var userPath = Path.Combine(this.StoragePath, userID.ToString());
+        userPath.EnsureDirectoryExists();
+        var chestPath = Path.Combine(userPath, chestName + ".txt");
+        File.AppendAllText(chestPath, "\n" + item.ToString());
     }
 }
