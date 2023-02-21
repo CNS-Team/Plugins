@@ -101,7 +101,7 @@ public class MainPlugin : TerrariaPlugin
                 int chestID = reader.ReadInt16();
                 // TSPlayer.All.SendInfoMessage($"open: chest[{chestID}]:{(chestID==-1?"-1":Main.chest[chestID].name)}");
 
-                if (chestID != -1 || !this.Config.ChestNames.Contains(Main.chest[player.ActiveChest].name))
+                if (chestID != -1)
                 {
                     return;
                 }
@@ -124,6 +124,22 @@ public class MainPlugin : TerrariaPlugin
                     }
                 }
 
+
+                if (!this.Config.ChestNames.Contains(Main.chest[player.ActiveChest].name))
+                {
+                    if (num5 != 0 && this.Config.ChestNames.Contains(name)) // 改名检查，只允许空箱子改名
+                    {
+                        if (Main.chest[player.ActiveChest].item.Sum(i => i.stack) > 0)
+                        {
+                            NetMessage.TrySendData(80, -1, -1, null, player.Index, chestID);
+                            NetMessage.TrySendData(69, -1, -1, null, chestID, Main.chest[player.ActiveChest].x, Main.chest[player.ActiveChest].y);
+                            player.SendErrorMessage($"只有空箱子可被重命名为{name}");
+                            args.Handled = true;
+                        }
+                    }
+                    return;
+                }
+
                 var piggyBank = this.Storage.GetBankItems(player.Account.ID, Main.chest[chestID].name);
                 if (piggyBank.Count > 40)
                 {
@@ -137,9 +153,19 @@ public class MainPlugin : TerrariaPlugin
                 {
                     piggyBank = Main.chest[chestID].item.Where(item => !item.IsAir).Select(i => (ItemInfo) i).ToList();
                 }
-                for (int i = 0; i < 40; i++)
+                if (num5 != 0 && !this.Config.ChestNames.Contains(name))
                 {
-                    Main.chest[chestID].item[i].SetDefaults(ItemID.Coal);
+                    for (int i = 0; i < 40; i++)
+                    {
+                        Main.chest[chestID].item[i].TurnToAir();
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < 40; i++)
+                    {
+                        Main.chest[chestID].item[i].SetDefaults(ItemID.Coal);
+                    }
                 }
                 Storage.SaveBankItems(player.Account.ID, Main.chest[chestID].name, piggyBank);
             }
