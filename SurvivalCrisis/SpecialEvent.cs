@@ -7,32 +7,32 @@ using System.Threading.Tasks;
 
 namespace SurvivalCrisis
 {
-	public abstract class SpecialEvent
-	{
-		public bool Active { get; set; }
-		public bool Triggered { get; set; }
-		public int StartDelay { get; set; }
-		public int TimeLeft { get; set; }
+    public abstract class SpecialEvent
+    {
+        public bool Active { get; set; }
+        public bool Triggered { get; set; }
+        public int StartDelay { get; set; }
+        public int TimeLeft { get; set; }
 
-		protected SpecialEvent()
-		{
+        protected SpecialEvent()
+        {
 
-		}
+        }
 
-		public abstract void Update();
+        public abstract void Update();
 
-		public virtual void Start()
-		{
-			Active = true;
-			Triggered = true;
-		}
-		public virtual void End(in bool gameEnd = false)
-		{
-			Active = false;
-		}
-		public virtual void Reset()
-		{
-			Triggered = false;
-		}
-	}
+        public virtual void Start()
+        {
+            this.Active = true;
+            this.Triggered = true;
+        }
+        public virtual void End(in bool gameEnd = false)
+        {
+            this.Active = false;
+        }
+        public virtual void Reset()
+        {
+            this.Triggered = false;
+        }
+    }
 }

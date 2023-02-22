@@ -7,23 +7,23 @@ using System.Threading.Tasks;
 
 namespace SurvivalCrisis.Effects
 {
-	public class ChatInterference : Effect
-	{
-		public int Time { get; }
-		public ChatInterference(int time) : base(Type.Global)
-		{
-			Time = time;
-		}
+    public class ChatInterference : Effect
+    {
+        public int Time { get; }
+        public ChatInterference(int time) : base(Type.Global)
+        {
+            this.Time = time;
+        }
 
-		public override void Apply()
-		{
-			SurvivalCrisis.Instance.BCToAll(Texts.GlobalChatIsInterfered, Color.Khaki);
-			SurvivalCrisis.GameOperations.InterferenceChat(Time);
-		}
+        public override void Apply()
+        {
+            SurvivalCrisis.Instance.BCToAll(Texts.GlobalChatIsInterfered, Color.Khaki);
+            SurvivalCrisis.GameOperations.InterferenceChat(this.Time);
+        }
 
-		public override void Update()
-		{
-			End();
-		}
-	}
+        public override void Update()
+        {
+            this.End();
+        }
+    }
 }

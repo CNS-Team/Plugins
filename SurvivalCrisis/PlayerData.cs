@@ -8,15 +8,12 @@ using System.Threading.Tasks;
 
 namespace SurvivalCrisis
 {
-	public partial class PlayerData
+    public partial class PlayerData
     {
         public string Name { get; set; }
         public int UserID { get; set; }
         [JsonIgnore]
-        public int Score
-        {
-            get => SurvivorDatas.TotalScore + TraitorDatas.TotalScore;
-        }
+        public int Score => this.SurvivorDatas.TotalScore + this.TraitorDatas.TotalScore;
         public int Coins
         {
             get;
@@ -24,59 +21,50 @@ namespace SurvivalCrisis
         }
 
         public PlayerBoosts Boosts
-		{
+        {
             get;
             set;
-		}
+        }
 
         public List<int> UnlockedTitles
-		{
+        {
             get;
             set;
-		}
+        }
         public List<int> UnlockedPrefixs
-		{
+        {
             get;
             set;
-		}
+        }
         public int CurrentTitleID
-		{
+        {
             get;
             set;
-		}
+        }
         public int CurrentPrefixID
-		{
+        {
             get;
             set;
-		}
+        }
 
         public DataDetail SurvivorDatas { get; set; }
         public DataDetail TraitorDatas { get; set; }
 
         [JsonIgnore]
-        public int GameCounts
-        {
-            get => SurvivorDatas.GameCounts + TraitorDatas.GameCounts;
-        }
+        public int GameCounts => this.SurvivorDatas.GameCounts + this.TraitorDatas.GameCounts;
         [JsonIgnore]
-        public int WinCounts
-        {
-            get => SurvivorDatas.WinCounts + SurvivorDatas.WinCounts;
-        }
+        public int WinCounts => this.SurvivorDatas.WinCounts + this.SurvivorDatas.WinCounts;
         [JsonIgnore]
-        public int MaxSurvivalFrames
-        {
-            get => Math.Max(SurvivorDatas.MaxSurvivalFrames, TraitorDatas.MaxSurvivalFrames);
-        }
+        public int MaxSurvivalFrames => Math.Max(this.SurvivorDatas.MaxSurvivalFrames, this.TraitorDatas.MaxSurvivalFrames);
 
         public PlayerData(int userID)
         {
-            UserID = userID;
-            SurvivorDatas = new DataDetail();
-            TraitorDatas = new DataDetail();
-            Boosts = new PlayerBoosts();
-            UnlockedPrefixs = new List<int>();
-            UnlockedTitles = new List<int>();
+            this.UserID = userID;
+            this.SurvivorDatas = new DataDetail();
+            this.TraitorDatas = new DataDetail();
+            this.Boosts = new PlayerBoosts();
+            this.UnlockedPrefixs = new List<int>();
+            this.UnlockedTitles = new List<int>();
         }
     }
 }

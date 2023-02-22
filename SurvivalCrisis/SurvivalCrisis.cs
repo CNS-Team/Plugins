@@ -1,25 +1,25 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using SurvivalCrisis.Effects;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using TerrariaApi.Server;
 using Terraria;
-using TShockAPI.Hooks;
-using TShockAPI;
-using Microsoft.Xna.Framework;
 using Terraria.DataStructures;
 using Terraria.ID;
-using System.Threading;
-using System.IO;
-using SurvivalCrisis.Effects;
+using TerrariaApi.Server;
+using TShockAPI;
+using TShockAPI.Hooks;
 
 namespace SurvivalCrisis
 {
     using GItems = Nets.NetGroundItemCollection;
+    using PSystem = Terraria.GameContent.TeleportPylonsSystem;
     using TeleportPylonInfo = Terraria.GameContent.TeleportPylonInfo;
     using TeleportPylonType = Terraria.GameContent.TeleportPylonType;
-    using PSystem = Terraria.GameContent.TeleportPylonsSystem;
     [ApiVersion(2, 1)]
     public partial class SurvivalCrisis : TerrariaPlugin
     {
@@ -29,13 +29,13 @@ namespace SurvivalCrisis
         /// </summary>
         private const int ChatRadius = 50;
         public const int EventTime1 = SunsetToMidnight;
-        public const int EventTime2 = SunsetToMidnight + 7 * 60 * 60;
-        public const int EventTime3 = SunsetToMidnight + 15 * 60 * 60;
+        public const int EventTime2 = SunsetToMidnight + (7 * 60 * 60);
+        public const int EventTime3 = SunsetToMidnight + (15 * 60 * 60);
         public const int AvalancheTime = NightTime + DawnToNoon;
-        public const int NightTime = (int)(4.5 + 12 - 7.5) * 60 * 60;
-        public const int DawnToNoon = (int)(12 - 4.5) * 60 * 60;
-        public const int SunsetToMidnight = (int)(12 - 7.5) * 60 * 60;
-        public const int DayTime = (int)(19.5 - 4.5) * 60 * 60;
+        public const int NightTime = (int) (4.5 + 12 - 7.5) * 60 * 60;
+        public const int DawnToNoon = (int) (12 - 4.5) * 60 * 60;
+        public const int SunsetToMidnight = (int) (12 - 7.5) * 60 * 60;
+        public const int DayTime = (int) (19.5 - 4.5) * 60 * 60;
         public const int PeaceTime = 60 * 60 * 3;
         public const int BossComingTime = NightTime + DayTime + FPTime + 5;
         public const int FBPTime = 3 * 60 * 60;
@@ -115,13 +115,7 @@ namespace SurvivalCrisis
             get;
             private set;
         }
-        public NPC FinalBoss
-        {
-            get
-            {
-                return Main.npc[(int)FinalBossIndex];
-            }
-        }
+        public NPC FinalBoss => Main.npc[(int) this.FinalBossIndex];
         public int? FinalBossLifeMax
         {
             get;
@@ -144,10 +138,10 @@ namespace SurvivalCrisis
         }
 
         public int ChestUnlocked
-		{
+        {
             get;
             set;
-		}
+        }
         public bool EnabledGlobalChat
         {
             get;
@@ -178,8 +172,8 @@ namespace SurvivalCrisis
             get;
             private set;
         }
-        public List<Point> MazePylons 
-        { 
+        public List<Point> MazePylons
+        {
             get;
             set;
         }
@@ -202,20 +196,20 @@ namespace SurvivalCrisis
             }
 
             Instance = this;
-            DataBase = new DataManager(SavePath);
-            Players = new GamePlayer[Main.maxPlayers];
-            GroundItems = new GItems();
-            TraitorShop = new Shop(PlayerIdentity.Traitor);
-            ChestOpened = new bool[Main.maxChests];
+            this.DataBase = new DataManager(SavePath);
+            this.Players = new GamePlayer[Main.maxPlayers];
+            this.GroundItems = new GItems();
+            this.TraitorShop = new Shop(PlayerIdentity.Traitor);
+            this.ChestOpened = new bool[Main.maxChests];
 
             // ba55d3 淡紫色(186,85,211)
 
-            string lightPurple = "ba55d3";
-            string lightBlue = "87ceeb";
-            string golden = "ffd700";
-            string lightRed = "f08080";
+            var lightPurple = "ba55d3";
+            var lightBlue = "87ceeb";
+            var golden = "ffd700";
+            var lightRed = "f08080";
 
-            Prefixs = new Dictionary<int, string>
+            this.Prefixs = new Dictionary<int, string>
             {
                 [-8] = $"[c/{lightPurple}:腰缠万贯的]",
                 [-7] = $"[c/{lightRed}:蛮不讲理的]",
@@ -231,7 +225,7 @@ namespace SurvivalCrisis
                 [3] = "冷静的",
                 [4] = "淡定的"
             };
-            Titles = new Dictionary<int, string>
+            this.Titles = new Dictionary<int, string>
             {
                 [0] = string.Empty,
                 [1] = "宝藏猎人",
@@ -240,34 +234,34 @@ namespace SurvivalCrisis
                 [4] = "受害者"
             };
 
-            PrefixIDMin = -8;
-            PrefixIDMax = 0;
-            TitleIDMin = 0;
-            TitleIDMax = 4;
+            this.PrefixIDMin = -8;
+            this.PrefixIDMax = 0;
+            this.TitleIDMin = 0;
+            this.TitleIDMax = 4;
         }
         public override void Initialize()
         {
-            AddCommands();
-            InitializeVars();
-            AttachHooks();
+            this.AddCommands();
+            this.InitializeVars();
+            this.AttachHooks();
         }
         protected override void Dispose(bool disposing)
         {
-            if (gMapToken != null)
+            if (this.gMapToken != null)
             {
-                gMapToken.Cancel();
-                gMapToken = null;
+                this.gMapToken.Cancel();
+                this.gMapToken = null;
             }
-            RemoveCommands();
-            RemoveHooks();
-            DataBase.Save();
+            this.RemoveCommands();
+            this.RemoveHooks();
+            this.DataBase.Save();
             base.Dispose(disposing);
         }
         private void InitializeVars()
         {
             Rand = new Random();
-            Effects = new Queue<Effect>();
-            FinalBossTypes = new int[]
+            this.Effects = new Queue<Effect>();
+            this.FinalBossTypes = new int[]
             {
                 NPCID.SkeletronHead,
                 NPCID.SkeletronPrime,
@@ -278,16 +272,16 @@ namespace SurvivalCrisis
             #region LoadConfig
             if (!File.Exists(ConfigPath))
             {
-                Config = new CrisisConfig();
-                Config.Save(ConfigPath);
+                this.Config = new CrisisConfig();
+                this.Config.Save(ConfigPath);
             }
             else
             {
-                Config = CrisisConfig.LoadFile(ConfigPath);
+                this.Config = CrisisConfig.LoadFile(ConfigPath);
             }
             #endregion
             #region LoadRegions
-            Regions.Initialize(Config);
+            Regions.Initialize(this.Config);
             #endregion
             #region LoadEvents
             //var types = typeof(SpecialEvent).Assembly.GetTypes().Where(type => !type.IsAbstract && type.IsSubclassOf(typeof(SpecialEvent))).ToArray();
@@ -300,37 +294,37 @@ namespace SurvivalCrisis
         }
         private void AddCommands()
         {
-            Commands.ChatCommands.Add(new Command("sc.hotreload", HotReloadCmd, "hotreload"));
-            Commands.ChatCommands.Add(new Command("sc.debug", DebugCommand, "scd"));
-            Commands.ChatCommands.Add(new Command("sc.player", PlayerCommand, "sc"));
+            Commands.ChatCommands.Add(new Command("sc.hotreload", this.HotReloadCmd, "hotreload"));
+            Commands.ChatCommands.Add(new Command("sc.debug", this.DebugCommand, "scd"));
+            Commands.ChatCommands.Add(new Command("sc.player", this.PlayerCommand, "sc"));
         }
         private void AttachHooks()
         {
             #region ServerApi
-            ServerApi.Hooks.GameUpdate.Register(this, OnUpdate);
-            ServerApi.Hooks.ServerLeave.Register(this, OnLeave);
-            ServerApi.Hooks.ServerJoin.Register(this, OnJoin);
-            ServerApi.Hooks.NpcStrike.Register(this, OnNpcStrike);
-            ServerApi.Hooks.NpcKilled.Register(this, OnNPCKilled);
-            ServerApi.Hooks.NetGetData.Register(this, OnGetData, 0);
+            ServerApi.Hooks.GameUpdate.Register(this, this.OnUpdate);
+            ServerApi.Hooks.ServerLeave.Register(this, this.OnLeave);
+            ServerApi.Hooks.ServerJoin.Register(this, this.OnJoin);
+            ServerApi.Hooks.NpcStrike.Register(this, this.OnNpcStrike);
+            ServerApi.Hooks.NpcKilled.Register(this, this.OnNPCKilled);
+            ServerApi.Hooks.NetGetData.Register(this, this.OnGetData, 0);
             #endregion
             #region TShock
-            PlayerHooks.PlayerPostLogin += OnLogin;
-            PlayerHooks.PlayerLogout += OnLogout;
-            PlayerHooks.PlayerChat += OnChat;
+            PlayerHooks.PlayerPostLogin += this.OnLogin;
+            PlayerHooks.PlayerLogout += this.OnLogout;
+            PlayerHooks.PlayerChat += this.OnChat;
             #endregion
             #region GetdataHandlers
-            GetDataHandlers.KillMe += OnKillMe;
-            GetDataHandlers.PlayerDamage += OnPlayerDamage;
-            GetDataHandlers.ChestOpen += OnChestOpen;
-            GetDataHandlers.PlayerTeam += OnChangeTeam;
-            GetDataHandlers.TogglePvp += OnTogglePvp;
-            GetDataHandlers.TileEdit += OnTileEdit;
-            GetDataHandlers.PlaceObject += OnPlaceObject;
-            GetDataHandlers.ReadNetModule += OnReadNetModule;
-            GetDataHandlers.PlayerSlot += OnPlayerSlot;
-            GetDataHandlers.Teleport += OnTeleport;
-            GetDataHandlers.PlayerSpawn += OnPlayerSpawn;
+            GetDataHandlers.KillMe += this.OnKillMe;
+            GetDataHandlers.PlayerDamage += this.OnPlayerDamage;
+            GetDataHandlers.ChestOpen += this.OnChestOpen;
+            GetDataHandlers.PlayerTeam += this.OnChangeTeam;
+            GetDataHandlers.TogglePvp += this.OnTogglePvp;
+            GetDataHandlers.TileEdit += this.OnTileEdit;
+            GetDataHandlers.PlaceObject += this.OnPlaceObject;
+            GetDataHandlers.ReadNetModule += this.OnReadNetModule;
+            GetDataHandlers.PlayerSlot += this.OnPlayerSlot;
+            GetDataHandlers.Teleport += this.OnTeleport;
+            GetDataHandlers.PlayerSpawn += this.OnPlayerSpawn;
             #endregion
         }
         private void RemoveCommands()
@@ -342,30 +336,30 @@ namespace SurvivalCrisis
         private void RemoveHooks()
         {
             #region ServerApi
-            ServerApi.Hooks.GameUpdate.Deregister(this, OnUpdate);
-            ServerApi.Hooks.ServerLeave.Deregister(this, OnLeave);
-            ServerApi.Hooks.ServerJoin.Deregister(this, OnJoin);
-            ServerApi.Hooks.NpcStrike.Deregister(this, OnNpcStrike);
-            ServerApi.Hooks.NpcKilled.Deregister(this, OnNPCKilled);
-            ServerApi.Hooks.NetGetData.Deregister(this, OnGetData);
+            ServerApi.Hooks.GameUpdate.Deregister(this, this.OnUpdate);
+            ServerApi.Hooks.ServerLeave.Deregister(this, this.OnLeave);
+            ServerApi.Hooks.ServerJoin.Deregister(this, this.OnJoin);
+            ServerApi.Hooks.NpcStrike.Deregister(this, this.OnNpcStrike);
+            ServerApi.Hooks.NpcKilled.Deregister(this, this.OnNPCKilled);
+            ServerApi.Hooks.NetGetData.Deregister(this, this.OnGetData);
             #endregion
             #region TShock
-            PlayerHooks.PlayerPostLogin -= OnLogin;
-            PlayerHooks.PlayerLogout -= OnLogout;
-            PlayerHooks.PlayerChat -= OnChat;
+            PlayerHooks.PlayerPostLogin -= this.OnLogin;
+            PlayerHooks.PlayerLogout -= this.OnLogout;
+            PlayerHooks.PlayerChat -= this.OnChat;
             #endregion
             #region GetdataHandlers
-            GetDataHandlers.KillMe -= OnKillMe;
-            GetDataHandlers.PlayerDamage -= OnPlayerDamage;
-            GetDataHandlers.ChestOpen -= OnChestOpen;
-            GetDataHandlers.PlayerTeam -= OnChangeTeam;
-            GetDataHandlers.TogglePvp -= OnTogglePvp;
-            GetDataHandlers.TileEdit -= OnTileEdit;
-            GetDataHandlers.PlaceObject -= OnPlaceObject;
-            GetDataHandlers.ReadNetModule -= OnReadNetModule;
-            GetDataHandlers.PlayerSlot -= OnPlayerSlot;
-            GetDataHandlers.Teleport -= OnTeleport;
-            GetDataHandlers.PlayerSpawn -= OnPlayerSpawn;
+            GetDataHandlers.KillMe -= this.OnKillMe;
+            GetDataHandlers.PlayerDamage -= this.OnPlayerDamage;
+            GetDataHandlers.ChestOpen -= this.OnChestOpen;
+            GetDataHandlers.PlayerTeam -= this.OnChangeTeam;
+            GetDataHandlers.TogglePvp -= this.OnTogglePvp;
+            GetDataHandlers.TileEdit -= this.OnTileEdit;
+            GetDataHandlers.PlaceObject -= this.OnPlaceObject;
+            GetDataHandlers.ReadNetModule -= this.OnReadNetModule;
+            GetDataHandlers.PlayerSlot -= this.OnPlayerSlot;
+            GetDataHandlers.Teleport -= this.OnTeleport;
+            GetDataHandlers.PlayerSpawn -= this.OnPlayerSpawn;
             #endregion
         }
         #endregion
@@ -373,209 +367,209 @@ namespace SurvivalCrisis
         #region OnGetData
         private void OnGetData(GetDataEventArgs args)
         {
-            if (!IsInGame)
+            if (!this.IsInGame)
             {
                 return;
             }
             switch (args.MsgID)
             {
                 case PacketTypes.Teleport:
-                    {
+                {
 
-                        using var stream = new MemoryStream(args.Msg.readBuffer, args.Index, args.Length);
-                        using var reader = new BinaryReader(stream);
-                        BitsByte bitsByte6 = reader.ReadByte();
-                        int index = reader.ReadInt16();
-                        index = args.Msg.whoAmI;
-                        Vector2 vector = reader.ReadVector2();
-                        int num28 = 0;
-                        num28 = reader.ReadByte();
-                        int num29 = 0;
-                        if (bitsByte6[0])
+                    using var stream = new MemoryStream(args.Msg.readBuffer, args.Index, args.Length);
+                    using var reader = new BinaryReader(stream);
+                    BitsByte bitsByte6 = reader.ReadByte();
+                    int index = reader.ReadInt16();
+                    index = args.Msg.whoAmI;
+                    var vector = reader.ReadVector2();
+                    var num28 = 0;
+                    num28 = reader.ReadByte();
+                    var num29 = 0;
+                    if (bitsByte6[0])
+                    {
+                        num29++;
+                    }
+                    if (bitsByte6[1])
+                    {
+                        num29 += 2;
+                    }
+                    var flag3 = false;
+                    if (bitsByte6[2])
+                    {
+                        flag3 = true;
+                    }
+                    var num30 = 0;
+                    if (bitsByte6[3])
+                    {
+                        num30 = reader.ReadInt32();
+                    }
+                    if (flag3)
+                    {
+                        // vector = Main.player[index].position;
+                    }
+                    switch (num29)
+                    {
+                        case 2:
                         {
-                            num29++;
-                        }
-                        if (bitsByte6[1])
-                        {
-                            num29 += 2;
-                        }
-                        bool flag3 = false;
-                        if (bitsByte6[2])
-                        {
-                            flag3 = true;
-                        }
-                        int num30 = 0;
-                        if (bitsByte6[3])
-                        {
-                            num30 = reader.ReadInt32();
-                        }
-                        if (flag3)
-                        {
-                            // vector = Main.player[index].position;
-                        }
-                        switch (num29)
-                        {
-                            case 2:
+                            // Main.player[index].Teleport(vector, num28, num30);
+                            var tI = -1;
+                            var dis = 9999f;
+                            for (var i = 0; i < 255; i++)
+                            {
+                                if (Main.player[i].active && i != index)
                                 {
-                                    // Main.player[index].Teleport(vector, num28, num30);
-                                    int tI = -1;
-                                    float dis = 9999f;
-                                    for (int i = 0; i < 255; i++)
+                                    var dist = Main.player[i].position - vector;
+                                    if (dist.Length() < dis)
                                     {
-                                        if (Main.player[i].active && i != index)
-                                        {
-                                            Vector2 dist = Main.player[i].position - vector;
-                                            if (dist.Length() < dis)
-                                            {
-                                                dis = dist.Length();
-                                                tI = i;
-                                            }
-                                        }
+                                        dis = dist.Length();
+                                        tI = i;
                                     }
-                                    if (tI >= 0)
-                                    {
-                                        var player = Players[index];
-                                        if (player.CanVote)
-                                        {
-                                            var target = Players[tI];
-                                            if (target != null)
-                                            {
-                                                target.VotedCount++;
-#if DEBUG
-                                                BCToAll($"{player.Index}号投了{target.Index}号一票", Color.HotPink);
-#endif
-                                                BCToAll($"{player.Index}号已投票", Color.HotPink);player.TSPlayer.SendInfoMessage($"你票了{target.Index}号");
-                                            }
-                                            player.CanVote = false;
-                                            player.TeleportTo(player.TPlayer.position);
-                                            args.Handled = true;
-                                        }
-                                        // ChatHelper.BroadcastChatMessage(NetworkText.FromKey("Game.HasTeleportedTo", Main.player[whoAmI].name, Main.player[tI].name), new Color(250, 250, 0));
-                                    }
-                                    break;
                                 }
+                            }
+                            if (tI >= 0)
+                            {
+                                var player = this.Players[index];
+                                if (player.CanVote)
+                                {
+                                    var target = this.Players[tI];
+                                    if (target != null)
+                                    {
+                                        target.VotedCount++;
+#if DEBUG
+                                        this.BCToAll($"{player.Index}号投了{target.Index}号一票", Color.HotPink);
+#endif
+                                        this.BCToAll($"{player.Index}号已投票", Color.HotPink); player.TSPlayer.SendInfoMessage($"你票了{target.Index}号");
+                                    }
+                                    player.CanVote = false;
+                                    player.TeleportTo(player.TPlayer.position);
+                                    args.Handled = true;
+                                }
+                                // ChatHelper.BroadcastChatMessage(NetworkText.FromKey("Game.HasTeleportedTo", Main.player[whoAmI].name, Main.player[tI].name), new Color(250, 250, 0));
+                            }
+                            break;
+                        }
+                    }
+                }
+                break;
+                case PacketTypes.SpawnBossorInvasion:
+                {
+                    args.Handled = true;
+                    using var stream = new MemoryStream(args.Msg.readBuffer, args.Index, args.Length);
+                    using var reader = new BinaryReader(stream);
+                    int index = reader.ReadInt16();
+                    int type = reader.ReadInt16();
+                    if (type < 0)
+                    {
+                        if (type > -5)
+                        {
+                            type *= -1;
+                        }
+                        if (this.IsInGame)
+                        {
+                            if (type == InvasionID.GoblinArmy)
+                            {
+                                this.Players[index].AddPerformanceScore(8, "干扰通讯");
+                                GameOperations.AddEffect(new ChatInterference(60 * 60 * 3));
+                            }
                         }
                     }
                     break;
-                case PacketTypes.SpawnBossorInvasion:
-                    {
-                        args.Handled = true;
-                        using var stream = new MemoryStream(args.Msg.readBuffer, args.Index, args.Length);
-                        using var reader = new BinaryReader(stream);
-                        int index = reader.ReadInt16();
-                        int type = reader.ReadInt16();
-                        if (type < 0)
-                        {
-                            if (type > -5)
-                            {
-                                type *= -1;
-                            }
-                            if (IsInGame)
-                            {
-                                if (type == InvasionID.GoblinArmy)
-                                {
-                                    Players[index].AddPerformanceScore(8, "干扰通讯");
-                                    GameOperations.AddEffect(new ChatInterference(60 * 60 * 3));
-                                }
-                            }
-                        }
-                        break;
-                    }
+                }
                 case PacketTypes.ChestUnlock:
+                {
+                    args.Handled = true;
+                    using var stream = new MemoryStream(args.Msg.readBuffer, args.Index, args.Length);
+                    using var reader = new BinaryReader(stream);
+                    int type = reader.ReadByte();
+                    int x = reader.ReadInt16();
+                    int y = reader.ReadInt16();
+                    if (type == 1)
                     {
-                        args.Handled = true;
-                        using var stream = new MemoryStream(args.Msg.readBuffer, args.Index, args.Length);
-                        using var reader = new BinaryReader(stream);
-                        int type = reader.ReadByte();
-                        int x = reader.ReadInt16();
-                        int y = reader.ReadInt16();
-                        if (type == 1)
+                        var player = this.Players[args.Msg.whoAmI];
+                        Chest.Unlock(x, y);
+                        if (this.ChestUnlocked == 0)
                         {
-                            var player = Players[args.Msg.whoAmI];
-                            Chest.Unlock(x, y);
-                            if (ChestUnlocked == 0)
+                            player.AddPerformanceScore(25, "解锁7级箱");
+                        }
+                        else
+                        {
+                            var chest = Main.chest[Chest.FindChest(x, y)];
+                            foreach (var item in chest.item)
                             {
-                                player.AddPerformanceScore(25, "解锁7级箱");
+                                item.TurnToAir();
+                            }
+                            chest.item[0].SetDefaults(ItemID.PocketMirror);
+                            player.SendText("这份财富只独属于一人，它已被人捷足先登...", Color.DarkGreen);
+                            player.SendText("你在箱底翻到了一面镜子", Color.Green);
+                            player.AddPerformanceScore(10, "残羹剩饭");
+                        }
+                        this.ChestUnlocked++;
+                        NetMessage.TrySendData(52, -1, args.Msg.whoAmI, null, 0, type, x, y);
+                        NetMessage.SendTileSquare(-1, x, y, 2);
+                    }
+                    if (type == 2)
+                    {
+                        NetMessage.TrySendData(52, -1, args.Msg.whoAmI, null, 0, type, x, y);
+                        NetMessage.SendTileSquare(-1, x, y, 2);
+                    }
+                    break;
+                }
+                case PacketTypes.PlayerHp:
+                {
+                    using var stream = new MemoryStream(args.Msg.readBuffer, args.Index, args.Length);
+                    using var reader = new BinaryReader(stream);
+                    int index = reader.ReadByte();
+                    if (this.Players[index].Identity == PlayerIdentity.Watcher)
+                    {
+                        return;
+                    }
+                    if (index != Main.myPlayer || Main.ServerSideCharacter)
+                    {
+                        index = args.Msg.whoAmI;
+                        var player = this.Players[index];
+                        var statLife = reader.ReadInt16();
+                        var statLifeMax = reader.ReadInt16();
+                        if (statLifeMax > player.LifeMax)
+                        {
+                            if (player.LifeMax < 400)
+                            {
+                                player.AddPerformanceScore((statLifeMax - player.LifeMax) * 6 / 20, "提高生命上限");
                             }
                             else
-							{
-                                var chest = Main.chest[Chest.FindChest(x, y)];
-                                foreach(var item in chest.item)
-								{
-                                    item.TurnToAir();
-								}
-                                chest.item[0].SetDefaults(ItemID.PocketMirror);
-                                player.SendText("这份财富只独属于一人，它已被人捷足先登...", Color.DarkGreen);
-                                player.SendText("你在箱底翻到了一面镜子", Color.Green);
-                                player.AddPerformanceScore(10, "残羹剩饭");
-                            }
-                            ChestUnlocked++;
-                            NetMessage.TrySendData(52, -1, args.Msg.whoAmI, null, 0, type, x, y);
-                            NetMessage.SendTileSquare(-1, x, y, 2);
-                        }
-                        if (type == 2)
-                        {
-                            NetMessage.TrySendData(52, -1, args.Msg.whoAmI, null, 0, type, x, y);
-                            NetMessage.SendTileSquare(-1, x, y, 2);
-                        }
-                        break;
-                    }
-                case PacketTypes.PlayerHp:
-                    {
-                        using var stream = new MemoryStream(args.Msg.readBuffer, args.Index, args.Length);
-                        using var reader = new BinaryReader(stream);
-                        int index = reader.ReadByte();
-                        if (Players[index].Identity == PlayerIdentity.Watcher)
-                        {
-                            return;
-                        }
-                        if (index != Main.myPlayer || Main.ServerSideCharacter)
-                        {
-                            index = args.Msg.whoAmI;
-                            var player = Players[index];
-                            var statLife = reader.ReadInt16();
-                            var statLifeMax = reader.ReadInt16();
-                            if (statLifeMax > player.LifeMax)
                             {
-                                if (player.LifeMax < 400)
-                                {
-                                    player.AddPerformanceScore((statLifeMax - player.LifeMax) * 6 / 20, "提高生命上限");
-                                }
-                                else
-                                {
-                                    player.AddPerformanceScore((statLifeMax - player.LifeMax) * 7 / 5, "提高生命上限");
-                                }
+                                player.AddPerformanceScore((statLifeMax - player.LifeMax) * 7 / 5, "提高生命上限");
                             }
                         }
-                        break;
                     }
+                    break;
+                }
                 case PacketTypes.PlayerMana:
+                {
+                    using var stream = new MemoryStream(args.Msg.readBuffer, args.Index, args.Length);
+                    using var reader = new BinaryReader(stream);
+                    int index = reader.ReadByte();
+                    if (Main.netMode == 2)
                     {
-                        using var stream = new MemoryStream(args.Msg.readBuffer, args.Index, args.Length);
-                        using var reader = new BinaryReader(stream);
-                        int index = reader.ReadByte();
-                        if (Main.netMode == 2)
-                        {
-                            index = args.Msg.whoAmI;
-                        }
+                        index = args.Msg.whoAmI;
+                    }
 
-                        var player = Players[index];
-                        int statMana = reader.ReadInt16();
-                        int statManaMax = reader.ReadInt16();
-                        if (statManaMax > player.ManaMax)
-                        {
-                            player.AddPerformanceScore((statManaMax - player.ManaMax) * 10 / 20, "提高魔力上限");
-                        }
-                        break;
-                    }
-                case PacketTypes.ItemOwner:
+                    var player = this.Players[index];
+                    int statMana = reader.ReadInt16();
+                    int statManaMax = reader.ReadInt16();
+                    if (statManaMax > player.ManaMax)
                     {
-                        if (Players[args.Msg.whoAmI].Identity == PlayerIdentity.Watcher)
-                        {
-                            args.Handled = true;
-                        }
-                        break;
+                        player.AddPerformanceScore((statManaMax - player.ManaMax) * 10 / 20, "提高魔力上限");
                     }
+                    break;
+                }
+                case PacketTypes.ItemOwner:
+                {
+                    if (this.Players[args.Msg.whoAmI].Identity == PlayerIdentity.Watcher)
+                    {
+                        args.Handled = true;
+                    }
+                    break;
+                }
             }
         }
         #endregion
@@ -635,8 +629,8 @@ namespace SurvivalCrisis
         #region OnChestOpen
         private void OnChestOpen(object sender, GetDataHandlers.ChestOpenEventArgs args)
         {
-            var player = Players[args.Player.Index];
-            if (IsInGame)
+            var player = this.Players[args.Player.Index];
+            if (this.IsInGame)
             {
                 if (player.Identity == PlayerIdentity.Watcher)
                 {
@@ -645,9 +639,9 @@ namespace SurvivalCrisis
                 else
                 {
                     var chestIndex = Chest.FindChest(args.X, args.Y);
-                    if (0 <= chestIndex && chestIndex < ChestOpened.Length && !ChestOpened[chestIndex])
+                    if (0 <= chestIndex && chestIndex < this.ChestOpened.Length && !this.ChestOpened[chestIndex])
                     {
-                        ChestOpened[chestIndex] = true;
+                        this.ChestOpened[chestIndex] = true;
                         player.ChestsOpened++;
                         if (Main.chest[chestIndex].item.Count(item => item.type == ItemID.GoldenKey) > 0)
                         {
@@ -662,15 +656,15 @@ namespace SurvivalCrisis
         #region OnChat
         private void OnChat(PlayerChatEventArgs args)
         {
-            if (!IsInGame)
+            if (!this.IsInGame)
             {
                 return;
             }
-            var player = Players[args.Player.Index];
+            var player = this.Players[args.Player.Index];
             if (player.Identity == PlayerIdentity.Watcher)
             {
                 var grouP = player.TSPlayer.Group;
-                BCToWatcher("[旁观者频道]" + args.TShockFormattedText, new Color(grouP.R, grouP.G, grouP.B));
+                this.BCToWatcher("[旁观者频道]" + args.TShockFormattedText, new Color(grouP.R, grouP.G, grouP.B));
                 TSPlayer.Server.SendConsoleMessage(args.TShockFormattedText, grouP.R, grouP.G, grouP.B);
                 args.Handled = true;
                 return;
@@ -680,7 +674,7 @@ namespace SurvivalCrisis
                 player.ChatCount++;
                 args.TShockFormattedText = args.TShockFormattedText.Replace(args.Player.Name, $"{player.Prefix}{player.Title}{args.Player.Index}号");
             }
-            if (IsFinalBattleTime)
+            if (this.IsFinalBattleTime)
             {
                 var prefix = player.Identity switch
                 {
@@ -695,27 +689,27 @@ namespace SurvivalCrisis
             var color = new Color(group.R, group.G, group.B);
             if (player.Identity == PlayerIdentity.Watcher)
             {
-                BCToWatcher("[旁观者频道]" + args.TShockFormattedText, color);
+                this.BCToWatcher("[旁观者频道]" + args.TShockFormattedText, color);
             }
-            else if (EnabledGlobalChat && TraitorEMPTime == 0 && player.HeldItem.type == ItemID.WeatherRadio)
+            else if (this.EnabledGlobalChat && this.TraitorEMPTime == 0 && player.HeldItem.type == ItemID.WeatherRadio)
             {
-                BCToAll("[全图广播]" + args.TShockFormattedText, color);
+                this.BCToAll("[全图广播]" + args.TShockFormattedText, color);
             }
             else if (player.Equipped(ItemID.SpectreGoggles))
             {
-                BCToTraitor("[背板者频道]" + args.TShockFormattedText, color);
+                this.BCToTraitor("[背板者频道]" + args.TShockFormattedText, color);
             }
             else
             {
                 if (Regions.Hall.InRange(player))
                 {
-                    BCToHall("[大厅]" + args.TShockFormattedText, color);
+                    this.BCToHall("[大厅]" + args.TShockFormattedText, color);
                     //BCToWatcher("[大厅]" + args.TShockFormattedText, color);
                 }
                 else
                 {
-                    string prefix = player.Name + "=>";
-                    foreach (var ply in Players)
+                    var prefix = player.Name + "=>";
+                    foreach (var ply in this.Players)
                     {
                         if (ply?.TSPlayer == null || ply.Identity == PlayerIdentity.Watcher)
                         {
@@ -727,7 +721,7 @@ namespace SurvivalCrisis
                             ply.SendText(args.TShockFormattedText, color);
                         }
                     }
-                    BCToWatcher(prefix + ":" + args.TShockFormattedText, color);
+                    this.BCToWatcher(prefix + ":" + args.TShockFormattedText, color);
                 }
             }
             TSPlayer.Server.SendConsoleMessage(args.TShockFormattedText, group.R, group.G, group.B);
@@ -738,13 +732,13 @@ namespace SurvivalCrisis
         private void OnChangeTeam(object sender, GetDataHandlers.PlayerTeamEventArgs args)
         {
             var player = TShock.Players[args.PlayerId];
-            if (IsInGame)
+            if (this.IsInGame)
             {
-                if (GameTime > BossComingTime)
+                if (this.GameTime > BossComingTime)
                 {
 
                 }
-                else if (player.TPlayer.hostile || TShock.Players.Count(p => p?.Team == args.Team) >= 2|| GameTime > BossComingTime - FBPTime)
+                else if (player.TPlayer.hostile || TShock.Players.Count(p => p?.Team == args.Team) >= 2 || this.GameTime > BossComingTime - FBPTime)
                 {
                     args.Handled = true;
                     player.SetTeam(player.Team);
@@ -754,17 +748,17 @@ namespace SurvivalCrisis
         private void OnTogglePvp(object sender, GetDataHandlers.TogglePvpEventArgs args)
         {
             args.Handled = true;
-            var player = Players[args.PlayerId];
+            var player = this.Players[args.PlayerId];
             player.Pvp = player.TPlayer.hostile;
         }
         #endregion
         #region OnKillMe
         private void OnKillMe(object sender, GetDataHandlers.KillMeEventArgs args)
-		{
-			args.Handled = true;
-            if (Players[args.PlayerId].Identity != PlayerIdentity.Watcher)
+        {
+            args.Handled = true;
+            if (this.Players[args.PlayerId].Identity != PlayerIdentity.Watcher)
             {
-                Players[args.PlayerId].OnKill(args);
+                this.Players[args.PlayerId].OnKill(args);
             }
         }
         #endregion
@@ -773,9 +767,9 @@ namespace SurvivalCrisis
         {
             if (args.PVP)
             {
-                var attacker = Players[args.PlayerDeathReason._sourcePlayerIndex];
-                var player = Players[args.ID];
-                for (int i = 0; i < attacker.TPlayer.armor.Length; i++)
+                var attacker = this.Players[args.PlayerDeathReason._sourcePlayerIndex];
+                var player = this.Players[args.ID];
+                for (var i = 0; i < attacker.TPlayer.armor.Length; i++)
                 {
                     if (attacker.TPlayer.armor[i].type == ItemID.PocketMirror)
                     {
@@ -801,7 +795,7 @@ namespace SurvivalCrisis
         #region OnHurt
         private void OnHurt(object sender, GetDataHandlers.PlayerDamageEventArgs args)
         {
-            Players[args.Player.Index].OnHurt(args);
+            this.Players[args.Player.Index].OnHurt(args);
         }
         #endregion
         #region OnUpdate
@@ -816,8 +810,8 @@ namespace SurvivalCrisis
 #else
 			const int leastPlayerCount = 4;
 #endif
-            timer++;
-            for (int i = 0; i < Main.maxNPCs; i++)
+            this.timer++;
+            for (var i = 0; i < Main.maxNPCs; i++)
             {
                 if (Main.npc[i].active && Main.npc[i].aiStyle != 7)
                 {
@@ -830,81 +824,81 @@ namespace SurvivalCrisis
                 }
             }
             #region PlayerUpdate
-            for (int i = 0; i < Main.myPlayer; i++)
+            for (var i = 0; i < Main.myPlayer; i++)
             {
-                if (Players[i] != null && TShock.Players[i] == null)
+                if (this.Players[i] != null && TShock.Players[i] == null)
                 {
-                    Players[i] = null;
+                    this.Players[i] = null;
                     continue;
                 }
-                if (Players[i] == null)
+                if (this.Players[i] == null)
                 {
                     continue;
                 }
-                Players[i].Update();
+                this.Players[i].Update();
             }
             #endregion
             #region Waiting
-            if (gameStartDelay == null)
+            if (this.gameStartDelay == null)
             {
-                var count = Players.Count(player => player?.IsGuest == false && Regions.WaitingZone.InRange(player));
+                var count = this.Players.Count(player => player?.IsGuest == false && Regions.WaitingZone.InRange(player));
                 if (count >= leastPlayerCount)
                 {
-                    gameStartDelay = 30 * 60;
+                    this.gameStartDelay = 30 * 60;
                 }
                 else
                 {
-                    if (count > 0 && timer % 150 == 0)
+                    if (count > 0 && this.timer % 150 == 0)
                     {
                         var pos = new Vector2((Regions.WaitingZone.Left + Regions.WaitingZone.Right) / 2f, Regions.WaitingZone.CenterY) * 16;
                         Utils.SendCombatText(Texts.NotEnoughPlayers, Color.Pink, pos);
                     }
                 }
             }
-            else if (gameStartDelay > 0)
+            else if (this.gameStartDelay > 0)
             {
-                gameStartDelay--;
-                if (gameStartDelay % 90 == 0)
+                this.gameStartDelay--;
+                if (this.gameStartDelay % 90 == 0)
                 {
-                    if (Players.Count(player => player?.IsGuest == false && Regions.WaitingZone.InRange(player)) < leastPlayerCount)
+                    if (this.Players.Count(player => player?.IsGuest == false && Regions.WaitingZone.InRange(player)) < leastPlayerCount)
                     {
-                        gameStartDelay = null;
-                        if (gMapToken != null)
+                        this.gameStartDelay = null;
+                        if (this.gMapToken != null)
                         {
-                            gMapToken.Cancel();
-                            gMapToken = null;
-                            generateMap = null;
+                            this.gMapToken.Cancel();
+                            this.gMapToken = null;
+                            this.generateMap = null;
                         }
                         Utils.SendCombatText(Texts.NotEnoughPlayers, Color.Pink, Regions.WaitingZone.Center);
                         return;
                     }
                 }
-                if (gameStartDelay % 180 == 0)
+                if (this.gameStartDelay % 180 == 0)
                 {
-                    Utils.SendCombatText($"{gameStartDelay / 60}", Color.Pink, Regions.WaitingZone.Center);
+                    Utils.SendCombatText($"{this.gameStartDelay / 60}", Color.Pink, Regions.WaitingZone.Center);
                 }
-                if (gameStartDelay == 15 * 60)
+                if (this.gameStartDelay == 15 * 60)
                 {
-                    generateMap = GenerateMapAsync();
+                    this.generateMap = this.GenerateMapAsync();
                 }
-                else if (gameStartDelay == 0)
+                else if (this.gameStartDelay == 0)
                 {
-                    if (generateMap.IsCompleted)
+                    if (this.generateMap.IsCompleted)
                     {
-                        if (generateMap.Status == TaskStatus.Faulted)
+                        if (this.generateMap.Status == TaskStatus.Faulted)
                         {
-                            DebugMessage(generateMap.Exception.ToString());
+                            DebugMessage(this.generateMap.Exception.ToString());
                         }
                         GameOperations.GameStart();
                     }
                     else
                     {
-                        gameStartDelay += 10 * 60;
-                        BCToAll(Texts.NotCompleteMap, Color.Blue);
+                        this.gameStartDelay += 10 * 60;
+                        this.BCToAll(Texts.NotCompleteMap, Color.Blue);
                     }
                 }
             }
-            else if (IsInGame)
+            else if (this.IsInGame)
             {
                 GameOperations.GameUpdate();
             }
@@ -914,32 +908,32 @@ namespace SurvivalCrisis
         #region Join/Leave/Login/Logout
         private void OnLogout(PlayerLogoutEventArgs args)
         {
-            Players[args.Player.Index] = GamePlayer.Guest(args.Player.Index);
+            this.Players[args.Player.Index] = GamePlayer.Guest(args.Player.Index);
         }
 
         private void OnLogin(PlayerPostLoginEventArgs args)
         {
-            Players[args.Player.Index] = DataBase.GetPlayer(args.Player.Index);
+            this.Players[args.Player.Index] = this.DataBase.GetPlayer(args.Player.Index);
         }
 
         private void OnJoin(JoinEventArgs args)
         {
-            Players[args.Who] ??= GamePlayer.Guest(args.Who);
+            this.Players[args.Who] ??= GamePlayer.Guest(args.Who);
         }
 
         private void OnLeave(LeaveEventArgs args)
         {
-            Players[args.Who] = null;
+            this.Players[args.Who] = null;
         }
         #endregion
         #region OnNPCKilled
         private void OnNPCKilled(NpcKilledEventArgs args)
         {
-            if (IsFinalBattleTime && args.npc == FinalBoss && args.npc.type == FinalBossType)
+            if (this.IsFinalBattleTime && args.npc == this.FinalBoss && args.npc.type == this.FinalBossType)
             {
                 GameOperations.GameEnd(PlayerIdentity.Survivor);
             }
-            else if (IsInGame)
+            else if (this.IsInGame)
             {
                 var pos = args.npc.position;
                 var rBox = args.npc.Size;
@@ -956,44 +950,44 @@ namespace SurvivalCrisis
                     case NPCID.HellArmoredBonesSpikeShield:
                     case NPCID.HellArmoredBonesSword:
                     case NPCID.HellArmoredBones:
+                    {
+                        var a = Rand.NextDouble();
+                        if (a < 0.7)
                         {
-                            var a = Rand.NextDouble();
-                            if (a < 0.7)
-                            {
-                                int[] moltenArmors = { ItemID.MoltenBreastplate, ItemID.MoltenHelmet, ItemID.MoltenGreaves };
-                                Rand.Shuffle(moltenArmors);
-                                DropItem(ItemID.ShadowKey);
-                                DropItem(moltenArmors[0]);
-                                DropItem(moltenArmors[1]);
-                            }
-                            else if (a < 1)
-                            {
-                                DropItem(ItemID.GoldenKey);
-                            }
-                            DropItem(ItemID.InfernoFork);
+                            int[] moltenArmors = { ItemID.MoltenBreastplate, ItemID.MoltenHelmet, ItemID.MoltenGreaves };
+                            Rand.Shuffle(moltenArmors);
+                            DropItem(ItemID.ShadowKey);
+                            DropItem(moltenArmors[0]);
+                            DropItem(moltenArmors[1]);
                         }
-                        break;
+                        else if (a < 1)
+                        {
+                            DropItem(ItemID.GoldenKey);
+                        }
+                        DropItem(ItemID.InfernoFork);
+                    }
+                    break;
                     case NPCID.Mimic:
+                    {
+                        var a = Rand.NextDouble();
+                        if (a < 0.4)
                         {
-                            var a = Rand.NextDouble();
-                            if (a < 0.4)
-                            {
-                                DropItem(ItemID.DD2BallistraTowerT1Popper, Rand.Next(20, 50));
-                            }
-                            else if (a < 0.7)
-                            {
-                                DropItem(ItemID.DD2BallistraTowerT2Popper, Rand.Next(15, 40));
-                            }
-                            else if (a < 0.9)
-                            {
-                                DropItem(ItemID.DD2BallistraTowerT3Popper, Rand.Next(10, 30));
-                            }
-                            else if (a < 1)
-                            {
-                                DropItem(ItemID.RainbowCrystalStaff, Rand.Next(5, 20));
-                            }
+                            DropItem(ItemID.DD2BallistraTowerT1Popper, Rand.Next(20, 50));
                         }
-                        break;
+                        else if (a < 0.7)
+                        {
+                            DropItem(ItemID.DD2BallistraTowerT2Popper, Rand.Next(15, 40));
+                        }
+                        else if (a < 0.9)
+                        {
+                            DropItem(ItemID.DD2BallistraTowerT3Popper, Rand.Next(10, 30));
+                        }
+                        else if (a < 1)
+                        {
+                            DropItem(ItemID.RainbowCrystalStaff, Rand.Next(5, 20));
+                        }
+                    }
+                    break;
                     case NPCID.AngryBones:
                         DropItem(ItemID.GoldenKey, probability: 0.02);
                         break;
@@ -1025,77 +1019,77 @@ namespace SurvivalCrisis
                         }
                         break;
                     case NPCID.DiggerHead:
+                    {
+                        var a = Rand.NextDouble();
+                        if (a < 0.3)
                         {
-                            var a = Rand.NextDouble();
-                            if (a < 0.3)
-                            {
 
-                            }
-                            else if (a < 0.5)
-                            {
-                                DropItem(ItemID.PalladiumPickaxe);
-                            }
-                            else if (a < 0.7)
-                            {
-                                DropItem(ItemID.TitaniumPickaxe);
-                            }
-                            else if (a < 0.9)
-                            {
-                                DropItem(ItemID.Drax);
-                            }
-                            else if (a < 1)
-                            {
-                                DropItem(ItemID.StardustPickaxe);
-                            }
                         }
-                        break;
+                        else if (a < 0.5)
+                        {
+                            DropItem(ItemID.PalladiumPickaxe);
+                        }
+                        else if (a < 0.7)
+                        {
+                            DropItem(ItemID.TitaniumPickaxe);
+                        }
+                        else if (a < 0.9)
+                        {
+                            DropItem(ItemID.Drax);
+                        }
+                        else if (a < 1)
+                        {
+                            DropItem(ItemID.StardustPickaxe);
+                        }
+                    }
+                    break;
                     case NPCID.ChaosElemental:
                         DropItem(ItemID.RodofDiscord, probability: 0.08);
                         DropItem(ItemID.RainbowRod, probability: 0.08);
                         break;
                     case NPCID.EnchantedSword:
+                    {
+                        var a = Rand.NextDouble();
+                        if (a < 0.4)
                         {
-                            var a = Rand.NextDouble();
-                            if (a < 0.4)
-                            {
-                                DropItem(ItemID.EnchantedSword);
-                            }
-                            else if (a < 0.7)
-                            {
-                                DropItem(ItemID.Arkhalis);
-                            }
-                            else if (a < 0.95)
-                            {
-                                DropItem(ItemID.Excalibur);
-                            }
-                            else if (a < 1)
-                            {
-                                DropItem(ItemID.TrueExcalibur);
-                            }
+                            DropItem(ItemID.EnchantedSword);
                         }
-                        break;
+                        else if (a < 0.7)
+                        {
+                            DropItem(ItemID.Arkhalis);
+                        }
+                        else if (a < 0.95)
+                        {
+                            DropItem(ItemID.Excalibur);
+                        }
+                        else if (a < 1)
+                        {
+                            DropItem(ItemID.TrueExcalibur);
+                        }
+                    }
+                    break;
                     case NPCID.CursedHammer:
+                    {
+                        DropItem(ItemID.Hammush, probability: 0.01);
+                        var a = Rand.NextDouble();
+                        if (a < 0.4)
                         {
-                            DropItem(ItemID.Hammush, probability: 0.01);
-                            var a = Rand.NextDouble();
-                            if (a < 0.4)
-                            {
-                                DropItem(ItemID.TheBreaker);
-                            }
-                            else if (a < 0.7)
-                            {
-                                DropItem(ItemID.Pwnhammer);
-                            }
-                            else if (a < 0.95)
-                            {
-                                DropItem(ItemID.NightsEdge);
-                            }
-                            else if (a < 1)
-                            {
-                                DropItem(ItemID.TrueNightsEdge);
-                            }
+                            DropItem(ItemID.TheBreaker);
                         }
-                        break;
+                        else if (a < 0.7)
+                        {
+                            DropItem(ItemID.Pwnhammer);
+                        }
+                        else if (a < 0.95)
+                        {
+                            DropItem(ItemID.NightsEdge);
+                        }
+                        else if (a < 1)
+                        {
+                            DropItem(ItemID.TrueNightsEdge);
+                        }
+                    }
+                    break;
                     case NPCID.IlluminantBat:
                         DropItem(ItemID.CrystalBullet, Rand.Next(40, 80));
                         DropItem(ItemID.Chik, probability: 0.25);
@@ -1147,18 +1141,18 @@ namespace SurvivalCrisis
         #region OnNpcStrike
         private void OnNpcStrike(NpcStrikeEventArgs args)
         {
-            var player = Players[args.Player.whoAmI];
+            var player = this.Players[args.Player.whoAmI];
             if (player == null || player.IsGuest)
             {
                 return;
             }
             player.OnStrikeNpc(args);
-            if (args.Npc.whoAmI == FinalBossIndex)
+            if (args.Npc.whoAmI == this.FinalBossIndex)
             {
-                FinalBossLifeRest -= (int)Main.CalculateDamageNPCsTake(args.Damage, args.Npc.defense);
-                if (FinalBossLifeRest < 0)
+                this.FinalBossLifeRest -= (int) Main.CalculateDamageNPCsTake(args.Damage, args.Npc.defense);
+                if (this.FinalBossLifeRest < 0)
                 {
-                    FinalBossLifeRest = 0;
+                    this.FinalBossLifeRest = 0;
                 }
             }
         }
@@ -1173,9 +1167,9 @@ namespace SurvivalCrisis
                     args.Handled = true;
                     if (Regions.Maze.InRange(args.X, args.Y) && (!Main.tile[args.X, args.Y].active() || Main.tile[args.X, args.Y].type == TileID.Torches))
                     {
-                        for (int i = -1; i <= 1; i++)
+                        for (var i = -1; i <= 1; i++)
                         {
-                            for (int j = -1; j <= 1; j++)
+                            for (var j = -1; j <= 1; j++)
                             {
                                 if (Main.tile[args.X + i, args.Y + j].type == TileID.TeleportationPylon)
                                 {
@@ -1193,7 +1187,7 @@ namespace SurvivalCrisis
                     }
                     if (Main.tile[args.X, args.Y].type == TileID.TeleportationPylon)
                     {
-                        var pylon = Rand.Next(MazePylons);
+                        var pylon = Rand.Next(this.MazePylons);
                         new TileSection(pylon.X, pylon.Y, 1, 1).UpdateToPlayer(args.Player.Index);
                         args.Player.Teleport(16 * pylon.X, 16 * pylon.Y);
                         args.Handled = true;
@@ -1216,8 +1210,8 @@ namespace SurvivalCrisis
                     }
                 }
             }
-            if(IsInGame && Players[args.Player.Index].Identity == PlayerIdentity.Watcher)
-			{
+            if (this.IsInGame && this.Players[args.Player.Index].Identity == PlayerIdentity.Watcher)
+            {
                 args.Handled = true;
                 new TileSection(args.X, args.Y, 1, 1).UpdateToPlayer(args.Player.Index);
             }
@@ -1236,23 +1230,23 @@ namespace SurvivalCrisis
         #region OnPlayerSlot
         private void OnPlayerSlot(object sender, GetDataHandlers.PlayerSlotEventArgs args)
         {
-            if (IsInGame)
+            if (this.IsInGame)
             {
-                var player = Players[args.PlayerId];
+                var player = this.Players[args.PlayerId];
                 if (player?.TSPlayer != null && player.Identity != PlayerIdentity.Watcher)
                 {
                     if (NetItem.PiggyIndex.Item1 <= args.Slot && args.Slot < NetItem.PiggyIndex.Item2)
                     {
                         player.TPlayer.bank.item[args.Slot - NetItem.PiggyIndex.Item1].netDefaults(args.Type);
                         player.TPlayer.bank.item[args.Slot - NetItem.PiggyIndex.Item1].stack = args.Stack;
-                        NetMessage.SendData((int)PacketTypes.PlayerSlot, -1, player.Index, null, args.Slot);
+                        NetMessage.SendData((int) PacketTypes.PlayerSlot, -1, player.Index, null, args.Slot);
                         if (player.Equipped(ItemID.DiscountCard))
                         {
-                            TraitorShop.TryBuyFromPiggy(player);
+                            this.TraitorShop.TryBuyFromPiggy(player);
                         }
                         else
                         {
-                            CurrentTask.CheckPiggy(player);
+                            this.CurrentTask.CheckPiggy(player);
                         }
                         args.Handled = true;
                     }
@@ -1271,7 +1265,7 @@ namespace SurvivalCrisis
         {
             if (args.SpawnContext == PlayerSpawnContext.RecallFromItem)
             {
-                var player = Players[args.PlayerId];
+                var player = this.Players[args.PlayerId];
                 if (player.Identity != PlayerIdentity.Watcher)
                 {
                     if (player.WarpingCountDown == 0)
@@ -1280,9 +1274,9 @@ namespace SurvivalCrisis
                         player.AddEffect(new PlayerWarp(player, 10 * 60, home));
                     }
                     else
-					{
+                    {
                         player.SendText("请等待上一次跃迁", Color.Yellow);
-					}
+                    }
                     args.Handled = true;
                     player.TeleportTo(player.TPlayer.Center);
                 }
@@ -1293,9 +1287,9 @@ namespace SurvivalCrisis
         #region GenerateMap
         private async Task<bool> GenerateMapAsync()
         {
-            gMapToken = new CancellationTokenSource();
-            BCToAll(Texts.GeneratingMap, Color.Purple);
-            return await Task.Run(GenerateMap, gMapToken.Token);
+            this.gMapToken = new CancellationTokenSource();
+            this.BCToAll(Texts.GeneratingMap, Color.Purple);
+            return await Task.Run(this.GenerateMap, this.gMapToken.Token);
         }
         private bool GenerateMap()
         {
@@ -1316,7 +1310,7 @@ namespace SurvivalCrisis
             caveEx.Generate();
             hell.Generate();
             Regions.GamingZone.UpdateToPlayer();
-            BCToAll(Texts.GeneratedMap, Color.Purple);
+            this.BCToAll(Texts.GeneratedMap, Color.Purple);
             return true;
         }
         #endregion
@@ -1324,24 +1318,17 @@ namespace SurvivalCrisis
         #region HotReload
         public void PostHotReload()
         {
-            for (int i = 0; i < Main.maxPlayers; i++)
+            for (var i = 0; i < Main.maxPlayers; i++)
             {
                 if (TShock.Players[i] != null)
                 {
-                    if (TShock.Players[i].IsLoggedIn)
-                    {
-                        Players[i] = DataBase.GetPlayer(i);
-                    }
-                    else
-                    {
-                        Players[i] = GamePlayer.Guest(i);
-                    }
+                    this.Players[i] = TShock.Players[i].IsLoggedIn ? this.DataBase.GetPlayer(i) : GamePlayer.Guest(i);
                 }
             }
         }
         private void HotReloadCmd(CommandArgs args)
         {
-            Dispose();
+            this.Dispose();
             #region FindContainer
             PluginContainer Container = null;
             foreach (var container in ServerApi.Plugins)
@@ -1381,25 +1368,17 @@ namespace SurvivalCrisis
         #region Debug
         private void DebugCommand(CommandArgs args)
         {
-            string option;
-            if (args.Parameters.Count < 1)
-            {
-                option = "help";
-            }
-            else
-            {
-                option = args.Parameters[0];
-            }
+            var option = args.Parameters.Count < 1 ? "help" : args.Parameters[0];
             switch (option)
             {
                 case "help":
                     break;
                 case "pstates":
-                    for (int i = 0; i < Players.Length; i++)
+                    for (var i = 0; i < this.Players.Length; i++)
                     {
-                        if (Players[i] != null)
+                        if (this.Players[i] != null)
                         {
-                            args.Player.SendInfoMessage($"({i}){Players[i].Name}: isGuest: {Players[i].IsGuest}, identity: {Players[i].Identity}");
+                            args.Player.SendInfoMessage($"({i}){this.Players[i].Name}: isGuest: {this.Players[i].IsGuest}, identity: {this.Players[i].Identity}");
                         }
                     }
                     break;
@@ -1407,248 +1386,240 @@ namespace SurvivalCrisis
                     Regions.ShowTo(args.Player);
                     break;
                 case "cfg":
-                    Config.ShowTo(args.Player);
+                    this.Config.ShowTo(args.Player);
                     break;
                 case "ss":
+                {
+                    var point = new Point(args.Player.TileX, args.Player.TileY);
+                    if (args.Parameters.Count >= 3 && int.TryParse(args.Parameters[1], out var width) && int.TryParse(args.Parameters[2], out var height))
                     {
-                        var point = new Point(args.Player.TileX, args.Player.TileY);
-                        if (args.Parameters.Count >= 3 && int.TryParse(args.Parameters[1], out int width) && int.TryParse(args.Parameters[2], out int height))
-                        {
-                            var block = MapGenerating.IslandsGenerator.TileBlockData.FromMap(new TileSection(point.X, point.Y, width, height));
-                            block.Save();
-                        }
-                        else
-                        {
-                            var block = MapGenerating.IslandsGenerator.TileBlockData.BFSBlock(point);
-                            block.Save();
-                        }
+                        var block = MapGenerating.IslandsGenerator.TileBlockData.FromMap(new TileSection(point.X, point.Y, width, height));
+                        block.Save();
                     }
-                    break;
+                    else
+                    {
+                        var block = MapGenerating.IslandsGenerator.TileBlockData.BFSBlock(point);
+                        block.Save();
+                    }
+                }
+                break;
                 case "island":
+                {
+                    MapGenerating.IslandsGenerator.TileBlockData island = null;
+                    var files = new DirectoryInfo(IslandsPath).GetFiles();
+                    if (args.Parameters.Count > 1)
                     {
-                        MapGenerating.IslandsGenerator.TileBlockData island = null;
-                        var files = new DirectoryInfo(IslandsPath).GetFiles();
-                        if (args.Parameters.Count > 1)
+                        var file = files.FirstOrDefault(f => f.Name.StartsWith(args.Parameters[1], StringComparison.OrdinalIgnoreCase));
+                        if (file != null)
                         {
-                            var file = files.FirstOrDefault(f => f.Name.StartsWith(args.Parameters[1], StringComparison.OrdinalIgnoreCase));
-                            if (file != null)
-                            {
-                                island = MapGenerating.IslandsGenerator.TileBlockData.FromFile(file.FullName);
-                            }
-                        }
-                        if (island != null)
-                        {
-                            var section = new TileSection(args.Player.TileX, args.Player.TileY, island.Width, island.Height);
-                            island.AffixTo(section);
-                            section.UpdateToPlayer();
-                        }
-                        else
-                        {
-                            foreach (var file in files)
-                            {
-                                args.Player.SendInfoMessage(file.Name);
-                            }
+                            island = MapGenerating.IslandsGenerator.TileBlockData.FromFile(file.FullName);
                         }
                     }
-                    break;
+                    if (island != null)
+                    {
+                        var section = new TileSection(args.Player.TileX, args.Player.TileY, island.Width, island.Height);
+                        island.AffixTo(section);
+                        section.UpdateToPlayer();
+                    }
+                    else
+                    {
+                        foreach (var file in files)
+                        {
+                            args.Player.SendInfoMessage(file.Name);
+                        }
+                    }
+                }
+                break;
                 case "sphere":
+                {
+                    MapGenerating.IslandsGenerator.TileBlockData sphere = null;
+                    var files = new DirectoryInfo(SpheresPath).GetFiles();
+                    if (args.Parameters.Count > 1)
                     {
-                        MapGenerating.IslandsGenerator.TileBlockData sphere = null;
-                        var files = new DirectoryInfo(SpheresPath).GetFiles();
-                        if (args.Parameters.Count > 1)
+                        var file = files.FirstOrDefault(f => f.Name.StartsWith(args.Parameters[1], StringComparison.OrdinalIgnoreCase));
+                        if (file != null)
                         {
-                            var file = files.FirstOrDefault(f => f.Name.StartsWith(args.Parameters[1], StringComparison.OrdinalIgnoreCase));
-                            if (file != null)
-                            {
-                                sphere = MapGenerating.IslandsGenerator.TileBlockData.FromFile(file.FullName);
-                            }
-                        }
-                        if (sphere != null)
-                        {
-                            var section = new TileSection(args.Player.TileX, args.Player.TileY, sphere.Width, sphere.Height);
-                            sphere.AffixTo(section);
-                            section.UpdateToPlayer();
-                        }
-                        else
-                        {
-                            foreach (var file in files)
-                            {
-                                args.Player.SendInfoMessage(file.Name);
-                            }
+                            sphere = MapGenerating.IslandsGenerator.TileBlockData.FromFile(file.FullName);
                         }
                     }
-                    break;
+                    if (sphere != null)
+                    {
+                        var section = new TileSection(args.Player.TileX, args.Player.TileY, sphere.Width, sphere.Height);
+                        sphere.AffixTo(section);
+                        section.UpdateToPlayer();
+                    }
+                    else
+                    {
+                        foreach (var file in files)
+                        {
+                            args.Player.SendInfoMessage(file.Name);
+                        }
+                    }
+                }
+                break;
                 case "sigma":
+                {
+                    var x = args.Player.TileX;
+                    var heights = new List<int>(50);
+                    for (var i = x; i < x + 50; i++)
                     {
-                        int x = args.Player.TileX;
-                        List<int> heights = new List<int>(50);
-                        for (int i = x; i < x + 50; i++)
+                        for (var j = args.Player.TileY - 50; j < Main.maxTilesY; j++)
                         {
-                            for (int j = args.Player.TileY - 50; j < Main.maxTilesY; j++)
+                            if (Main.tile[i, j].active())
                             {
-                                if (Main.tile[i, j].active())
-                                {
-                                    heights.Add(j);
-                                    break;
-                                }
+                                heights.Add(j);
+                                break;
                             }
                         }
-                        var average = heights.Average();
-                        var sigma2 = heights.Average(value => (value - average) * (value - average));
-                        args.Player.SendMessage($"average: {average} σ²: {sigma2}", Color.Blue);
                     }
-                    break;
+                    var average = heights.Average();
+                    var sigma2 = heights.Average(value => (value - average) * (value - average));
+                    args.Player.SendMessage($"average: {average} σ²: {sigma2}", Color.Blue);
+                }
+                break;
             }
         }
         #endregion
         #region PCommand
         private void PlayerCommand(CommandArgs args)
         {
-            string option;
-            if (args.Parameters.Count > 0)
-            {
-                option = args.Parameters[0];
-            }
-            else
-            {
-                option = "help";
-            }
+            var option = args.Parameters.Count > 0 ? args.Parameters[0] : "help";
             switch (option)
             {
                 case "pch":
-                    if (!IsInGame)
+                    if (!this.IsInGame)
                     {
                         args.Player.SendErrorMessage("只能在游戏中使用这个命令");
                     }
-                    else if (Players[args.Player.Index].Identity != PlayerIdentity.Traitor)
+                    else if (this.Players[args.Player.Index].Identity != PlayerIdentity.Traitor)
                     {
                         args.Player.SendErrorMessage("只有背叛者可以使用这个命令");
                     }
                     else
                     {
-                        var msg = args.Message.Substring(args.Message.LastIndexOf("ss pchat ") + "ss pchat".Length);
-                        BCToTraitor($"[背叛者频道]{args.Player.Index}号: {msg}", Color.White);
+                        var msg = args.Message[(args.Message.LastIndexOf("ss pchat ") + "ss pchat".Length)..];
+                        this.BCToTraitor($"[背叛者频道]{args.Player.Index}号: {msg}", Color.White);
                     }
                     break;
                 case "task":
-                    if (!IsInGame)
+                    if (!this.IsInGame)
                     {
                         args.Player.SendErrorMessage("你只能在游戏中使用该命令");
                     }
-                    else if (CurrentTask == null)
+                    else if (this.CurrentTask == null)
                     {
                         args.Player.SendInfoMessage("当前无生存者任务");
                     }
                     else
                     {
-                        args.Player.SendMessage(CurrentTask.Text, Color.White);
-                        args.Player.SendMessage(CurrentTask.CurrentProcess(), Color.BlueViolet);
+                        args.Player.SendMessage(this.CurrentTask.Text, Color.White);
+                        args.Player.SendMessage(this.CurrentTask.CurrentProcess(), Color.BlueViolet);
                     }
                     break;
                 case "cps":
-                    if (!IsInGame)
+                    if (!this.IsInGame)
                     {
                         args.Player.SendErrorMessage("你只能在游戏中使用该命令");
                     }
-                    else if (CurrentTask == null)
+                    else if (this.CurrentTask == null)
                     {
                         args.Player.SendInfoMessage("当前无生存者任务");
                     }
                     else
                     {
-                        CurrentTask.CheckPiggy(Players[args.Player.Index]);
+                        this.CurrentTask.CheckPiggy(this.Players[args.Player.Index]);
                     }
                     break;
                 case "st":
-                    if (!IsInGame)
+                    if (!this.IsInGame)
                     {
                         args.Player.SendErrorMessage("只能在游戏中使用这个命令");
                     }
-                    else if (Players[args.Player.Index].Identity != PlayerIdentity.Traitor)
+                    else if (this.Players[args.Player.Index].Identity != PlayerIdentity.Traitor)
                     {
                         args.Player.SendErrorMessage("只有背叛者可以使用这个命令");
                     }
                     else
                     {
-                        if (args.Parameters.Count >= 2 && int.TryParse(args.Parameters[1], out int index))
+                        if (args.Parameters.Count >= 2 && int.TryParse(args.Parameters[1], out var index))
                         {
-                            TraitorShop.TryBuy(Players[args.Player.Index], index);
+                            this.TraitorShop.TryBuy(this.Players[args.Player.Index], index);
                         }
                         else
                         {
-                            TraitorShop.DisplayTo(Players[args.Player.Index]);
+                            this.TraitorShop.DisplayTo(this.Players[args.Player.Index]);
                         }
                     }
                     break;
                 case "rank":
-					{
-                        var traitorRank = DataBase.GetTraitorRank();
-                        var survivorRank = DataBase.GetSurvivorRank();
-                        args.Player.SendInfoMessage($"生存者排行:");
-                        for (int i = 0; i < 10 && i < survivorRank.Count; i++)
-                        {
-                            args.Player.SendInfoMessage($"第{i + 1}名: {survivorRank[i].Name}({survivorRank[i].SurvivorDatas.TotalScore})");
-                        }
-                        args.Player.SendInfoMessage($"背叛者排行:");
-                        for (int i = 0; i < 10 && i < traitorRank.Count; i++)
-                        {
-                            args.Player.SendInfoMessage($"第{i + 1}名: {traitorRank[i].Name}({traitorRank[i].TraitorDatas.TotalScore})");
-                        }
+                {
+                    var traitorRank = this.DataBase.GetTraitorRank();
+                    var survivorRank = this.DataBase.GetSurvivorRank();
+                    args.Player.SendInfoMessage($"生存者排行:");
+                    for (var i = 0; i < 10 && i < survivorRank.Count; i++)
+                    {
+                        args.Player.SendInfoMessage($"第{i + 1}名: {survivorRank[i].Name}({survivorRank[i].SurvivorDatas.TotalScore})");
                     }
-                    break;
+                    args.Player.SendInfoMessage($"背叛者排行:");
+                    for (var i = 0; i < 10 && i < traitorRank.Count; i++)
+                    {
+                        args.Player.SendInfoMessage($"第{i + 1}名: {traitorRank[i].Name}({traitorRank[i].TraitorDatas.TotalScore})");
+                    }
+                }
+                break;
                 case "np":
-					{
-						if (Players[args.Player.Index].Data.UnlockedPrefixs.Count == 0)
-						{
-							args.Player.SendInfoMessage("尚未解锁任何前缀");
-							return;
-						}
-						Players[args.Player.Index].ToNextPrefixID();
-                        break;
-					}
-                case "nt":
-					{
-						if (Players[args.Player.Index].Data.UnlockedTitles.Count == 0)
-						{
-							args.Player.SendInfoMessage("尚未解锁任何称号");
-							return;
-						}
-						Players[args.Player.Index].ToNextTitleID();
-                        break;
-                    }
-                case "rp":
-					{
-                        Players[args.Player.Index].BuyRandomPrefix(200);
-                        break;
-					}
-                case "rt":
+                {
+                    if (this.Players[args.Player.Index].Data.UnlockedPrefixs.Count == 0)
                     {
-                        Players[args.Player.Index].BuyRandomTitle(200);
-                        break;
-					}
-                case "score":
-                    {
-                        var player = Players[args.Player.Index];
-                        var traitorRank = DataBase.GetTraitorRank();
-                        var survivorRank = DataBase.GetSurvivorRank();
-
-                        player.SendText($"——————生存者信息——————", Color.LightBlue);
-                        player.SendText($"当前排名: {survivorRank.IndexOf(player.Data) + 1}", Color.LightSkyBlue);
-                        player.SendText($"总积分: {player.Data.SurvivorDatas.TotalScore}", Color.LightSkyBlue);
-                        player.SendText($"游戏次数: {player.Data.SurvivorDatas.GameCounts, 4}      胜利次数: {player.Data.SurvivorDatas.WinCounts, 4}", Color.LightSkyBlue);
-                        player.SendText($"死亡次数: {player.Data.SurvivorDatas.KilledCount}", Color.LightSkyBlue);
-
-                        player.SendText($"——————背叛者信息——————", Color.DarkRed);
-                        player.SendText($"当前排名: {survivorRank.IndexOf(player.Data) + 1}", Color.OrangeRed);
-                        player.SendText($"总积分: {player.Data.TraitorDatas.TotalScore}", Color.OrangeRed);
-                        player.SendText($"游戏次数: {player.Data.TraitorDatas.GameCounts,4}      胜利次数: {player.Data.TraitorDatas.WinCounts,4}", Color.OrangeRed);
-                        player.SendText($"击杀次数: {player.Data.TraitorDatas.KillingCount}", Color.OrangeRed);
-
-                        player.SendText($"当前可消费积分: {player.Data.Coins}", Color.Yellow);
+                        args.Player.SendInfoMessage("尚未解锁任何前缀");
+                        return;
                     }
+                    this.Players[args.Player.Index].ToNextPrefixID();
                     break;
+                }
+                case "nt":
+                {
+                    if (this.Players[args.Player.Index].Data.UnlockedTitles.Count == 0)
+                    {
+                        args.Player.SendInfoMessage("尚未解锁任何称号");
+                        return;
+                    }
+                    this.Players[args.Player.Index].ToNextTitleID();
+                    break;
+                }
+                case "rp":
+                {
+                    this.Players[args.Player.Index].BuyRandomPrefix(200);
+                    break;
+                }
+                case "rt":
+                {
+                    this.Players[args.Player.Index].BuyRandomTitle(200);
+                    break;
+                }
+                case "score":
+                {
+                    var player = this.Players[args.Player.Index];
+                    var traitorRank = this.DataBase.GetTraitorRank();
+                    var survivorRank = this.DataBase.GetSurvivorRank();
+
+                    player.SendText($"——————生存者信息——————", Color.LightBlue);
+                    player.SendText($"当前排名: {survivorRank.IndexOf(player.Data) + 1}", Color.LightSkyBlue);
+                    player.SendText($"总积分: {player.Data.SurvivorDatas.TotalScore}", Color.LightSkyBlue);
+                    player.SendText($"游戏次数: {player.Data.SurvivorDatas.GameCounts,4}      胜利次数: {player.Data.SurvivorDatas.WinCounts,4}", Color.LightSkyBlue);
+                    player.SendText($"死亡次数: {player.Data.SurvivorDatas.KilledCount}", Color.LightSkyBlue);
+
+                    player.SendText($"——————背叛者信息——————", Color.DarkRed);
+                    player.SendText($"当前排名: {survivorRank.IndexOf(player.Data) + 1}", Color.OrangeRed);
+                    player.SendText($"总积分: {player.Data.TraitorDatas.TotalScore}", Color.OrangeRed);
+                    player.SendText($"游戏次数: {player.Data.TraitorDatas.GameCounts,4}      胜利次数: {player.Data.TraitorDatas.WinCounts,4}", Color.OrangeRed);
+                    player.SendText($"击杀次数: {player.Data.TraitorDatas.KillingCount}", Color.OrangeRed);
+
+                    player.SendText($"当前可消费积分: {player.Data.Coins}", Color.Yellow);
+                }
+                break;
                 case "stat":
-                    args.Player.SendMessage(Players[args.Player.Index].LastStatusMessage ?? string.Empty, Color.White);
+                    args.Player.SendMessage(this.Players[args.Player.Index].LastStatusMessage ?? string.Empty, Color.White);
                     break;
                 default:
                     args.Player.SendInfoMessage("task    查看生存者任务");
@@ -1678,7 +1649,7 @@ namespace SurvivalCrisis
         }
         public void BCToHall(string message, Color color)
         {
-            foreach (var player in Players)
+            foreach (var player in this.Players)
             {
                 if (player != null && Regions.Hall.InRange(player))
                 {
@@ -1692,15 +1663,15 @@ namespace SurvivalCrisis
         }
         public void BCToWatcher(string message, Color color)
         {
-            BCTo(PlayerIdentity.Watcher, message, color);
+            this.BCTo(PlayerIdentity.Watcher, message, color);
         }
         public void BCToTraitor(string message, Color color)
         {
-            BCTo(PlayerIdentity.Traitor, message, color);
+            this.BCTo(PlayerIdentity.Traitor, message, color);
         }
         public void BCTo(PlayerIdentity identity, string message, Color color)
         {
-            foreach (var player in Players)
+            foreach (var player in this.Players)
             {
                 if (player?.Identity == identity)
                 {

@@ -8,41 +8,38 @@ using Terraria;
 
 namespace SurvivalCrisis.Nets
 {
-	public class NetGroundItemCollection
-	{
-		private NetGroundItem[] items;
+    public class NetGroundItemCollection
+    {
+        private readonly NetGroundItem[] items;
 
-		public int Count => items.Length;
-		public NetGroundItem this[int index]
-		{
-			get => items[index];
-		}
+        public int Count => this.items.Length;
+        public NetGroundItem this[int index] => this.items[index];
 
-		public NetGroundItemCollection()
-		{
-			items = new NetGroundItem[Main.maxItems];
-			for (int i = 0; i < items.Length; i++)
-			{
-				items[i] = new NetGroundItem(i);
-			}
-		}
+        public NetGroundItemCollection()
+        {
+            this.items = new NetGroundItem[Main.maxItems];
+            for (var i = 0; i < this.items.Length; i++)
+            {
+                this.items[i] = new NetGroundItem(i);
+            }
+        }
 
-		public void Clear()
-		{
-			for (int i = 0; i < items.Length; i++)
-			{
-				items[i].Active = false;
-			}
-		}
-		public void Clear(int itemID)
-		{
-			for (int i = 0; i < items.Length; i++)
-			{
-				if (items[i].ID == itemID)
-				{
-					items[i].Active = false;
-				}
-			}
-		}
-	}
+        public void Clear()
+        {
+            for (var i = 0; i < this.items.Length; i++)
+            {
+                this.items[i].Active = false;
+            }
+        }
+        public void Clear(int itemID)
+        {
+            for (var i = 0; i < this.items.Length; i++)
+            {
+                if (this.items[i].ID == itemID)
+                {
+                    this.items[i].Active = false;
+                }
+            }
+        }
+    }
 }

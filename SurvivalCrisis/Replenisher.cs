@@ -14,9 +14,9 @@ namespace SurvivalCrisis
     {
         public static int ForcePlaceChest(Point where)
         {
-            TileSection section = new TileSection(where.X, where.Y - 1, 2, 3);
-            Tile copy0 = new Tile(section[0, 2]);
-            Tile copy1 = new Tile(section[1, 2]);
+            var section = new TileSection(where.X, where.Y - 1, 2, 3);
+            var copy0 = new Tile(section[0, 2]);
+            var copy1 = new Tile(section[1, 2]);
             section.KillAllTile();
             section.PlaceTileAt(new Point(0, 2), TileID.WoodBlock);
             section.PlaceTileAt(new Point(1, 2), TileID.WoodBlock);
@@ -61,7 +61,7 @@ namespace SurvivalCrisis
 
         public static void SpecialLine(int x, int y, int length, ushort type)
         {
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
                 Main.tile[x + i, y].active(false);
                 Main.tile[x + i, y].active(true);
@@ -72,22 +72,24 @@ namespace SurvivalCrisis
 
         public static void UpdateSection(int x, int y, int x2, int y2, int who = -1)
         {
-            int lowX = Netplay.GetSectionX(x);
-            int highX = Netplay.GetSectionX(x2);
-            int lowY = Netplay.GetSectionY(y);
-            int highY = Netplay.GetSectionY(y2);
+            var lowX = Netplay.GetSectionX(x);
+            var highX = Netplay.GetSectionX(x2);
+            var lowY = Netplay.GetSectionY(y);
+            var highY = Netplay.GetSectionY(y2);
             if (who == -1)
             {
-                foreach (RemoteClient sock in Netplay.Clients)
+                foreach (var sock in Netplay.Clients)
                 {
                     if (!sock.IsActive)
                     {
                         continue;
                     }
-                    for (int i = lowX; i <= highX; i++)
+                    for (var i = lowX; i <= highX; i++)
                     {
-                        for (int j = lowY; j <= highY; j++)
+                        for (var j = lowY; j <= highY; j++)
+                        {
                             sock.TileSections[i, j] = false;
+                        }
                     }
                 }
             }
@@ -98,10 +100,12 @@ namespace SurvivalCrisis
                 {
                     return;
                 }
-                for (int i = lowX; i <= highX; i++)
+                for (var i = lowX; i <= highX; i++)
                 {
-                    for (int j = lowY; j <= highY; j++)
+                    for (var j = lowY; j <= highY; j++)
+                    {
                         sock.TileSections[i, j] = false;
+                    }
                 }
             }
         }

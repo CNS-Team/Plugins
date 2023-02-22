@@ -26,13 +26,9 @@ namespace SurvivalCrisis
                 {
                     traitorCount = 0;
                 }
-                else if (participantsCount < 4)
-                {
-                    traitorCount = 1;
-                }
                 else
                 {
-                    traitorCount = participantsCount / 4;
+                    traitorCount = participantsCount < 4 ? 1 : participantsCount / 4;
                 }
                 return traitorCount;
             }
@@ -43,14 +39,7 @@ namespace SurvivalCrisis
                 {
                     if (player != null)
                     {
-                        if (player.Identity == PlayerIdentity.Watcher)
-                        {
-                            player.Pvp = false;
-                        }
-                        else
-                        {
-                            player.Pvp = pvp;
-                        }
+                        player.Pvp = player.Identity == PlayerIdentity.Watcher ? false : pvp;
                     }
                 }
             }
@@ -125,8 +114,8 @@ namespace SurvivalCrisis
                     @event.Reset();
                 }
                 events[0].StartDelay = SunsetToMidnight;
-                events[1].StartDelay = SunsetToMidnight + 7 * 60 * 60;
-                events[2].StartDelay = SunsetToMidnight + 15 * 60 * 60;
+                events[1].StartDelay = SunsetToMidnight + (7 * 60 * 60);
+                events[2].StartDelay = SunsetToMidnight + (15 * 60 * 60);
                 #endregion
                 #region Effects
                 ClearEffects();
@@ -158,7 +147,7 @@ namespace SurvivalCrisis
                     if (player != null)
                     {
                         player.OnGameEnd();
-                        NetMessage.TrySendData((int)PacketTypes.PlayerInfo, -1, player.Index, null, player.Index);
+                        NetMessage.TrySendData((int) PacketTypes.PlayerInfo, -1, player.Index, null, player.Index);
                     }
                 }
                 Commands.HandleCommand(TSPlayer.Server, "/resetplayers all");
@@ -191,7 +180,7 @@ namespace SurvivalCrisis
                 }
                 if (Game.GameTime % 60 == 0)
                 {
-                    int timeToNextEvent = -1;
+                    var timeToNextEvent = -1;
                     if (Game.GameTime < EventTime1)
                     {
                         timeToNextEvent = EventTime1 - Game.GameTime;
@@ -246,11 +235,11 @@ namespace SurvivalCrisis
             public static void IdentifyPlayers()
             {
                 var actives = Game.Players.Where(player => player != null && !player.IsGuest && Regions.WaitingZone.InRange(player)).ToArray();
-                int count = actives.Length;
-                int traitorCount = CalcTraitorsCount(count);
+                var count = actives.Length;
+                var traitorCount = CalcTraitorsCount(count);
                 #region Select Traitor
-                bool[] selected = new bool[count];
-                for (int i = 0; i < traitorCount; i++)
+                var selected = new bool[count];
+                for (var i = 0; i < traitorCount; i++)
                 {
                     int t;
                     do
@@ -290,7 +279,7 @@ namespace SurvivalCrisis
                 Game.FinalBossLifeMax = Game.FinalBoss.lifeMax;
                 Game.FinalBossLifeRest = Game.FinalBoss.lifeMax;
 
-                TSPlayer.All.SendData(PacketTypes.NpcUpdate, string.Empty, (int)Game.FinalBossIndex);
+                TSPlayer.All.SendData(PacketTypes.NpcUpdate, string.Empty, (int) Game.FinalBossIndex);
             }
 
             public static void CleanField()
@@ -302,7 +291,7 @@ namespace SurvivalCrisis
 
             public static void BroadcastResults(PlayerIdentity winner)
             {
-                string message = winner switch
+                var message = winner switch
                 {
                     PlayerIdentity.Survivor => Texts.SurvivorsWin,
                     PlayerIdentity.Traitor => Texts.TraitorsWin,
@@ -366,7 +355,7 @@ namespace SurvivalCrisis
                     var survivorCount = Game.Participants.Count(p => p?.Party == PlayerIdentity.Survivor);
                     var score = 0.0;
                     var bossLife = Game.FinalBossLifeMax;
-                    var BLPropotion = Game.IsFinalBattleTime ? (double)Game.FinalBossLifeRest / (double)Game.FinalBossLifeMax : 1;
+                    var BLPropotion = Game.IsFinalBattleTime ? (double) Game.FinalBossLifeRest / (double) Game.FinalBossLifeMax : 1;
                     var bossScore = 50 * Game.Participants.Length;
                     if (player.Party == PlayerIdentity.Traitor)
                     {
@@ -375,15 +364,15 @@ namespace SurvivalCrisis
                         score += fromKilling;
                         score += fromBoss;
                         statement += $"  +{fromKilling}(击杀{player.KilledCount}人)\n";
-                        statement += $"  +{(int)fromBoss}(boss剩余{(int)(BLPropotion * 100)}%血量)\n";
+                        statement += $"  +{(int) fromBoss}(boss剩余{(int) (BLPropotion * 100)}%血量)\n";
                     }
                     else
                     {
                         if (bossLife != null)
                         {
-                            var fromBoss = (player.DamageCaused / (double)bossLife) * (1 - BLPropotion) * bossScore;
+                            var fromBoss = player.DamageCaused / (double) bossLife * (1 - BLPropotion) * bossScore;
                             score += fromBoss;
-                            statement += $"  +{(int)fromBoss}(对boss造成{(int)(player.DamageCaused / (double)bossLife * 100)}%伤害)\n";
+                            statement += $"  +{(int) fromBoss}(对boss造成{(int) (player.DamageCaused / (double) bossLife * 100)}%伤害)\n";
                         }
                     }
                     var fromChest = player.ChestsOpened;
@@ -414,9 +403,9 @@ namespace SurvivalCrisis
                     {
                         data = player.Data.TraitorDatas;
                     }
-                    data.TotalScore += (int)score;
-                    player.Data.Coins += (int)score;
-                    statement += $"共计获得{(int)score}分, 当前分数{data.TotalScore}";
+                    data.TotalScore += (int) score;
+                    player.Data.Coins += (int) score;
+                    statement += $"共计获得{(int) score}分, 当前分数{data.TotalScore}";
                     player.SendText(statement, Color.YellowGreen);
                 }
             }
@@ -447,29 +436,29 @@ namespace SurvivalCrisis
             #region SpawnEnemies
             private static void SpawnEnemiesUpdate()
             {
-                int playersInSpheres = Regions.Spheres.CountPlayers(true);
-                int playersInMaze = Regions.Maze.CountPlayers(true);
-                int playersInCaveEx = Regions.CaveEx.CountPlayers(true);
-                int playersInHell = Regions.Hell.CountPlayers(true);
+                var playersInSpheres = Regions.Spheres.CountPlayers(true);
+                var playersInMaze = Regions.Maze.CountPlayers(true);
+                var playersInCaveEx = Regions.CaveEx.CountPlayers(true);
+                var playersInHell = Regions.Hell.CountPlayers(true);
 
-                int enemiesInSpheres = Main.npc.Count(npc => npc.active && Regions.Spheres.InRange(npc));
-                int enemiesInMaze = Main.npc.Count(npc => npc.active && Regions.Maze.InRange(npc));
-                int enemiesInCaveEx = Main.npc.Count(npc => npc.active && Regions.CaveEx.InRange(npc) && npc.lifeMax > 450);
-                int enemiesInHell = Main.npc.Count(npc => npc.active && Regions.Hell.InRange(npc) && npc.lifeMax > 300);
+                var enemiesInSpheres = Main.npc.Count(npc => npc.active && Regions.Spheres.InRange(npc));
+                var enemiesInMaze = Main.npc.Count(npc => npc.active && Regions.Maze.InRange(npc));
+                var enemiesInCaveEx = Main.npc.Count(npc => npc.active && Regions.CaveEx.InRange(npc) && npc.lifeMax > 450);
+                var enemiesInHell = Main.npc.Count(npc => npc.active && Regions.Hell.InRange(npc) && npc.lifeMax > 300);
 
-                int spheresMax = 15 * playersInSpheres;
-                int mazeMax = 5 * playersInMaze;
-                int caveExMax = 9 * playersInCaveEx;
-                int hellMax = 7 * playersInHell;
+                var spheresMax = 15 * playersInSpheres;
+                var mazeMax = 5 * playersInMaze;
+                var caveExMax = 9 * playersInCaveEx;
+                var hellMax = 7 * playersInHell;
 
-                int spheresAverage = playersInSpheres == 0 ? 0 : (spheresMax - enemiesInSpheres) / playersInSpheres;
-                int mazeAverage = playersInMaze == 0 ? 0 : (mazeMax - enemiesInMaze) / playersInMaze;
-                int caveExAverage = playersInCaveEx == 0 ? 0 : (caveExMax - enemiesInCaveEx) / playersInCaveEx;
-                int hellAverage = playersInHell == 0 ? 0 : (hellMax - enemiesInHell) / playersInHell;
+                var spheresAverage = playersInSpheres == 0 ? 0 : (spheresMax - enemiesInSpheres) / playersInSpheres;
+                var mazeAverage = playersInMaze == 0 ? 0 : (mazeMax - enemiesInMaze) / playersInMaze;
+                var caveExAverage = playersInCaveEx == 0 ? 0 : (caveExMax - enemiesInCaveEx) / playersInCaveEx;
+                var hellAverage = playersInHell == 0 ? 0 : (hellMax - enemiesInHell) / playersInHell;
 
                 foreach (var player in Game.Participants)
                 {
-                    if (!player.IsValid()|| player.Identity == PlayerIdentity.Watcher)
+                    if (!player.IsValid() || player.Identity == PlayerIdentity.Watcher)
                     {
                         continue;
                     }
@@ -504,7 +493,7 @@ namespace SurvivalCrisis
                     else if (Regions.Hell.InRange(player))
                     {
                         const int scaler = 10;
-                        int hellSkeleton = Rand.Next(277, 280 + 1);
+                        var hellSkeleton = Rand.Next(277, 280 + 1);
                         TrySpawnEnemies(player, caveExAverage,
                             (NPCID.BoneSerpentHead, 0.0010 * scaler),
                             (NPCID.Mimic, 0.0003 * scaler),
@@ -521,16 +510,16 @@ namespace SurvivalCrisis
             {
                 if (Game.IsLongLongDark)
                 {
-                    for (int i = 0; i < npcs.Length; i++)
+                    for (var i = 0; i < npcs.Length; i++)
                     {
                         npcs[i].probability *= 1.2;
                     }
                 }
-                var x = (int)(player.TPlayer.position.X / 16);
-                var y = (int)(player.TPlayer.position.Y / 16);
-                for (int i = 0; i < 120; i++)
+                var x = (int) (player.TPlayer.position.X / 16);
+                var y = (int) (player.TPlayer.position.Y / 16);
+                for (var i = 0; i < 120; i++)
                 {
-                    for (int j = 0; j < 120; j++)
+                    for (var j = 0; j < 120; j++)
                     {
                         if (i > 80 || j > 45)
                         {
@@ -540,10 +529,10 @@ namespace SurvivalCrisis
                                 !Main.tile[x + i, y + j + 2].active() && !Main.tile[x + i + 1, y + j + 2].active()
                                 )
                             {
-                                var npc = Rand.Next(npcs);
-                                if (Rand.NextDouble() < 0.066 && Rand.NextDouble() < npc.probability)
+                                var (type, probability) = Rand.Next(npcs);
+                                if (Rand.NextDouble() < 0.066 && Rand.NextDouble() < probability)
                                 {
-                                    int idx = NPC.NewNPC(new EntitySource_DebugCommand(), (x + i) * 16, (y + j) * 16, npc.type);
+                                    var idx = NPC.NewNPC(new EntitySource_DebugCommand(), (x + i) * 16, (y + j) * 16, type);
                                     TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", idx);
                                     n--;
                                 }
@@ -558,10 +547,10 @@ namespace SurvivalCrisis
                                 !Main.tile[x - i, y + j + 2].active() && !Main.tile[x - i + 1, y + j + 2].active()
                                 )
                             {
-                                var npc = Rand.Next(npcs);
-                                if (Rand.NextDouble() < 0.066 && Rand.NextDouble() < npc.probability)
+                                var (type, probability) = Rand.Next(npcs);
+                                if (Rand.NextDouble() < 0.066 && Rand.NextDouble() < probability)
                                 {
-                                    int idx = NPC.NewNPC(new EntitySource_DebugCommand(), (x - i) * 16, (y + j) * 16, npc.type);
+                                    var idx = NPC.NewNPC(new EntitySource_DebugCommand(), (x - i) * 16, (y + j) * 16, type);
                                     TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", idx);
                                     n--;
                                 }
@@ -576,10 +565,10 @@ namespace SurvivalCrisis
                                 !Main.tile[x + i, y - j + 2].active() && !Main.tile[x + i + 1, y - j + 2].active()
                                 )
                             {
-                                var npc = Rand.Next(npcs);
-                                if (Rand.NextDouble() < 0.066 && Rand.NextDouble() < npc.probability)
+                                var (type, probability) = Rand.Next(npcs);
+                                if (Rand.NextDouble() < 0.066 && Rand.NextDouble() < probability)
                                 {
-                                    int idx = NPC.NewNPC(new EntitySource_DebugCommand(), (x + i) * 16, (y - j) * 16, npc.type);
+                                    var idx = NPC.NewNPC(new EntitySource_DebugCommand(), (x + i) * 16, (y - j) * 16, type);
                                     TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", idx);
                                     n--;
                                 }
@@ -594,10 +583,10 @@ namespace SurvivalCrisis
                                 !Main.tile[x - i, y - j + 2].active() && !Main.tile[x - i + 1, y - j + 2].active()
                                 )
                             {
-                                var npc = Rand.Next(npcs);
-                                if (Rand.NextDouble() < 0.066 && Rand.NextDouble() < npc.probability)
+                                var (type, probability) = Rand.Next(npcs);
+                                if (Rand.NextDouble() < 0.066 && Rand.NextDouble() < probability)
                                 {
-                                    int idx = NPC.NewNPC(new EntitySource_DebugCommand(), (x - i) * 16, (y - j) * 16, npc.type);
+                                    var idx = NPC.NewNPC(new EntitySource_DebugCommand(), (x - i) * 16, (y - j) * 16, type);
                                     TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", idx);
                                     n--;
                                 }
@@ -650,7 +639,7 @@ namespace SurvivalCrisis
             }
             private static void UpdateEffects()
             {
-                int count = Game.Effects.Count;
+                var count = Game.Effects.Count;
                 while (count-- > 0)
                 {
                     var effect = Game.Effects.Dequeue();
@@ -663,7 +652,7 @@ namespace SurvivalCrisis
             }
             public static void RemoveEffect(Effect effect)
             {
-                int count = Game.Effects.Count;
+                var count = Game.Effects.Count;
                 while (count-- > 0)
                 {
                     var e = Game.Effects.Dequeue();

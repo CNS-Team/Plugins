@@ -7,13 +7,13 @@ using Terraria.ID;
 
 namespace SurvivalCrisis.SpecialEvents
 {
-	public class BunnyRevenge : BunnyTime
-	{
-		public BunnyRevenge()
-		{
-			bunnyType = NPCID.ExplosiveBunny;
-			text = Texts.SpecialEvents.BunnyRevenge;
-			color = Texts.SpecialEvents.BunnyRevengeColor;
-		}
-	}
+    public class BunnyRevenge : BunnyTime
+    {
+        public BunnyRevenge()
+        {
+            this.bunnyType = NPCID.ExplosiveBunny;
+            this.text = Texts.SpecialEvents.BunnyRevenge;
+            this.color = Texts.SpecialEvents.BunnyRevengeColor;
+        }
+    }
 }

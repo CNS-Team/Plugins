@@ -6,23 +6,20 @@ using System.Threading.Tasks;
 
 namespace SurvivalCrisis.Nets
 {
-	public class NetInventory
-	{
-		private NetInventorySlot[] slots;
-		public GamePlayer Player { get; }
-		public int Count
-		{
-			get => slots.Length;
-		}
-		public NetInventory(GamePlayer player)
-		{
-			Player = player;
-			slots = new NetInventorySlot[player.TPlayer.inventory.Length];
-			for (int i = 0; i < slots.Length; i++)
-			{
-				slots[i] = new NetInventorySlot(player.Index, i);
-			}
-		}
-		public NetInventorySlot this[int slot] => slots[slot];
-	}
+    public class NetInventory
+    {
+        private readonly NetInventorySlot[] slots;
+        public GamePlayer Player { get; }
+        public int Count => this.slots.Length;
+        public NetInventory(GamePlayer player)
+        {
+            this.Player = player;
+            this.slots = new NetInventorySlot[player.TPlayer.inventory.Length];
+            for (var i = 0; i < this.slots.Length; i++)
+            {
+                this.slots[i] = new NetInventorySlot(player.Index, i);
+            }
+        }
+        public NetInventorySlot this[int slot] => this.slots[slot];
+    }
 }
