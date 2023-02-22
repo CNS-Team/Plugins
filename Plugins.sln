@@ -69,7 +69,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chrome.Task", "Chrome.Task\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicPlayer", "MusicPlayer\MusicPlayer.csproj", "{C1A2E3FE-4709-4A50-A4F3-5D275C010E3F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPCEnhancer", "NPCEnhancer\NPCEnhancer.csproj", "{1FA2411D-93F9-41F2-AD0F-5F231C514722}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NPCEnhancer", "NPCEnhancer\NPCEnhancer.csproj", "{1FA2411D-93F9-41F2-AD0F-5F231C514722}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProgressRestrict", "ProgressRestrict\ProgressRestrict.csproj", "{291379D0-7665-4463-AC81-117399DA884E}"
 EndProject
@@ -78,6 +78,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PrismaticChrome.EventInjector", "PChrome.EventInjector\PrismaticChrome.EventInjector.csproj", "{7BC119DB-0B89-4367-8681-DC78E812D519}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PreloginChatFix", "PreloginChatFix\PreloginChatFix.csproj", "{AAF25422-BA41-4F2F-8665-AE1A79BA037D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PiggyChest", "PiggyChest\PiggyChest.csproj", "{E5627C6F-4D71-4716-B33E-B9682E1FCE57}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -391,6 +393,14 @@ Global
 		{AAF25422-BA41-4F2F-8665-AE1A79BA037D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AAF25422-BA41-4F2F-8665-AE1A79BA037D}.Release|x64.ActiveCfg = Release|Any CPU
 		{AAF25422-BA41-4F2F-8665-AE1A79BA037D}.Release|x64.Build.0 = Release|Any CPU
+		{E5627C6F-4D71-4716-B33E-B9682E1FCE57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5627C6F-4D71-4716-B33E-B9682E1FCE57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5627C6F-4D71-4716-B33E-B9682E1FCE57}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E5627C6F-4D71-4716-B33E-B9682E1FCE57}.Debug|x64.Build.0 = Debug|Any CPU
+		{E5627C6F-4D71-4716-B33E-B9682E1FCE57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5627C6F-4D71-4716-B33E-B9682E1FCE57}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5627C6F-4D71-4716-B33E-B9682E1FCE57}.Release|x64.ActiveCfg = Release|Any CPU
+		{E5627C6F-4D71-4716-B33E-B9682E1FCE57}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
