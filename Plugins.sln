@@ -81,6 +81,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PreloginChatFix", "Prelogin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PiggyChest", "PiggyChest\PiggyChest.csproj", "{E5627C6F-4D71-4716-B33E-B9682E1FCE57}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SurvivalCrisis", "SurvivalCrisis\SurvivalCrisis.csproj", "{728EDCC4-14EF-427D-B487-B67BB79D5931}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -401,6 +403,14 @@ Global
 		{E5627C6F-4D71-4716-B33E-B9682E1FCE57}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E5627C6F-4D71-4716-B33E-B9682E1FCE57}.Release|x64.ActiveCfg = Release|Any CPU
 		{E5627C6F-4D71-4716-B33E-B9682E1FCE57}.Release|x64.Build.0 = Release|Any CPU
+		{728EDCC4-14EF-427D-B487-B67BB79D5931}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{728EDCC4-14EF-427D-B487-B67BB79D5931}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{728EDCC4-14EF-427D-B487-B67BB79D5931}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{728EDCC4-14EF-427D-B487-B67BB79D5931}.Debug|x64.Build.0 = Debug|Any CPU
+		{728EDCC4-14EF-427D-B487-B67BB79D5931}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{728EDCC4-14EF-427D-B487-B67BB79D5931}.Release|Any CPU.Build.0 = Release|Any CPU
+		{728EDCC4-14EF-427D-B487-B67BB79D5931}.Release|x64.ActiveCfg = Release|Any CPU
+		{728EDCC4-14EF-427D-B487-B67BB79D5931}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
