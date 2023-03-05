@@ -1,7 +1,0 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-	<Import Project="..\template.targets" />
-	<ItemGroup>
-	  <ProjectReference Include="..\Chrome.RPG\Chrome.RPG.csproj" />
-	  <ProjectReference Include="..\Chrome.Task\Chrome.Task.csproj" />
-	</ItemGroup>
-</Project>
