@@ -175,6 +175,10 @@ public class Main : TerrariaPlugin
         {
             val.Disconnect(_translation.language["NotOnList"]);
         }
+        else
+        {
+            players.Add(val.Name, val);
+        }
     }
 
     private void Load()
