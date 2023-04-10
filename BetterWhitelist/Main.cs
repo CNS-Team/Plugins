@@ -49,7 +49,7 @@ public class Main : TerrariaPlugin
     private void OnLeave(LeaveEventArgs args)
     {
         var val = new TSPlayer(args.Who);
-        if (players.ContainsKey(val.Name))
+        if (val != null)
         {
             players.Remove(val.Name);
         }
