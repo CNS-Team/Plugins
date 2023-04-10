@@ -164,7 +164,7 @@ public class Main : TerrariaPlugin
 
         if (players.ContainsKey(val.Name))
         {
-            val.Disconnect("请等待角色完全退出后进入!");
+            val.Disconnect("等待角色退出后重试!");
             return;
         }
         if (_config.Disabled)
