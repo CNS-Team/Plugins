@@ -15,8 +15,7 @@ public class Main : TerrariaPlugin
 
     public static Translation _translation;
 
-    public static Dictionary<string, TSPlayer> players;
-
+    public static Dictionary<string, TSPlayer> players = new();
     public override string Name => "BetterWhitelist";
 
     public override Version Version => new Version(2, 1);
@@ -49,7 +48,7 @@ public class Main : TerrariaPlugin
     private void OnLeave(LeaveEventArgs args)
     {
         var val = new TSPlayer(args.Who);
-        if (players.ContainsKey(val.Name))
+        if (val != null)
         {
             players.Remove(val.Name);
         }
@@ -119,11 +118,11 @@ public class Main : TerrariaPlugin
                 {
                     if (_config.WhitePlayers.Count > 0)
                     {
-                        for (var i = 0; i < players.Count; i++)
+                        foreach (var ply in players)
                         {
-                            if (!_config.WhitePlayers.Contains(players.Keys.ToList()[i]))
+                            if (!_config.WhitePlayers.Contains(ply.Key))
                             {
-                                players[players.Keys.ToList()[i]].Disconnect(_translation.language["NotOnList"]);
+                                ply.Value.Disconnect(_translation.language["NotOnList"]);
                             }
                         }
                     }

@@ -20,7 +20,6 @@ public class Chameleon : TerrariaPlugin
 
     public static string[] PrepareList = new string[10];
 
-    private readonly string _clientWasBooted;
 
     public override string Name => Assembly.GetExecutingAssembly().GetName().Name!;
 
@@ -33,7 +32,6 @@ public class Chameleon : TerrariaPlugin
     public Chameleon(Main game)
         : base(game)
     {
-        this._clientWasBooted = Language.GetTextValue("CLI.ClientWasBooted", "", "").Trim();
     }
 
     public override void Initialize()

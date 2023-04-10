@@ -3,7 +3,6 @@ using TShockAPI;
 
 namespace Chameleon;
 
-[JsonObject(/*Could not decode attribute arguments.*/)]
 internal class Configuration
 {
     public static readonly string FilePath = Path.Combine(TShock.SavePath, "Chameleon.json");
