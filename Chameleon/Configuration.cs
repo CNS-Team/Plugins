@@ -7,9 +7,6 @@ internal class Configuration
 {
     public static readonly string FilePath = Path.Combine(TShock.SavePath, "Chameleon.json");
 
-    [JsonProperty("等待列表长度")]
-    public ushort AwaitBufferSize = 10;
-
     [JsonProperty("启用强制提示显示")]
     public bool EnableForcedHint = true;
 
