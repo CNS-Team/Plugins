@@ -65,7 +65,7 @@ public class Chameleon : TerrariaPlugin
         {
             TShock.Log.ConsoleError("[流光系统] 在启用本插件的情况下, 服务器密码功能将失效.");
         }
-        if (TShock.Config.Settings.DisableLoginBeforeJoin)
+        if (!TShock.Config.Settings.DisableLoginBeforeJoin)
         {
             TShock.Log.ConsoleError("[流光系统] 在启用本插件的情况下, 入服前登录将被强制开启.");
             TShock.Config.Settings.DisableLoginBeforeJoin = true;
