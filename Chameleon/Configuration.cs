@@ -14,7 +14,7 @@ internal class Configuration
     public int LimitPasswordLength = 10;
 
     [JsonProperty("强制提示欢迎语")]
-    public string Greeting = "   欢迎来到Sin喵窝";
+    public string Greeting = "   欢迎来到喵云特供服";
 
     [JsonProperty("验证失败提示语")]
     public string VerficationFailedMessage = "         账户密码错误.\r\n\r\n         若你第一次进服，请换一个人物名:\r\n         若忘记密码, 请在群内发送\"重置密码\".";
