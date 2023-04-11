@@ -163,7 +163,7 @@ public class Chameleon : TerrariaPlugin
         }
         if (Config.EnableForcedHint && !PrepareList.Contains(player.Name))
         {
-            AddToList(player.Name);
+            PrepareList.Add(player.Name);
             Kick(player, string.Join("\n", Config.Hints), Config.Greeting);
             return true;
         }
@@ -304,10 +304,6 @@ public class Chameleon : TerrariaPlugin
         return true;
     }
 
-    private static void AddToList(string playerName)
-    {
-        PrepareList[PrepareList.Count % Config.AwaitBufferSize] = playerName;
-    }
 
     public static void Kick(TSPlayer player, string msg, string custom)
     {
