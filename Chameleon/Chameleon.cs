@@ -18,7 +18,7 @@ public class Chameleon : TerrariaPlugin
 
     internal static Configuration Config;
 
-    public static string[] PrepareList = new string[10];
+    public static List<string> PrepareList = new();
 
 
     public override string Name => Assembly.GetExecutingAssembly().GetName().Name!;
@@ -269,7 +269,7 @@ public class Chameleon : TerrariaPlugin
                 player.State = 2;
             }
             NetMessage.SendData(7, player.Index);
-            Group groupByName2 = TShock.Groups.GetGroupByName(userAccountByName.Group);
+            var groupByName2 = TShock.Groups.GetGroupByName(userAccountByName.Group);
             player.Group = groupByName2;
             player.tempGroup = null;
             player.Account = userAccountByName;
@@ -297,6 +297,7 @@ public class Chameleon : TerrariaPlugin
             TShock.Log.ConsoleInfo(player.Name + "成功验证登录.");
             TShock.UserAccounts.SetUserAccountUUID(userAccountByName, player.UUID);
             PlayerHooks.OnPlayerPostLogin(player);
+            PrepareList.Remove(player.Name);
             return true;
         }
         Kick(player, "该用户名已被占用.", "请更换人物名");
@@ -305,11 +306,7 @@ public class Chameleon : TerrariaPlugin
 
     private static void AddToList(string playerName)
     {
-        int i;
-        for (i = 0; i < PrepareList.Length && !string.IsNullOrEmpty(PrepareList[i]); i++)
-        {
-        }
-        PrepareList[i % PrepareList.Length] = playerName;
+        PrepareList[PrepareList.Count % Config.AwaitBufferSize] = playerName;
     }
 
     public static void Kick(TSPlayer player, string msg, string custom)
@@ -326,11 +323,6 @@ public class Chameleon : TerrariaPlugin
     {
         Config = Configuration.Read(Configuration.FilePath);
         Config.Write(Configuration.FilePath);
-        if (Config.AwaitBufferSize != 10)
-        {
-            Array.Resize(ref PrepareList, Config.AwaitBufferSize);
-            Array.Clear(PrepareList, 0, Config.AwaitBufferSize);
-        }
     }
 
     private static void ReloadConfig(ReloadEventArgs args)
