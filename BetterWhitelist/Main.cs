@@ -164,7 +164,7 @@ public class Main : TerrariaPlugin
 
         if (players.ContainsKey(val.Name))
         {
-            val.Disconnect("等待角色退出后重试!");
+            val.Disconnect("绛夊緟瑙掕壊閫�鍑哄悗閲嶈瘯!");
             return;
         }
         if (_config.Disabled)
