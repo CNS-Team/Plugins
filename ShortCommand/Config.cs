@@ -40,7 +40,10 @@ public class Config
     /// <returns></returns>
     public static Config Read(string Path)
     {
-        if (!File.Exists(Path)) return new Config();
+        if (!File.Exists(Path))
+        {
+            return new Config();
+        }
         using var fs = new FileStream(Path, FileMode.Open, FileAccess.Read, FileShare.Read);
         return Read(fs);
     }
@@ -54,7 +57,7 @@ public class Config
     {
         using var sr = new StreamReader(stream);
         var cf = JsonConvert.DeserializeObject<Config>(sr.ReadToEnd());
-        return cf == null ? new Config() : cf;
+        return cf ?? new Config();
     }
 
     /// <summary>
@@ -63,8 +66,8 @@ public class Config
     /// <param name="Path">配置文件路径</param>
     public void Write(string Path)//给定路径进行写
     {
-        using (var fs = new FileStream(Path, FileMode.Create, FileAccess.Write, FileShare.Write))
-        { Write(fs); }
+        using var fs = new FileStream(Path, FileMode.Create, FileAccess.Write, FileShare.Write);
+        this.Write(fs);
     }
 
     /// <summary>
@@ -74,7 +77,7 @@ public class Config
     public void Write(Stream stream)//给定流文件写
     {
         var data = JsonConvert.SerializeObject(this, Formatting.Indented);
-        var sw = new StreamWriter(stream);
+        using var sw = new StreamWriter(stream);
         sw.Write(data);
         sw.Close();
     }

@@ -40,8 +40,6 @@ public class Plugin : TerrariaPlugin
 
     private List<CC> LCC { get; set; }
 
-    public static bool jump { get; set; }
-
     public Plugin(Main game)
         : base(game)
     {
@@ -98,11 +96,6 @@ public class Plugin : TerrariaPlugin
         {
             return;
         }
-        if (jump)
-        {
-            jump = false;
-            return;
-        }
         if (Commands.TShockCommands.Any(p => p.Name == args.CommandName) || Commands.ChatCommands.Any(p => p.Name == args.CommandName))
         {
             foreach (var cmd in this.Config.Commands)
@@ -145,7 +138,6 @@ public class Plugin : TerrariaPlugin
                         args.Handled = true;
                         break;
                     }
-                    jump = true;
                     if (Commands.HandleCommand(args.Player, args.CommandPrefix + sourceCmd))
                     {
                         if (!this.LCC.Exists((t) => t.Name == args.Player.Name && t.Cmd == cmd.NewCommand))
@@ -156,7 +148,6 @@ public class Plugin : TerrariaPlugin
                 }
                 else
                 {
-                    jump = true;
                     Commands.HandleCommand(args.Player, args.CommandPrefix + sourceCmd);
                 }
                 args.Handled = true;

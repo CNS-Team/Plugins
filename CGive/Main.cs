@@ -35,9 +35,9 @@ public class Main : TerrariaPlugin
         var specifier = Commands.Specifier;
         if (TShock.UserAccounts.GetUserAccountsByName(text).Count == 0)
         {
-            return new RestObject("201")
+            return new RestObject()
             {
-                Response = "没有找到注册名为" + text + "的账户"
+                Error = "没有找到注册名为" + text + "的账户"
             };
         }
         var list = new List<Warehouse>();
@@ -84,9 +84,9 @@ public class Main : TerrariaPlugin
             
         }
         return list.Count == 0
-            ? new RestObject("202")
+            ? new RestObject()
             {
-                Response = "该玩家没有仓库"
+                Error = "该玩家没有仓库"
             }
             : new RestObject("200")
             {
