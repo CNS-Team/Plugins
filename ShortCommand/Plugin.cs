@@ -40,8 +40,6 @@ public class Plugin : TerrariaPlugin
 
     private List<CC> LCC { get; set; }
 
-    public static bool jump { get; set; }
-
     public Plugin(Main game)
         : base(game)
     {
@@ -98,11 +96,6 @@ public class Plugin : TerrariaPlugin
         {
             return;
         }
-        if (jump)
-        {
-            jump = false;
-            return;
-        }
         foreach (var cmd in this.Config.Commands)
         {
             var sourcecmd = cmd.SourceCommand;
@@ -116,8 +109,7 @@ public class Plugin : TerrariaPlugin
             {
                 continue;
             }
-            var sourceCmd = cmd.SourceCommand;
-            if (!this.SR(ref sourceCmd, args.Player.Name, args.Parameters, cmd.Supplement))
+            if (!this.SR(ref sourcecmd, args.Player.Name, args.Parameters, cmd.Supplement))
             {
                 continue;
             }
@@ -142,8 +134,7 @@ public class Plugin : TerrariaPlugin
                     args.Handled = true;
                     break;
                 }
-                jump = true;
-                if (Commands.HandleCommand(args.Player, args.CommandPrefix + sourceCmd))
+                if (Commands.HandleCommand(args.Player, args.CommandPrefix + sourcecmd))
                 {
                     if (!this.LCC.Exists((t) => t.Name == args.Player.Name && t.Cmd == cmd.NewCommand))
                     {
@@ -153,8 +144,7 @@ public class Plugin : TerrariaPlugin
             }
             else
             {
-                jump = true;
-                Commands.HandleCommand(args.Player, args.CommandPrefix + sourceCmd);
+                Commands.HandleCommand(args.Player, args.CommandPrefix + sourcecmd);
             }
             args.Handled = true;
             break;
@@ -196,7 +186,7 @@ public class Plugin : TerrariaPlugin
         var text = "";
         for (var i = 0; i < cmdArgs.Count; i++)
         {
-            var text2 = $"{i}";
+            var text2 = "{" + i + "}";
             if (cmd.Contains(text2))
             {
                 cmd = cmd.Replace(text2, cmdArgs[i]);
