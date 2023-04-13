@@ -40,6 +40,8 @@ public class Plugin : TerrariaPlugin
 
     private List<CC> LCC { get; set; }
 
+    public static bool jump { get; set; }
+
     public Plugin(Main game)
         : base(game)
     {
@@ -96,63 +98,66 @@ public class Plugin : TerrariaPlugin
         {
             return;
         }
-        if (Commands.TShockCommands.Any(p => p.Name == args.CommandName) || Commands.ChatCommands.Any(p => p.Name == args.CommandName))
+        if (jump)
         {
-            foreach (var cmd in this.Config.Commands)
+            jump = false;
+            return;
+        }
+        foreach (var cmd in this.Config.Commands)
+        {
+            var sourcecmd = cmd.SourceCommand;
+            if (this.SR(ref sourcecmd, args.Player.Name, args.Parameters, cmd.Supplement) && sourcecmd == args.CommandText && cmd.NotSource)
             {
-                var sourcecmd = cmd.SourceCommand;
-                if (this.SR(ref sourcecmd, args.Player.Name, args.Parameters, cmd.Supplement) && sourcecmd == args.CommandText && cmd.NotSource)
-                {
-                    args.Player.SendErrorMessage("此指令已被禁用，故无法使用！");
-                    args.Handled = true;
-                    return;
-                }
-
-                if (cmd.NewCommand == "" || !(cmd.NewCommand == args.CommandName))
-                {
-                    continue;
-                }
-                var sourceCmd = cmd.SourceCommand;
-                if (!this.SR(ref sourceCmd, args.Player.Name, args.Parameters, cmd.Supplement))
-                {
-                    continue;
-                }
-                if (args.Player.Index >= 0)
-                {
-                    if (!cmd.Death && (args.Player.Dead || args.Player.TPlayer.statLife < 1))
-                    {
-                        args.Player.SendErrorMessage("此指令要求你必须活着才能使用！");
-                        args.Handled = true;
-                        break;
-                    }
-                    if (cmd.Death && (!args.Player.Dead || args.Player.TPlayer.statLife > 0))
-                    {
-                        args.Player.SendErrorMessage("此指令要求你必须死亡才能使用！");
-                        args.Handled = true;
-                        break;
-                    }
-                    var num = this.GetCD(args.Player.Name, cmd.SourceCommand, cmd.CD, cmd.ShareCD);
-                    if (num > 0)
-                    {
-                        args.Player.SendErrorMessage("此指令正在冷却，还有{0}秒才能使用！", num);
-                        args.Handled = true;
-                        break;
-                    }
-                    if (Commands.HandleCommand(args.Player, args.CommandPrefix + sourceCmd))
-                    {
-                        if (!this.LCC.Exists((t) => t.Name == args.Player.Name && t.Cmd == cmd.NewCommand))
-                        {
-                            this.LCC.Add(new CC(args.Player.Name, cmd.NewCommand));
-                        }
-                    }
-                }
-                else
-                {
-                    Commands.HandleCommand(args.Player, args.CommandPrefix + sourceCmd);
-                }
+                args.Player.SendErrorMessage("此指令已被禁用，故无法使用！");
                 args.Handled = true;
-                break;
+                return;
             }
+            if (cmd.NewCommand == "" || !(cmd.NewCommand == args.CommandName))
+            {
+                continue;
+            }
+            var sourceCmd = cmd.SourceCommand;
+            if (!this.SR(ref sourceCmd, args.Player.Name, args.Parameters, cmd.Supplement))
+            {
+                continue;
+            }
+            if (args.Player.Index >= 0)
+            {
+                if (!cmd.Death && (args.Player.Dead || args.Player.TPlayer.statLife < 1))
+                {
+                    args.Player.SendErrorMessage("此指令要求你必须活着才能使用！");
+                    args.Handled = true;
+                    break;
+                }
+                if (cmd.Death && (!args.Player.Dead || args.Player.TPlayer.statLife > 0))
+                {
+                    args.Player.SendErrorMessage("此指令要求你必须死亡才能使用！");
+                    args.Handled = true;
+                    break;
+                }
+                var num = this.GetCD(args.Player.Name, cmd.SourceCommand, cmd.CD, cmd.ShareCD);
+                if (num > 0)
+                {
+                    args.Player.SendErrorMessage("此指令正在冷却，还有{0}秒才能使用！", num);
+                    args.Handled = true;
+                    break;
+                }
+                jump = true;
+                if (Commands.HandleCommand(args.Player, args.CommandPrefix + sourceCmd))
+                {
+                    if (!this.LCC.Exists((t) => t.Name == args.Player.Name && t.Cmd == cmd.NewCommand))
+                    {
+                        this.LCC.Add(new CC(args.Player.Name, cmd.NewCommand));
+                    }
+                }
+            }
+            else
+            {
+                jump = true;
+                Commands.HandleCommand(args.Player, args.CommandPrefix + sourceCmd);
+            }
+            args.Handled = true;
+            break;
         }
     }
 
