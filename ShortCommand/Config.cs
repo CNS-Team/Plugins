@@ -17,8 +17,8 @@ public class CMD
     [JsonProperty("阻止原始")]
     public bool NotSource = false;
 
-    [JsonProperty("死亡条件")]
-    public bool Death = false;
+    [JsonProperty("限制条件")]
+    public ConditionType Condition = ConditionType.None;
 
     [JsonProperty("冷却秒数")]
     public int CD = 0;

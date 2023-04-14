@@ -1,5 +1,3 @@
-using Org.BouncyCastle.Asn1.CryptoPro;
-using System.ComponentModel;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
@@ -10,7 +8,7 @@ namespace ShortCommand;
 [ApiVersion(2, 1)]
 public class Plugin : TerrariaPlugin
 {
-    public class CC
+    public class CommandCD
     {
         public string Name { get; set; }
 
@@ -18,7 +16,7 @@ public class Plugin : TerrariaPlugin
 
         public DateTime LastTime { get; set; }
 
-        public CC(string name, string cmd)
+        public CommandCD(string name, string cmd)
         {
             this.Name = name;
             this.Cmd = cmd;
@@ -38,12 +36,16 @@ public class Plugin : TerrariaPlugin
 
     internal string PATH = Path.Combine(TShock.SavePath, "简短指令.json");
 
-    private List<CC> LCC { get; set; }
+    private readonly Dictionary<string, CMD> ShortCmd = new();
+
+    private readonly HashSet<string> NotSourceCmd = new();
+
+    private List<CommandCD> CmdCD { get; set; }
 
     public Plugin(Main game)
         : base(game)
     {
-        this.LCC = new List<CC>();
+        this.CmdCD = new List<CommandCD>();
         this.Config = new Config();
         this.Order += 1000000;
     }
@@ -58,10 +60,28 @@ public class Plugin : TerrariaPlugin
                 TShock.Log.ConsoleError("未找到简短指令配置，已为您创建！");
             }
             else
-            { 
+            {
                 this.Config = Config.Read(this.PATH);
             }
             this.Config.Write(this.PATH);
+            this.ShortCmd.Clear();
+            this.NotSourceCmd.Clear();
+            this.Config.Commands.ForEach(x =>
+            {
+                if (x != null)
+                {
+                    this.ShortCmd[x.NewCommand] = x;
+                    if (x.NotSource && !string.IsNullOrEmpty(x.SourceCommand))
+                    {
+                        var cmdArge = x.SourceCommand.Split(' ');
+                        if (cmdArge.Length > 0)
+                        {
+                            this.NotSourceCmd.Add(cmdArge[0]);
+                        }
+                    }
+                }
+
+            });
         }
         catch (Exception ex)
         {
@@ -72,7 +92,12 @@ public class Plugin : TerrariaPlugin
     public override void Initialize()
     {
         ServerApi.Hooks.GameInitialize.Register(this, this.OnInitialize);
-        PlayerHooks.PlayerCommand += new PlayerHooks.PlayerCommandD(this.OnChat);
+        PlayerHooks.PlayerCommand += this.OnChat;
+        GeneralHooks.ReloadEvent += (e) =>
+        {
+            this.RC();
+            e.Player.SendSuccessMessage("简短指令重读成功!");
+        };
     }
 
     protected override void Dispose(bool disposing)
@@ -80,7 +105,7 @@ public class Plugin : TerrariaPlugin
         if (disposing)
         {
             ServerApi.Hooks.GameInitialize.Deregister(this, this.OnInitialize);
-            PlayerHooks.PlayerCommand -= new PlayerHooks.PlayerCommandD(this.OnChat);
+            PlayerHooks.PlayerCommand -= this.OnChat;
         }
         this.Dispose(disposing);
     }
@@ -96,49 +121,47 @@ public class Plugin : TerrariaPlugin
         {
             return;
         }
-        foreach (var cmd in this.Config.Commands)
+        if (this.NotSourceCmd.Contains(args.CommandName))
+        {
+            args.Player.SendErrorMessage("该指令已被禁止使用!");
+            args.Handled = true;
+            return;
+        }
+        if (this.ShortCmd.TryGetValue(args.CommandName, out var cmd) && cmd != null)
         {
             var sourcecmd = cmd.SourceCommand;
-            if (this.SR(ref sourcecmd, args.Player.Name, args.Parameters, cmd.Supplement) && sourcecmd == args.CommandText && cmd.NotSource)
+            var status = this.SR(ref sourcecmd, args.Player.Name, args.Parameters, cmd.Supplement);
+            if (!status)
             {
-                args.Player.SendErrorMessage("此指令已被禁用，故无法使用！");
-                args.Handled = true;
                 return;
             }
-            if (cmd.NewCommand == "" || !(cmd.NewCommand == args.CommandName))
-            {
-                continue;
-            }
-            if (!this.SR(ref sourcecmd, args.Player.Name, args.Parameters, cmd.Supplement))
-            {
-                continue;
-            }
+
             if (args.Player.Index >= 0)
             {
-                if (!cmd.Death && (args.Player.Dead || args.Player.TPlayer.statLife < 1))
+                if (cmd.Condition == ConditionType.Alive && (args.Player.Dead || args.Player.TPlayer.statLife < 1))
                 {
                     args.Player.SendErrorMessage("此指令要求你必须活着才能使用！");
                     args.Handled = true;
-                    break;
+                    return;
                 }
-                if (cmd.Death && (!args.Player.Dead || args.Player.TPlayer.statLife > 0))
+                if (cmd.Condition == ConditionType.Death && (!args.Player.Dead || args.Player.TPlayer.statLife > 0))
                 {
                     args.Player.SendErrorMessage("此指令要求你必须死亡才能使用！");
                     args.Handled = true;
-                    break;
+                    return;
                 }
                 var num = this.GetCD(args.Player.Name, cmd.SourceCommand, cmd.CD, cmd.ShareCD);
                 if (num > 0)
                 {
                     args.Player.SendErrorMessage("此指令正在冷却，还有{0}秒才能使用！", num);
                     args.Handled = true;
-                    break;
+                    return;
                 }
                 if (Commands.HandleCommand(args.Player, args.CommandPrefix + sourcecmd))
                 {
-                    if (!this.LCC.Exists((t) => t.Name == args.Player.Name && t.Cmd == cmd.NewCommand))
+                    if (!this.CmdCD.Exists((t) => t.Name == args.Player.Name && t.Cmd == cmd.NewCommand))
                     {
-                        this.LCC.Add(new CC(args.Player.Name, cmd.NewCommand));
+                        this.CmdCD.Add(new CommandCD(args.Player.Name, cmd.NewCommand));
                     }
                 }
             }
@@ -147,34 +170,33 @@ public class Plugin : TerrariaPlugin
                 Commands.HandleCommand(args.Player, args.CommandPrefix + sourcecmd);
             }
             args.Handled = true;
-            break;
         }
     }
 
     private int GetCD(string plyName, string Cmd, int CD, bool share)
     {
-        for (var i = 0; i < this.LCC.Count; i++)
+        for (var i = 0; i < this.CmdCD.Count; i++)
         {
             if (share)
             {
-                if (this.LCC[i].Cmd != Cmd)
+                if (this.CmdCD[i].Cmd != Cmd)
                 {
                     continue;
                 }
             }
-            else if (this.LCC[i].Cmd != Cmd || this.LCC[i].Name != plyName)
+            else if (this.CmdCD[i].Cmd != Cmd || this.CmdCD[i].Name != plyName)
             {
                 continue;
             }
             else
-            { 
-                var num = (int) (DateTime.UtcNow - this.LCC[i].LastTime).TotalSeconds;
+            {
+                var num = (int) (DateTime.UtcNow - this.CmdCD[i].LastTime).TotalSeconds;
                 num = CD - num;
                 if (num > 0)
                 {
                     return num;
                 }
-                this.LCC.RemoveAt(i);
+                this.CmdCD.RemoveAt(i);
                 return 0;
             }
         }
