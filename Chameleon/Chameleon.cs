@@ -63,16 +63,16 @@ public class Chameleon : TerrariaPlugin
     {
         if (!string.IsNullOrEmpty(TShock.Config.Settings.ServerPassword) || !string.IsNullOrEmpty(Netplay.ServerPassword))
         {
-            TShock.Log.ConsoleError("[流光系统] 在启用本插件的情况下, 服务器密码功能将失效.");
+            TShock.Log.ConsoleError("[喵云系统] 在启用本插件的情况下, 服务器密码功能将失效.");
         }
         if (!TShock.Config.Settings.DisableLoginBeforeJoin)
         {
-            TShock.Log.ConsoleError("[流光系统] 在启用本插件的情况下, 入服前登录将被强制开启.");
+            TShock.Log.ConsoleError("[喵云系统] 在启用本插件的情况下, 入服前登录将被强制开启.");
             TShock.Config.Settings.DisableLoginBeforeJoin = true;
         }
         if (!TShock.Config.Settings.RequireLogin && !TShock.ServerSideCharacterConfig.Settings.Enabled)
         {
-            TShock.Log.ConsoleError("[流光系统] 在启用本插件的情况下, 注册登录将被强制开启.");
+            TShock.Log.ConsoleError("[喵云系统] 在启用本插件的情况下, 注册登录将被强制开启.");
             TShock.Config.Settings.RequireLogin = true;
         }
     }
@@ -151,12 +151,12 @@ public class Chameleon : TerrariaPlugin
                 {
                     player.IsDisabledForBannedWearable = false;
                 }
-                player.SendSuccessMessage("[账号管理]已经验证" + userAccountByName.Name + "登录完毕.");
+                player.SendSuccessMessage("[喵云系统]已经验证" + userAccountByName.Name + "登录完毕.");
                 TShock.Log.ConsoleInfo(player.Name + "成功验证登录.");
                 PlayerHooks.OnPlayerPostLogin(player);
                 return true;
             }
-            NetMessage.SendData(9, player.Index, -1, NetworkText.FromLiteral("[流光系统]输入你的账号密码登录...\n在\"服务器密码\"中\n"), 1);
+            NetMessage.SendData(9, player.Index, -1, NetworkText.FromLiteral("[喵云系统]输入你的账号密码登录...\n在\"服务器密码\"中\n"), 1);
             player.RequiresPassword = true;
             NetMessage.SendData(37, player.Index);
             return true;
@@ -168,7 +168,7 @@ public class Chameleon : TerrariaPlugin
             return true;
         }
 
-        NetMessage.SendData(9, player.Index, -1, NetworkText.FromLiteral("[流光系统]请设置你的账号密码...\n在\"服务器密码\"中\n"), 1);
+        NetMessage.SendData(9, player.Index, -1, NetworkText.FromLiteral("[喵云系统]请设置你的账号密码...\n在\"服务器密码\"中\n"), 1);
         player.SetData("reg-pwd", value: true);
         NetMessage.SendData(37, player.Index);
         return true;
@@ -179,12 +179,12 @@ public class Chameleon : TerrariaPlugin
         var data = player.GetData<bool>("reg-pwd");
         if (string.IsNullOrEmpty(password))
         {
-            player.Disconnect("[流光系统]你输入了一个空密码!");
+            player.Disconnect("[喵云系统]你输入了一个空密码!");
             return true;
         }
         if (password.Length > Config.LimitPasswordLength)
         {
-            player.Disconnect($"[流光系统]密码长度不能超过{Config.LimitPasswordLength}!");
+            player.Disconnect($"[喵云系统]密码长度不能超过{Config.LimitPasswordLength}!");
             return true;
         }
         if (!player.RequiresPassword && !data)
@@ -231,7 +231,7 @@ public class Chameleon : TerrariaPlugin
                 {
                     player.IsDisabledForBannedWearable = false;
                 }
-                player.SendSuccessMessage("[账号管理]已经验证" + userAccountByName.Name + "登录完毕。");
+                player.SendSuccessMessage("[喵云系统]已经验证" + userAccountByName.Name + "登录完毕。");
                 TShock.Log.ConsoleInfo(player.Name + "成功验证登录。");
                 TShock.UserAccounts.SetUserAccountUUID(userAccountByName, player.UUID);
                 PlayerHooks.OnPlayerPostLogin(player);
@@ -293,7 +293,7 @@ public class Chameleon : TerrariaPlugin
             {
                 player.IsDisabledForBannedWearable = false;
             }
-            player.SendSuccessMessage("[账号管理]已经验证" + userAccountByName.Name + "登录完毕.");
+            player.SendSuccessMessage("[喵云系统]已经验证" + userAccountByName.Name + "登录完毕.");
             TShock.Log.ConsoleInfo(player.Name + "成功验证登录.");
             TShock.UserAccounts.SetUserAccountUUID(userAccountByName, player.UUID);
             PlayerHooks.OnPlayerPostLogin(player);
