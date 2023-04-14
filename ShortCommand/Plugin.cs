@@ -212,6 +212,7 @@ public class Plugin : TerrariaPlugin
             if (cmd.Contains(text2))
             {
                 cmd = cmd.Replace(text2, cmdArgs[i]);
+                Console.WriteLine(cmd);
                 continue;
             }
             if (Supplement)
