@@ -151,7 +151,7 @@ public class Chameleon : TerrariaPlugin
                 {
                     player.IsDisabledForBannedWearable = false;
                 }
-                player.SendSuccessMessage("[账号管理]已经验证" + userAccountByName.Name + "登录完毕.");
+                player.SendSuccessMessage("[流光系统]已经验证" + userAccountByName.Name + "登录完毕.");
                 TShock.Log.ConsoleInfo(player.Name + "成功验证登录.");
                 PlayerHooks.OnPlayerPostLogin(player);
                 return true;
@@ -231,7 +231,7 @@ public class Chameleon : TerrariaPlugin
                 {
                     player.IsDisabledForBannedWearable = false;
                 }
-                player.SendSuccessMessage("[账号管理]已经验证" + userAccountByName.Name + "登录完毕。");
+                player.SendSuccessMessage("[流光系统]已经验证" + userAccountByName.Name + "登录完毕。");
                 TShock.Log.ConsoleInfo(player.Name + "成功验证登录。");
                 TShock.UserAccounts.SetUserAccountUUID(userAccountByName, player.UUID);
                 PlayerHooks.OnPlayerPostLogin(player);
@@ -293,7 +293,7 @@ public class Chameleon : TerrariaPlugin
             {
                 player.IsDisabledForBannedWearable = false;
             }
-            player.SendSuccessMessage("[账号管理]已经验证" + userAccountByName.Name + "登录完毕.");
+            player.SendSuccessMessage("[流光系统]已经验证" + userAccountByName.Name + "登录完毕.");
             TShock.Log.ConsoleInfo(player.Name + "成功验证登录.");
             TShock.UserAccounts.SetUserAccountUUID(userAccountByName, player.UUID);
             PlayerHooks.OnPlayerPostLogin(player);
