@@ -13,7 +13,7 @@ public class KeyChanger : TerrariaPlugin
 {
     public override string Author => "Dr&Cai&CJX改适配";
 
-    private Config Config { get; set; }
+    internal static Config Config { get; set; }
 
     public override string Description => "使用特殊宝箱钥匙兑换其宝箱特别物品.";
 
@@ -46,7 +46,7 @@ public class KeyChanger : TerrariaPlugin
 
     private void onGetData(GetDataEventArgs e)
     {
-        if (this.Config.UseSSC || e.Handled || e.MsgID != PacketTypes.ItemDrop || TShock.Players[e.Msg.whoAmI] == null || !TShock.Players[e.Msg.whoAmI].Active || !this.Exchanging[e.Msg.whoAmI].HasValue)
+        if (Config.UseSSC || e.Handled || e.MsgID != PacketTypes.ItemDrop || TShock.Players[e.Msg.whoAmI] == null || !TShock.Players[e.Msg.whoAmI].Active || !this.Exchanging[e.Msg.whoAmI].HasValue)
         {
             return;
         }
@@ -74,9 +74,9 @@ public class KeyChanger : TerrariaPlugin
             return;
         }
         var key = Utils.LoadKey(this.Exchanging[e.Msg.whoAmI].Value);
-        if (this.Config.EnableRegionExchanges)
+        if (Config.EnableRegionExchanges)
         {
-            var region = (!this.Config.MarketMode) ? key.Region : TShock.Regions.GetRegionByName(this.Config.MarketRegion);
+            var region = (!Config.MarketMode) ? key.Region : TShock.Regions.GetRegionByName(Config.MarketRegion);
             if (!region.InArea((int) TShock.Players[e.Msg.whoAmI].X, (int) TShock.Players[e.Msg.whoAmI].Y))
             {
                 return;
@@ -106,7 +106,7 @@ public class KeyChanger : TerrariaPlugin
 
     private void onInitialize()
     {
-        this.Config = Config.Read();
+        Config = Config.Read();
         Commands.ChatCommands.Add(new Command(new List<string> { "key.change", "key.reload", "key.mode" }, this.KeyChange, "key")
         {
             HelpDesc = new string[6]
@@ -169,24 +169,24 @@ public class KeyChanger : TerrariaPlugin
                     switch (args.Parameters[1].ToLower())
                     {
                         case "normal":
-                            this.Config.EnableRegionExchanges = false;
+                            Config.EnableRegionExchanges = false;
                             player.SendSuccessMessage("兑换模式设置为普通 (随地兑换).");
                             break;
                         case "region":
-                            this.Config.EnableRegionExchanges = true;
-                            this.Config.MarketMode = false;
+                            Config.EnableRegionExchanges = true;
+                            Config.MarketMode = false;
                             player.SendSuccessMessage("兑换模式设置为领地 (一个钥匙对应一个领地).");
                             break;
                         default:
                             player.SendErrorMessage("格式错误! 正确格式为: {0}key mode <normal/region/market>", Commands.Specifier);
                             return;
                         case "market":
-                            this.Config.EnableRegionExchanges = true;
-                            this.Config.MarketMode = true;
+                            Config.EnableRegionExchanges = true;
+                            Config.MarketMode = true;
                             player.SendSuccessMessage("兑换模式设置为市场 (一个领地可兑换所有钥匙).");
                             break;
                     }
-                    this.Config.Write();
+                    Config.Write();
                     break;
                 case "list":
                     player.SendMessage("Temple Key - " + string.Join(", ", Utils.LoadKey(KeyTypes.Temple).Items.Select((Item i) => i.Name)), Color.Goldenrod);
@@ -203,7 +203,7 @@ public class KeyChanger : TerrariaPlugin
                         player.SendErrorMessage("你没有使用此指令的权限");
                         break;
                     }
-                    this.Config = Config.Read();
+                    Config = Config.Read();
                     player.SendSuccessMessage("KeyChangerConfig.json 重载成功.");
                     break;
                 case "change":
@@ -225,7 +225,7 @@ public class KeyChanger : TerrariaPlugin
                     }
                     if (!Enum.TryParse<KeyTypes>(args.Parameters[1].ToLowerInvariant(), ignoreCase: true, out var result))
                     {
-                        player.SendErrorMessage("钥匙种类错误! 可兑换的种类: " + string.Join(", ", this.Config.EnableTempleKey ? "temple" : null, this.Config.EnableJungleKey ? "jungle" : null, this.Config.EnableCorruptionKey ? "corruption" : null, this.Config.EnableCrimsonKey ? "crimson" : null, this.Config.EnableHallowedKey ? "hallowed" : null, this.Config.EnableFrozenKey ? "frozen" : null, this.Config.EnableDesertKey ? "desert" : null));
+                        player.SendErrorMessage("钥匙种类错误! 可兑换的种类: " + string.Join(", ", Config.EnableTempleKey ? "temple" : null, Config.EnableJungleKey ? "jungle" : null, Config.EnableCorruptionKey ? "corruption" : null, Config.EnableCrimsonKey ? "crimson" : null, Config.EnableHallowedKey ? "hallowed" : null, Config.EnableFrozenKey ? "frozen" : null, Config.EnableDesertKey ? "desert" : null));
                         break;
                     }
                     var key = Utils.LoadKey(result);
@@ -234,7 +234,7 @@ public class KeyChanger : TerrariaPlugin
                         player.SendInfoMessage("你所选择的钥匙当前不能兑换.");
                         break;
                     }
-                    if (!this.Config.UseSSC)
+                    if (!Config.UseSSC)
                     {
                         this.Exchanging[args.Player.Index] = result;
                         player.SendInfoMessage("掉落 (右键拿着) 任意数量的 " + key.Name + " 钥匙以继续.");
@@ -245,9 +245,9 @@ public class KeyChanger : TerrariaPlugin
                         player.SendErrorMessage("请确保背包里有所选择的钥匙.");
                         break;
                     }
-                    if (this.Config.EnableRegionExchanges)
+                    if (Config.EnableRegionExchanges)
                     {
-                        var region = (!this.Config.MarketMode) ? key.Region : TShock.Regions.GetRegionByName(this.Config.MarketRegion);
+                        var region = (!Config.MarketMode) ? key.Region : TShock.Regions.GetRegionByName(Config.MarketRegion);
                         if (region == null)
                         {
                             player.SendInfoMessage("没有设置兑换此钥匙的领地.");
@@ -264,19 +264,19 @@ public class KeyChanger : TerrariaPlugin
                         var item2 = player.TPlayer.inventory[j];
                         if (item2.netID == (int) key.Type)
                         {
-                            if (item2.stack < this.Config.NumberOfKeys)
+                            if (item2.stack < Config.NumberOfKeys)
                             {
-                                player.SendErrorMessage("请确保你最少有 {0} 个钥匙", this.Config.NumberOfKeys);
+                                player.SendErrorMessage("请确保你最少有 {0} 个钥匙", Config.NumberOfKeys);
                             }
                             else if (player.InventorySlotAvailable)
                             {
-                                player.TPlayer.inventory[j].stack -= this.Config.NumberOfKeys;
+                                player.TPlayer.inventory[j].stack -= Config.NumberOfKeys;
                                 NetMessage.SendData(5, -1, -1, NetworkText.Empty, player.Index, j);
                                 var random = new Random();
                                 var item3 = key.Items[random.Next(0, key.Items.Count)];
                                 player.GiveItem(item3.netID, 1);
                                 var itemById = TShock.Utils.GetItemById((int) key.Type);
-                                player.SendSuccessMessage("使用 {2}个 {0} 兑换 1个 {1}!", itemById.Name, item3.Name, this.Config.NumberOfKeys);
+                                player.SendSuccessMessage("使用 {2}个 {0} 兑换 1个 {1}!", itemById.Name, item3.Name, Config.NumberOfKeys);
                             }
                             else
                             {
