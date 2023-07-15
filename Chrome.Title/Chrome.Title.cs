@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace 称号插件;
 
@@ -506,37 +507,41 @@ public class 称号插件 : TerrariaPlugin
     /// <returns></returns>
     public static bool 聊天检测(ServerChatEventArgs args)
     {
-        if ((args.Text[..1] != TShock.Config.Settings.CommandSpecifier && args.Text[..1] != TShock.Config.Settings.CommandSilentSpecifier) || args.Text.Length == 1)//是否指令，“/”不是指令
+        string text = args.Text;
+        if ((text.StartsWith(TShock.Config.Settings.CommandSpecifier) || text.StartsWith(TShock.Config.Settings.CommandSilentSpecifier))
+                        && !string.IsNullOrWhiteSpace(text.Substring(1)))
         {
-            var plr = TShock.Players[args.Who];
-            if (plr.IsLoggedIn)//是否登录
-            {
-                if (args.Text == "")
-                {
-                    args.Handled = true;
-                    return false;
-                }
-                if (args.Text.Length > 500)
-                {
-                    plr.SendErrorMessage("您发送的信息过长！");
-                    args.Handled = true;
-                    return false;
-                }
-                if (!plr.HasPermission(Permissions.canchat))
-                {
-                    plr.SendErrorMessage("您没有聊天所需的权限\"tshock.canchat\"");
-                    args.Handled = true;
-                    return false;
-                }
-                if (plr.mute)
-                {
-                    plr.SendErrorMessage("您正被禁言中！");
-                    args.Handled = true;
-                    return false;
-                }
-                return true;
-            }
+            return false; 
         }
+        var plr = TShock.Players[args.Who];
+        if (plr.IsLoggedIn)//是否登录
+        {
+            if (args.Text == "")
+            {
+                args.Handled = true;
+                return false;
+            }
+            if (args.Text.Length > 500)
+            {
+                plr.SendErrorMessage("您发送的信息过长!");
+                args.Handled = true;
+                return false;
+            }
+            if (!plr.HasPermission(Permissions.canchat))
+            {
+                plr.SendErrorMessage("您没有聊天所需的权限\"tshock.canchat\"");
+                args.Handled = true;
+                return false;
+            }
+            if (plr.mute)
+            {
+                plr.SendErrorMessage("您正被禁言中!");
+                args.Handled = true;
+                return false;
+            }
+            return true;
+        }
+        
         return false;
 
     }
