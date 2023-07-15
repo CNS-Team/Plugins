@@ -1,239 +1,245 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using Org.BouncyCastle.Asn1.Utilities;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
 using TShockAPI.Hooks;
 
-namespace ShortCommand;
-
-[ApiVersion(2, 1)]
-public class Plugin : TerrariaPlugin
+namespace ShortCommand
 {
-    public class CommandCD
+    [ApiVersion(2, 1)]
+    public class Plugin : TerrariaPlugin
     {
-        public string Name { get; set; }
-
-        public string Cmd { get; set; }
-
-        public DateTime LastTime { get; set; }
-
-        public CommandCD(string name, string cmd)
+        public class CommandCD
         {
-            this.Name = name;
-            this.Cmd = cmd;
-            this.LastTime = DateTime.UtcNow;
+            public string Name { get; set; }
+
+            public string Cmd { get; set; }
+
+            public DateTime LastTime { get; set; }
+
+            public CommandCD(string name, string cmd)
+            {
+                Name = name;
+                Cmd = cmd;
+                LastTime = DateTime.UtcNow;
+            }
+
         }
-    }
+        public static bool jump { get; set; }
+        internal string PATH = Path.Combine(TShock.SavePath, "简短指令.json");
 
-    public override string Name => "简短指令改良版";
+        private readonly Dictionary<string, CMD> ShortCmd = new Dictionary<string, CMD>();
 
-    public override string Author => "GK 超级改良";
+        private readonly HashSet<string> NotSourceCmd = new HashSet<string>();
 
-    public override Version Version => new Version(1, 0, 1, 7);
+        public override string Name => "简短指令改良版";
 
-    public override string Description => "由GK改良的简短指令插件！";
+        public override string Author => "GK 超级改良 & Update By Cai";
 
-    private Config Config { get; set; }
+        public override Version Version => new Version(1, 0, 1, 7);
 
-    internal string PATH = Path.Combine(TShock.SavePath, "简短指令.json");
+        public override string Description => "由GK改良的简短指令插件！";
 
-    private readonly Dictionary<string, CMD> ShortCmd = new();
+        private Config Config { get; set; }
 
-    private readonly HashSet<string> NotSourceCmd = new();
+        private List<CommandCD> CmdCD { get; set; }
 
-    private List<CommandCD> CmdCD { get; set; }
-
-    public Plugin(Main game)
-        : base(game)
-    {
-        this.CmdCD = new List<CommandCD>();
-        this.Config = new Config();
-        this.Order += 1000000;
-    }
-
-    private void RC()
-    {
-        try
+        public Plugin(Main game)
+            : base(game)
         {
-            if (!File.Exists(this.PATH))
+            CmdCD = new List<CommandCD>();
+            Config = new Config();
+            base.Order += 1000000;
+        }
+
+        private void RC()
+        {
+            try
             {
-                this.Config.Commands.Add(new CMD());
-                TShock.Log.ConsoleError("未找到简短指令配置，已为您创建！");
-            }
-            else
-            {
-                this.Config = Config.Read(this.PATH);
-            }
-            this.Config.Write(this.PATH);
-            this.ShortCmd.Clear();
-            this.NotSourceCmd.Clear();
-            this.Config.Commands.ForEach(x =>
-            {
-                if (x != null)
+                if (!File.Exists(PATH))
                 {
-                    this.ShortCmd[x.NewCommand] = x;
-                    if (x.NotSource && !string.IsNullOrEmpty(x.SourceCommand))
+                    Config.Commands.Add(new CMD());
+                    TShock.Log.ConsoleError("未找到简短指令配置，已为您创建！");
+                }
+                else
+                {
+                    Config = ShortCommand.Config.Read(PATH);
+                }
+                Config.Write(PATH);
+                ShortCmd.Clear();
+                NotSourceCmd.Clear();
+                Config.Commands.ForEach(delegate (CMD x)
+                {
+                    if (x != null)
                     {
-                        var cmdArge = x.SourceCommand.Split(' ');
-                        if (cmdArge.Length > 0)
+                        ShortCmd[x.NewCommand] = x;
+                        if (x.NotSource && !string.IsNullOrEmpty(x.SourceCommand))
                         {
-                            this.NotSourceCmd.Add(cmdArge[0]);
+                            string[] array = x.SourceCommand.Split(' ');
+                            if (array.Length != 0)
+                            {
+                                NotSourceCmd.Add(array[0]);
+                            }
                         }
                     }
-                }
-
-            });
+                });
+            }
+            catch (Exception ex)
+            {
+                TShock.Log.ConsoleError("简短指令配置读取错误:" + ex.ToString());
+            }
         }
-        catch (Exception ex)
-        {
-            TShock.Log.ConsoleError("简短指令配置读取错误:" + ex.ToString());
-        }
-    }
 
-    public override void Initialize()
-    {
-        ServerApi.Hooks.GameInitialize.Register(this, this.OnInitialize);
-        PlayerHooks.PlayerCommand += this.OnChat;
-        GeneralHooks.ReloadEvent += (e) =>
+        public override void Initialize()
         {
-            this.RC();
-            e.Player.SendSuccessMessage("简短指令重读成功!");
-        };
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            ServerApi.Hooks.GameInitialize.Deregister(this, this.OnInitialize);
-            PlayerHooks.PlayerCommand -= this.OnChat;
+            ServerApi.Hooks.GameInitialize.Register(this, OnInitialize);
+            PlayerHooks.PlayerCommand += OnChat;
+            GeneralHooks.ReloadEvent += delegate (ReloadEventArgs e)
+            {
+                RC();
+                e.Player.SendSuccessMessage("简短指令重读成功!");
+            };
         }
-        this.Dispose(disposing);
-    }
 
-    private void OnInitialize(EventArgs args)
-    {
-        this.RC();
-    }
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                ServerApi.Hooks.GameInitialize.Deregister(this, OnInitialize);
+                PlayerHooks.PlayerCommand -= OnChat;
+            }
+            Dispose(disposing);
+        }
 
-    private void OnChat(PlayerCommandEventArgs args)
-    {
-        if (args.Handled)
+        private void OnInitialize(EventArgs args)
         {
-            return;
+            RC();
         }
-        if (this.NotSourceCmd.Contains(args.CommandName))
+
+        private void OnChat(PlayerCommandEventArgs args)
         {
-            args.Player.SendErrorMessage("该指令已被禁止使用!");
-            args.Handled = true;
-            return;
-        }
-        if (this.ShortCmd.TryGetValue(args.CommandName, out var cmd) && cmd != null)
-        {
-            var sourcecmd = cmd.SourceCommand;
-            var status = this.SR(ref sourcecmd, args.Player.Name, args.Parameters, cmd.Supplement);
-            if (!status)
+            PlayerCommandEventArgs args2 = args;
+            if (args2.Handled)
             {
                 return;
             }
-
-            if (args.Player.Index >= 0)
+            if (jump)
             {
-                if (cmd.Condition == ConditionType.Alive && (args.Player.Dead || args.Player.TPlayer.statLife < 1))
+                jump = false;
+                return;
+            }
+            if (NotSourceCmd.Contains(args2.CommandName))
+            {
+                args2.Player.SendErrorMessage("该指令已被禁止使用!");
+                args2.Handled = true;
+            }
+            else
+            {
+                if (!ShortCmd.TryGetValue(args2.CommandName, out var cmd) || cmd == null)
                 {
-                    args.Player.SendErrorMessage("此指令要求你必须活着才能使用！");
-                    args.Handled = true;
                     return;
                 }
-                if (cmd.Condition == ConditionType.Death && (!args.Player.Dead || args.Player.TPlayer.statLife > 0))
+                string cmd2 = cmd.SourceCommand;
+                if (!SR(ref cmd2, args2.Player.Name, args2.Parameters, cmd.Supplement))
                 {
-                    args.Player.SendErrorMessage("此指令要求你必须死亡才能使用！");
-                    args.Handled = true;
                     return;
                 }
-                var num = this.GetCD(args.Player.Name, cmd.SourceCommand, cmd.CD, cmd.ShareCD);
-                if (num > 0)
+                if (args2.Player.Index >= 0)
                 {
-                    args.Player.SendErrorMessage("此指令正在冷却，还有{0}秒才能使用！", num);
-                    args.Handled = true;
-                    return;
-                }
-                if (Commands.HandleCommand(args.Player, args.CommandPrefix + sourcecmd))
-                {
-                    if (!this.CmdCD.Exists((t) => t.Name == args.Player.Name && t.Cmd == cmd.NewCommand))
+                    if (cmd.Condition == ConditionType.Alive && (args2.Player.Dead || args2.Player.TPlayer.statLife < 1))
                     {
-                        this.CmdCD.Add(new CommandCD(args.Player.Name, cmd.NewCommand));
+                        args2.Player.SendErrorMessage("此指令要求你必须活着才能使用！");
+                        args2.Handled = true;
+                        return;
+                    }
+                    if (cmd.Condition == ConditionType.Death && (!args2.Player.Dead || args2.Player.TPlayer.statLife > 0))
+                    {
+                        args2.Player.SendErrorMessage("此指令要求你必须死亡才能使用！");
+                        args2.Handled = true;
+                        return;
+                    }
+                    int cD = GetCD(args2.Player.Name, cmd.SourceCommand, cmd.CD, cmd.ShareCD);
+                    if (cD > 0)
+                    {
+                        args2.Player.SendErrorMessage("此指令正在冷却，还有{0}秒才能使用！", cD);
+                        args2.Handled = true;
+                        return;
+                    }
+                    jump = true;
+                    if (Commands.HandleCommand(args2.Player, args2.CommandPrefix + cmd2) && !CmdCD.Exists((CommandCD t) => t.Name == args2.Player.Name && t.Cmd == cmd.NewCommand))
+                    {
+                        CmdCD.Add(new CommandCD(args2.Player.Name, cmd.NewCommand));
                     }
                 }
-            }
-            else
-            {
-                Commands.HandleCommand(args.Player, args.CommandPrefix + sourcecmd);
-            }
-            args.Handled = true;
-        }
-    }
-
-    private int GetCD(string plyName, string Cmd, int CD, bool share)
-    {
-        for (var i = 0; i < this.CmdCD.Count; i++)
-        {
-            if (share)
-            {
-                if (this.CmdCD[i].Cmd != Cmd)
+                else
                 {
+                    jump = true;
+                    Commands.HandleCommand(args2.Player, args2.CommandPrefix + cmd2);
+                }
+                args2.Handled = true;
+            }
+        }
+
+        private int GetCD(string plyName, string Cmd, int CD, bool share)
+        {
+            for (int i = 0; i < CmdCD.Count; i++)
+            {
+                if (share)
+                {
+                    if (!(CmdCD[i].Cmd != Cmd))
+                    {
+                    }
+                }
+                else if (!(CmdCD[i].Cmd != Cmd) && !(CmdCD[i].Name != plyName))
+                {
+                    int num = (int) (DateTime.UtcNow - CmdCD[i].LastTime).TotalSeconds;
+                    num = CD - num;
+                    if (num > 0)
+                    {
+                        return num;
+                    }
+                    CmdCD.RemoveAt(i);
+                    return 0;
+                }
+            }
+            return 0;
+        }
+
+        private bool SR(ref string cmd, string plyName, List<string> cmdArgs, bool Supplement)
+        {
+            string text = "";
+            for (int i = 0; i < cmdArgs.Count; i++)
+            {
+                string text2 = "{" + i + "}";
+                if (cmd.Contains(text2))
+                {
+                    cmd = cmd.Replace(text2, cmdArgs[i]);
                     continue;
                 }
-            }
-            else if (this.CmdCD[i].Cmd != Cmd || this.CmdCD[i].Name != plyName)
-            {
-                continue;
-            }
-            else
-            {
-                var num = (int) (DateTime.UtcNow - this.CmdCD[i].LastTime).TotalSeconds;
-                num = CD - num;
-                if (num > 0)
+                if (Supplement)
                 {
-                    return num;
+                    text = text + " " + cmdArgs[i];
+                    continue;
                 }
-                this.CmdCD.RemoveAt(i);
-                return 0;
+                return false;
             }
-        }
-        return 0;
-    }
-
-    private bool SR(ref string cmd, string plyName, List<string> cmdArgs, bool Supplement)
-    {
-        var text = "";
-        for (var i = 0; i < cmdArgs.Count; i++)
-        {
-            var text2 = "{" + i + "}";
-            if (cmd.Contains(text2))
+            string text3 = "{player}";
+            if (cmd.Contains(text3))
             {
-                cmd = cmd.Replace(text2, cmdArgs[i]);
-                continue;
+                cmd = cmd.Replace(text3, plyName);
+            }
+            if (cmd.Contains("{") && cmd.Contains("}"))
+            {
+                return false;
             }
             if (Supplement)
             {
-                text = $"{text} {cmdArgs[i]}";
-                continue;
+                cmd += text;
             }
-            return false;
+            return true;
         }
-        var text3 = "{player}";
-        if (cmd.Contains(text3))
-        {
-            cmd = cmd.Replace(text3, plyName);
-        }
-        if (cmd.Contains("{") && cmd.Contains("}"))
-        {
-            return false;
-        }
-        if (Supplement)
-        {
-            cmd += text;
-        }
-        return true;
     }
 }
