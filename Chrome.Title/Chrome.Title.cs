@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace 称号插件;
 
@@ -507,26 +506,36 @@ public class 称号插件 : TerrariaPlugin
     /// <returns></returns>
     public static bool 聊天检测(ServerChatEventArgs args)
     {
-        string text = args.Text;
+        if (args.Handled)
+        {
+            return false;
+        }
+        if (args.Text == "")
+        {
+            args.Handled = true;
+            return false;
+        }
+        var plr = TShock.Players[args.Who];
+        if (plr == null)
+        {
+            args.Handled = true;
+            return false;
+        }
+        if (args.Text.Length > 500)
+        {
+            plr.Kick("试图发送长聊天包崩溃服务器.", true);
+            args.Handled = true;
+            return false;
+        }
+        var text = args.Text;
         if ((text.StartsWith(TShock.Config.Settings.CommandSpecifier) || text.StartsWith(TShock.Config.Settings.CommandSilentSpecifier))
                         && !string.IsNullOrWhiteSpace(text.Substring(1)))
         {
             return false; 
         }
-        var plr = TShock.Players[args.Who];
         if (plr.IsLoggedIn)//是否登录
         {
-            if (args.Text == "")
-            {
-                args.Handled = true;
-                return false;
-            }
-            if (args.Text.Length > 500)
-            {
-                plr.SendErrorMessage("您发送的信息过长!");
-                args.Handled = true;
-                return false;
-            }
+            
             if (!plr.HasPermission(Permissions.canchat))
             {
                 plr.SendErrorMessage("您没有聊天所需的权限\"tshock.canchat\"");
