@@ -531,11 +531,10 @@ public class 称号插件 : TerrariaPlugin
         if ((text.StartsWith(TShock.Config.Settings.CommandSpecifier) || text.StartsWith(TShock.Config.Settings.CommandSilentSpecifier))
                         && !string.IsNullOrWhiteSpace(text.Substring(1)))
         {
-            return false; 
+            return false;
         }
         if (plr.IsLoggedIn)//是否登录
         {
-            
             if (!plr.HasPermission(Permissions.canchat))
             {
                 plr.SendErrorMessage("你没有聊天所需的权限\"tshock.canchat\"");
@@ -550,7 +549,7 @@ public class 称号插件 : TerrariaPlugin
             }
             return true;
         }
-        
+
         return false;
 
     }
