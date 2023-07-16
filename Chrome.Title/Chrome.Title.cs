@@ -538,13 +538,13 @@ public class 称号插件 : TerrariaPlugin
             
             if (!plr.HasPermission(Permissions.canchat))
             {
-                plr.SendErrorMessage("您没有聊天所需的权限\"tshock.canchat\"");
+                plr.SendErrorMessage("你没有聊天所需的权限\"tshock.canchat\"");
                 args.Handled = true;
                 return false;
             }
             if (plr.mute)
             {
-                plr.SendErrorMessage("您正被禁言中!");
+                plr.SendErrorMessage("你正被禁言中!");
                 args.Handled = true;
                 return false;
             }

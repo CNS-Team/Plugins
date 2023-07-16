@@ -10,7 +10,9 @@ namespace SurvivalCrisis.SpecialEvents
     public class Avalanche : SpecialEvent
     {
         private const int escapeTime = 60 * 180;
-        private int timer;
+        private int 
+            
+            r;
         public Avalanche()
         {
 
