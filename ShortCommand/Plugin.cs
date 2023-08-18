@@ -39,8 +39,8 @@ public class Plugin : TerrariaPlugin
     private readonly Dictionary<string, CMD> ShortCmd = new();
 
     private readonly HashSet<string> NotSourceCmd = new();
-
     private List<CommandCD> CmdCD { get; set; }
+    private static bool jump { get; set; }
 
     public Plugin(Main game)
         : base(game)
@@ -121,6 +121,11 @@ public class Plugin : TerrariaPlugin
         {
             return;
         }
+        if (jump)
+        {
+            jump = false;
+            return;
+        }
         if (this.NotSourceCmd.Contains(args.CommandName))
         {
             args.Player.SendErrorMessage("该指令已被禁止使用!");
@@ -157,6 +162,7 @@ public class Plugin : TerrariaPlugin
                     args.Handled = true;
                     return;
                 }
+                jump = true;
                 if (Commands.HandleCommand(args.Player, args.CommandPrefix + sourcecmd))
                 {
                     if (!this.CmdCD.Exists((t) => t.Name == args.Player.Name && t.Cmd == cmd.NewCommand))
@@ -167,6 +173,7 @@ public class Plugin : TerrariaPlugin
             }
             else
             {
+                jump = true;
                 Commands.HandleCommand(args.Player, args.CommandPrefix + sourcecmd);
             }
             args.Handled = true;
