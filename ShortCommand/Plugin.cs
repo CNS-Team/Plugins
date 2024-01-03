@@ -34,7 +34,7 @@ public class Plugin : TerrariaPlugin
 
     private Config Config { get; set; }
 
-    internal string PATH = Path.Combine(TShock.SavePath, "简短指令.json");
+    internal string PATH = Path.Combine(TShock.SavePath, "ShortCommand.json");
 
     private readonly Dictionary<string, CMD> ShortCmd = new();
 
