@@ -42,7 +42,7 @@ jobs:
           echo "TAG_NAME=v$(git rev-list --count HEAD)" >> $env:GITHUB_OUTPUT
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         with:
           prerelease: true
