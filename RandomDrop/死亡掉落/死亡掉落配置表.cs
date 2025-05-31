@@ -6,7 +6,6 @@ namespace 死亡掉落;
 
 internal class 死亡掉落配置表
 {
-    public string 作者_大豆子QQ424259518 = "此版由Pigeon定制，感谢定制！";
 
     public bool 是否开启进度掉落 = true;
 
@@ -116,22 +115,34 @@ internal class 死亡掉落配置表
 
     public bool 火星进行 = false;
 
-    private const string path = "tshock/随机掉落配置表.json";
+    private const string Path = "tshock/随机掉落配置表.json";
 
-    public static 死亡掉落配置表 GetConfig()
+    private static 死亡掉落配置表? _config = null; 
+
+    public static 死亡掉落配置表? GetConfig()
     {
-        var 死亡掉落配置表2 = new 死亡掉落配置表();
-        if (!File.Exists("tshock/随机掉落配置表.json"))
+        if (_config is null) 
         {
-            using var streamWriter = new StreamWriter("tshock/随机掉落配置表.json");
-            streamWriter.WriteLine(JsonConvert.SerializeObject((object) 死亡掉落配置表2, (Formatting) 1));
+            if (!File.Exists(Path))
+            {
+                _config = new 死亡掉落配置表();
+                using var streamWriter = new StreamWriter(Path);
+                streamWriter.WriteLine(JsonConvert.SerializeObject(_config, Formatting.Indented));
+            }
+            else
+            {
+                using var streamReader = new StreamReader(Path);
+                _config = JsonConvert.DeserializeObject<死亡掉落配置表>(streamReader.ReadToEnd());
+            }
         }
-        else
-        {
-            using var streamReader = new StreamReader("tshock/随机掉落配置表.json");
-            死亡掉落配置表2 = JsonConvert.DeserializeObject<死亡掉落配置表>(streamReader.ReadToEnd());
-        }
+        
 
-        return 死亡掉落配置表2;
+        return _config;
+    }
+
+    public static void ReloadConfig()
+    {
+        _config = null;
+        GetConfig();
     }
 }

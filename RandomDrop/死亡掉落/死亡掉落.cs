@@ -9,13 +9,14 @@ using Terraria;
 using Terraria.DataStructures;
 using TerrariaApi.Server;
 using TShockAPI;
+using TShockAPI.Hooks;
 
 namespace 死亡掉落;
 
 [ApiVersion(2, 1)]
 public class 死亡掉落 : TerrariaPlugin
 {
-    private static List<int> Ls0 = new ();
+    private static List<int> Ls0 = new (); 
 
     private static List<int> Ls1 = 死亡掉落配置表.GetConfig().哥布林一前禁物品;
 
@@ -153,7 +154,7 @@ public class 死亡掉落 : TerrariaPlugin
         ServerApi.Hooks.GamePostInitialize.Register(this, this.OnPostInitialize);
         ServerApi.Hooks.NpcKilled.Register(this, this.NPCDead);
         ServerApi.Hooks.NpcKilled.Register(this, this.NpcKilled);
-        死亡掉落配置表.GetConfig();
+        GeneralHooks.ReloadEvent += this.GeneralHooksOnReloadEvent;
     }
 
     protected override void Dispose(bool disposing)
@@ -163,9 +164,16 @@ public class 死亡掉落 : TerrariaPlugin
             ServerApi.Hooks.GamePostInitialize.Deregister(this, this.OnPostInitialize);
             ServerApi.Hooks.NpcKilled.Deregister(this, this.NPCDead);
             ServerApi.Hooks.NpcKilled.Deregister(this, this.NpcKilled);
+            死亡掉落配置表.GetConfig();
         }
 
         base.Dispose(disposing);
+    }
+    
+    private void GeneralHooksOnReloadEvent(ReloadEventArgs e)
+    {
+        死亡掉落配置表.ReloadConfig();
+        e.Player.SendSuccessMessage("[死亡掉落]配置文件已重载!");
     }
 
     private void OnPostInitialize(EventArgs args)
