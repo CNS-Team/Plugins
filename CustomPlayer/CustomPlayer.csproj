@@ -6,7 +6,10 @@
 	  <Folder Include="Basic\" />
 	</ItemGroup>
 	<ItemGroup>
-	  <ProjectReference Include="..\Chrome.Title\Chrome.Title.csproj" />
+          <PackageReference Include="MySqlConnector" Version="2.3.1" />
+          <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.6" />
+          <ProjectReference Include="..\Chrome.Title\Chrome.Title.csproj" />
 	</ItemGroup>
+
 	<Import Project="..\template.targets" />
 </Project>
