@@ -42,8 +42,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dimensions", "Dimensions\Di
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StatusTxtMgr", "StatusTxtMgr\StatusTxtMgr.csproj", "{1691A2C5-BA58-498B-8DF8-C7F6D26926C2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlayerReward", "PlayerReward\PlayerReward.csproj", "{4140A800-D641-444F-8749-9367F7E36584}"
-EndProject
 
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chrome.Title", "Chrome.Title\Chrome.Title.csproj", "{A9D567C5-31AF-4027-9AF6-88B09BBB9D98}"
 EndProject
