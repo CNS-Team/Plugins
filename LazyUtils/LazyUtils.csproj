@@ -2,5 +2,7 @@
   <Import Project="..\template.targets" />
   <ItemGroup>
     <PackageReference Include="linq2db" Version="5.4.1" />
+    <PackageReference Include="FastReflection" Version="2.3.0" />
+    <PackageReference Include="HarmonyLib" Version="2.3.0" /> 
   </ItemGroup>
 </Project>
