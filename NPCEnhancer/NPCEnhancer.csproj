@@ -1,8 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<Import Project="..\template.targets" />
-	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
-	</PropertyGroup>
 
 </Project>
