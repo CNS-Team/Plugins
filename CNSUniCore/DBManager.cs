@@ -1,6 +1,7 @@
 ﻿using MySql.Data.MySqlClient;
 using System.Data;
 using TShockAPI.DB;
+using TShockAPI.DB.Queries;
 
 namespace CNSUniCore;
 
@@ -33,12 +34,12 @@ public class DBManager
         IQueryBuilder queryBuilder2;
         if (flag)
         {
-            IQueryBuilder queryBuilder = new MysqlQueryCreator();
+            IQueryBuilder queryBuilder = new MysqlQueryBuilder();
             queryBuilder2 = queryBuilder;
         }
         else
         {
-            IQueryBuilder queryBuilder3 = new SqliteQueryCreator();
+            IQueryBuilder queryBuilder3 = new SqliteQueryBuilder();
             queryBuilder2 = queryBuilder3;
         }
         new SqlTableCreator(dbConnection, queryBuilder2).EnsureTableStructure(sqlTable);
@@ -63,12 +64,12 @@ public class DBManager
         IQueryBuilder queryBuilder2;
         if (flag)
         {
-            IQueryBuilder queryBuilder = new MysqlQueryCreator();
+            IQueryBuilder queryBuilder = new MysqlQueryBuilder();
             queryBuilder2 = queryBuilder;
         }
         else
         {
-            IQueryBuilder queryBuilder3 = new SqliteQueryCreator();
+            IQueryBuilder queryBuilder3 = new MysqlQueryBuilder();
             queryBuilder2 = queryBuilder3;
         }
         new SqlTableCreator(dbConnection, queryBuilder2).EnsureTableStructure(sqlTable);

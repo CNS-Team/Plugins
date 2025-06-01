@@ -11,6 +11,7 @@ using Terraria.UI.Chat;
 using TerrariaApi.Server;
 using TShockAPI;
 using TShockAPI.DB;
+using TShockAPI.DB.Queries;
 using TShockAPI.Hooks;
 using VBY.Basic.Command;
 using VBY.Basic.Extension;
@@ -131,7 +132,7 @@ public partial class CustomPlayerPlugin : TerrariaPlugin
             }.ConnectionString);
             try
             {
-                var sqlcreator = new SqlTableCreator(CustomPlayerPluginHelpers.DB, new MysqlQueryCreator());
+                var sqlcreator = new SqlTableCreator(CustomPlayerPluginHelpers.DB, new MysqlQueryBuilder());
                 foreach (var createTable in typeof(TableInfo).GetNestedTypes())
                 {
                     sqlcreator.EnsureTableStructure(Utils.SqlTableCreate(createTable));
