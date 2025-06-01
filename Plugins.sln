@@ -33,8 +33,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NPCEventBan", "NPCEventBan\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnlineInfo", "OnlineInfo\OnlineInfo.csproj", "{5A2D6C4A-42D1-47BD-88A3-533CDC5FC815}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CNSUniCore", "CNSUniCore\CNSUniCore.csproj", "{479A4838-749F-4514-BC4B-61CD2073ADC1}"
-EndProject
+
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TrProtocol", "TrProtocol\TrProtocol.csproj", "{DB3BDB96-EF22-47E0-9383-C9B77D7BC53D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PacketMonitor", "PacketMonitor\PacketMonitor.csproj", "{F2EB7A9D-0945-462C-AA1A-B9505D18C4EF}"
@@ -45,8 +44,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StatusTxtMgr", "StatusTxtMg
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlayerReward", "PlayerReward\PlayerReward.csproj", "{4140A800-D641-444F-8749-9367F7E36584}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomPlayer", "CustomPlayer\CustomPlayer.csproj", "{7ECB94D6-DFFD-4A3B-AC11-546A9B0A6A59}"
-EndProject
+
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chrome.Title", "Chrome.Title\Chrome.Title.csproj", "{A9D567C5-31AF-4027-9AF6-88B09BBB9D98}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NPCEnhancer", "NPCEnhancer\NPCEnhancer.csproj", "{1FA2411D-93F9-41F2-AD0F-5F231C514722}"
