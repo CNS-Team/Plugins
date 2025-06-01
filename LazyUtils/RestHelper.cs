@@ -27,7 +27,7 @@ public static class RestHelper
             errors[i - 1] = new RestObject("400") { Error = $"Bad input for parameter: {CommandParser.GetFriendlyName(@params[i].ParameterType)} {names[i - 1]}" };
         }
 
-        var @delegate = method.CreateFastDelegate();
+        var @delegate = method;
 
         return arg =>
         {
@@ -36,7 +36,7 @@ public static class RestHelper
             for (var i = 1; i < n; ++i)
                 if (!parsers[i - 1](arg.Parameters[names[i - 1]], out args[i]))
                     return errors[i - 1];
-            return @delegate(null, args);
+            return @delegate.Invoke(null, args);
         };
     }
 
