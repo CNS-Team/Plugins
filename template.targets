@@ -1,8 +1,9 @@
 <Project>
-  <PropertyGroup>
+   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -12,8 +13,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="TShock" Version="5.2.4">
-	  <ExcludeAssets>contentFiles</ExcludeAssets>
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-6qmf-mmc7-6c2p"/>
+    <PackageReference Include="UnrealMultiple.TShock-Beta" Version="6.0.0">
+        <IncludeAssets>compile</IncludeAssets>
     </PackageReference>
   </ItemGroup>
 
